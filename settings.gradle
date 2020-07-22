@@ -1,0 +1,3 @@
+include ':Messenger'
+include ':TelemetryViewModel'
+include ':app', ':datamodel', ':telemetry'

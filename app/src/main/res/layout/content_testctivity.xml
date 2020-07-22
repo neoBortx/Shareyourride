@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This layout contains some patterns that should be avoided and are fixed in
+ the view model layout. -->
+<layout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+                name="session"
+                type="com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel" />
+        <variable
+                name="location"
+                type="com.bvillarroya_creations.shareyourride.viewmodel.location.LocationViewModel" />
+        <variable
+                name="inclination"
+                type="com.bvillarroya_creations.shareyourride.viewmodel.inclination.InclinationViewModel" />-->
+    </data>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        tools:visibility="visible">
+
+    <Button
+            android:id="@+id/startSessionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start"
+            android:onClick="@{() -> session.startSession()}" />
+
+    <Button
+            android:id="@+id/stopSessionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stop"
+            android:onClick="@{() -> session.stopSession()}"/>
+
+    </LinearLayout>
+    <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/holaaaa"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="HOLAAAAAAA" />
+
+        <TextView
+                android:id="@+id/sessionIdLabel"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@{session.sessionId}" />
+
+        <TextView
+            android:id="@+id/sessionStateLabel"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@{session.sessionState}" />
+    </LinearLayout>
+
+
+    </LinearLayout>
+    </layout>
