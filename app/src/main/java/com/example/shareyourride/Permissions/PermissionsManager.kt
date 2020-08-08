@@ -13,26 +13,26 @@ import androidx.core.content.ContextCompat
 class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermissionsResultCallback {
 
     //region properties
-    /*
-        The list of permission that the Manager has to request to the user
-    */
+    /**
+     * The list of permission that the Manager has to request to the user
+     */
     val mPermissionList = mutableListOf<String>()
 
-    /*
-        The result code of the permission request. Each functionality uses an unique one
-    */
-    val mRequestPermissionsCode: Int = 2348974
+    /**
+     * The result code of the permission request. Each functionality uses an unique one
+     */
+    val mRequestPermissionsCode: Int = 23489
 
-    /*
-    List of permissions that aren't granted by the user o sensors aren't available
- */
+    /**
+     * List of permissions that aren't granted by the user o sensors aren't available
+     */
     val mPermissionsRejected = mutableListOf<String>()
     //endregion
 
     //region functionalities list
-    /*
-        Add a new functionality to the list of permission to request
-        @param functionality: name of the functionality, defined in Manifest.permission.
+    /**
+     * Add a new functionality to the list of permission to request
+     * @param functionality: name of the functionality, defined in Manifest.permission.
      */
     fun addFunctionality(functionality: String)
     {
@@ -46,12 +46,13 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to add functionality to the list of permissions to request" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
     }
 
-    /*
-        Delete a functionality from the list of functionalities to request
+    /**
+     * Delete a functionality from the list of functionalities to request
      */
     fun removeFunctionality(functionality: String)
     {
@@ -62,15 +63,16 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to remove functionality to the list of permissions to request" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
 
     }
 
-    /*
-       Add a new functionality to the list of permission to request
-       @param functionality: name of the functionality, defined in Manifest.permission.
-    */
+    /**
+     * Add a new functionality to the list of permission to request
+     * @param functionality: name of the functionality, defined in Manifest.permission.
+     */
     private fun addRejectedFunctionality(functionality: String)
     {
         try
@@ -83,12 +85,15 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to add functionality to the list of permissions to request" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
     }
 
-    /*
-        Delete a functionality from the list of functionalities to request
+    /**
+     * Delete a functionality from the list of functionalities to request
+     *
+     * @param functionality: The name of the functionality to remove
      */
     private fun removeRejectedFunctionality(functionality: String)
     {
@@ -99,15 +104,16 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to remove functionality to the list of permissions to request" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
 
     }
     //endregion
 
-    /*
-      Check if the functionality has its permission granted. If not, ask for them
-   */
+    /**
+     * Check if the functionality has its permission granted. If not, ask for them
+     */
     fun checkPermissions() {
         try {
             var askForPermission = false
@@ -128,13 +134,14 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to check or ask for permissions" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
     }
 
 
-    /*
-        Request to the user to grant permissions
+    /**
+     * Request to the user to grant permissions
      */
     private fun makeRequest()
     {
@@ -146,12 +153,16 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         catch(ex: Exception)
         {
             Log.e("SYR", "SYR -> Unable to make the permission request" +
-                    " ${ex.message} - ${ex.stackTrace}")
+                    " ${ex.message}")
+ex.printStackTrace()
         }
     }
 
-    /*
-        Manage the result of the permission request
+    /**
+     * Manage the result of the permission request
+     * @param requestCode: the identifier of the request permission transaction
+     * @param permissions: List of the requested permissions
+     * @param grantResults: the result of each permission request individually
      */
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray)
@@ -162,20 +173,39 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
             {
                 var i = 0
                 grantResults.forEach {
-                    val permission = permissions[i]
                     if (grantResults.isEmpty() || it != PackageManager.PERMISSION_GRANTED)
                     {
-                        Log.i(ContentValues.TAG, "Permission for $permission has been denied by user")
-                        addRejectedFunctionality(permission)
+                        processPermissionDenied(permissions[i])
                     }
                     else
                     {
-                        removeRejectedFunctionality(permission)
-                        Log.i(ContentValues.TAG, "Permission has been granted by user")
+                        processPermissionGranted(permissions[i])
                     }
                     i++
                 }
             }
         }
+    }
+
+    /**
+     * Process the rejection of the permission request
+     *
+     * @param permission: The name of the denied permission
+     */
+    private fun processPermissionDenied(permission: String)
+    {
+        Log.i(ContentValues.TAG, "Permission for $permission has been denied by user")
+        addRejectedFunctionality(permission)
+    }
+
+    /**
+     * Process the acceptation of the permission request
+     *
+     * @param permission: The name of the denied permission
+     */
+    private fun processPermissionGranted(permission: String)
+    {
+        removeRejectedFunctionality(permission)
+        Log.i(ContentValues.TAG, "Permission has been granted by user")
     }
 }

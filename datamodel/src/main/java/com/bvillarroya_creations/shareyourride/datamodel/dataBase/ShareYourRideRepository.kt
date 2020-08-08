@@ -75,8 +75,11 @@ class ShareYourRideRepository {
         //endregion
 
         //region session data
-        /*
-            Insert a given session in the data base
+        /**
+         * Insert a new session in the data base
+         * If the session already exist, this operation will be discarded
+         *
+         * @param session: Session data to update
          */
         suspend fun insertSession(session: Session) {
             return withContext(Dispatchers.Default) {
@@ -84,12 +87,25 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Insert a given session in the data base
+        /**
+         * Update an existing session with new data
+         *
+         * @param session: Session data to update
          */
         suspend fun updateSession(session: Session) {
             return withContext(Dispatchers.Default) {
                 DataBaseManager.updateSession(session)
+            }
+        }
+
+        /**
+         * Delete an existing session
+         *
+         * @param session: Session data to delete
+         */
+        suspend fun deleteSession(session: Session) {
+            return withContext(Dispatchers.Default) {
+                DataBaseManager.deleteSession(session)
             }
         }
         //endregion

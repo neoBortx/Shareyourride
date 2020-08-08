@@ -1,81 +1,147 @@
 package com.bvillarroya_creations.shareyourride.telemetry.location
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Looper
 import android.util.Log
+import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
+import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
+import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.IDataProvider
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
+import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTopics
+import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTypes
 import com.google.android.gms.location.*
-import com.google.android.gms.tasks.Task
 
+/**
+ * Class in charge of manage the location services
+ */
+class LocationProvider(private val context: Context): IDataProvider, IMessageHandlerClient {
 
-class LocationProvider(private val context: Context): IDataProvider {
-
+    //region variables
+    /**
+     * Function that handles the location updates
+     */
     private lateinit var mLocationCallback: LocationCallback
 
-    private var mProviderState: IDataProvider.ProviderState =   IDataProvider.ProviderState.STOPED
+    /**
+     * The state of the location provider
+     */
+    private var mProviderState: IDataProvider.ProviderState =   IDataProvider.ProviderState.STOPPED
 
+    /**
+     * The client to connect with the location services
+     */
     private val mFusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
+    /**
+     * To request location updates
+     */
     private var mLocationRequest: LocationRequest? = null
 
-    /*
-        Initialize the provider
+    //endregion
+
+    //region IDataProvider
+    /**
+     * Configure Location services with the priority and the pooling interval
+     * Configure the location client
      */
     override fun configureProvider() {
-        //Get updates each one second
-        mLocationRequest = LocationRequest.create()?.apply {
-            interval = 1000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        try {
+            //Get updates each one second
+            mLocationRequest = LocationRequest.create()?.apply {
+                interval = 1000
+                fastestInterval = 1000
+                priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+            }
+
+            if (mLocationRequest != null) {
+                val builder = LocationSettingsRequest.Builder()
+                    .addLocationRequest(mLocationRequest!!)
+
+                val client: SettingsClient = LocationServices.getSettingsClient(context)
+                client.checkLocationSettings(builder.build())
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SYR -> Unable to configure to location provider ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
-    /*
-        Set the handler that is going gto precess changes in the location
+    /**
+     * Set the handler that is going gto precess changes in the location
+     * @param callback: Function that is going to process location updates
      */
+    @SuppressLint("MissingPermission")
     override fun subscribeProvider(callback: (ITelemetryData) -> Unit) {
-        if (mLocationRequest != null) {
-            val builder = LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest!!)
+        try {
 
-            val client: SettingsClient = LocationServices.getSettingsClient(context)
-            val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-            mProviderState = IDataProvider.ProviderState.SUBSCRIBED
-            task.addOnSuccessListener {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // ...
-
-                startObserveLocation(callback)
+            if (mLocationRequest != null)
+            {
+                createLocationCallback(callback)
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback,Looper.getMainLooper())
             }
-
-            task.addOnFailureListener { exception ->
-                Log.e("SYR", "SYR -> Unable to subscribe to location provider $exception")
-
+            else{
+                Log.e("SYR", "SYR -> Unable to subscribe to location provider, mLocationRequest is null")
             }
         }
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SYR -> Unable to subscriber to location provider ${ex.message}")
+            ex.printStackTrace()
+        }
+
     }
 
-    private fun startObserveLocation(callback: (ITelemetryData) -> Unit)
+    /**
+     * Create the call back function called by the location services to process location updates
+     * This call callback function will forward the location data to upper layers
+     *
+     * @param callback: Function that is going to process location updates
+     */
+    private fun createLocationCallback(callback: (ITelemetryData) -> Unit)
     {
-        mLocationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                locationResult ?: return
-                for (location in locationResult.locations) {
+        try {
+            mLocationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult?) {
 
-                    val locationData = LocationData(location.latitude, location.longitude, location.altitude, location.speed, location.time)
+                    locationResult ?: return
+                    for (location in locationResult.locations) {
 
-                    Log.d("SYR","Location -> obtained lat: ${location.latitude} lon: ${location.longitude} " +
-                            "altitude: ${location.altitude} speed: ${location.speed} bearing ${location.bearing}")
+                        val locationData = LocationData(
+                            location.latitude,
+                            location.longitude,
+                            location.altitude,
+                            location.speed,
+                            location.bearing,
+                            location.time
+                        )
 
-                    callback(locationData)
+                        //Log.d("SYR","SYR -> Location obtained lat: ${location.latitude} lon: ${location.longitude} " +
+                        //        "altitude: ${location.altitude} speed: ${location.speed} bearing ${location.bearing}")
+
+                        callback(locationData)
+
+                        val message = MessageBundle(TelemetryMessageTypes.LOCATION_DATA, locationData)
+
+                        sendMessage(message)
+                    }
                 }
             }
         }
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SYR -> Unable to create location callback: ${ex.message}")
+            ex.printStackTrace()
+        }
+
     }
 
-    /*
-        Remove the handler of the location updates
+    /**
+     * Remove the handler of the location updates
      */
     override fun stopProvider() {
         try {
@@ -83,18 +149,35 @@ class LocationProvider(private val context: Context): IDataProvider {
         }
         catch (ex: Exception)
         {
+            Log.e("SYR", "SYR -> Unable to stop location provers: ${ex.message}")
             ex.printStackTrace()
         }
 
-        mProviderState = IDataProvider.ProviderState.STOPED
+        mProviderState = IDataProvider.ProviderState.STOPPED
     }
 
-    /*
-        returns the state of the Loctaion provider
+    /**
+     * Returns the state of the Location provider
      */
     override fun getProviderState(): IDataProvider.ProviderState
     {
         return mProviderState
     }
+    //endregion
+
+    //region IMessageHandlerClient implementation
+    init {
+        this.createMessageHandler( listOf<String>(TelemetryMessageTopics.TELEMETRY_DATA))
+    }
+
+    override lateinit var messageHandler: MessageHandler
+
+    /**
+     * No message required
+     */
+    override fun processMessage(msg: MessageBundle) {
+        Log.d("SYR", "SYR -> Skipping message")
+    }
+    //endregion
 
 }

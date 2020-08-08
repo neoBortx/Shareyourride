@@ -3,6 +3,7 @@ package com.bvillarroya_creations.shareyourride.datamodel.data
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 
 /*
     Store the information of each frame of the video
@@ -16,10 +17,6 @@ data class Video (
         Contains the session id and the frame id
      */
     @PrimaryKey
-    @Embedded val id: VideoId = VideoId("",0),
+    @Embedded val id: VideoId = VideoId("",0)
 
-    /*
-        the timeStamp when the frame is captured
-     */
-    val timeStamp: Long = 0
 )

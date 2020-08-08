@@ -3,7 +3,6 @@ package com.bvillarroya_creations.shareyourride.datamodel.data
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
-import androidx.room.Ignore
 import androidx.room.Index
 
 /*
@@ -17,30 +16,15 @@ import androidx.room.Index
             parentColumns = ["id"],
             childColumns = ["sessionId"],
             onDelete = CASCADE)],
-    indices = [ Index(value = ["sessionId", "videoId"])]
+    indices = [ Index(value = ["sessionId", "timeStamp"])]
 )
-class VideoId {
-
-    /*
-        The session that owns this video frame
-    */
-    var sessionId: String = ""
-    /*
-        The time stamp of the video frame
-    */
-    var videoId: Long = 0
-
-    constructor(sessionId: String, videoId: Long)
-    {
-        this.sessionId = sessionId
-        this.videoId = videoId
-    }
-
+data class VideoId(
     /**
-     * Default constructor
-     * Put @ignore tag to avoid compilation warnings related to the auto generated code with Room library
+     * The session that owns this video frame
+    */
+    var sessionId: String,
+    /**
+     * The time stamp of the video frame
      */
-    @Ignore
-    constructor()
-
-}
+    var timeStamp: Long
+)

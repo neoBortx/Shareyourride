@@ -96,8 +96,8 @@ class DataBaseManager {
         {
             if (videoDao != null)
             {
+                Log.d("SYR", "Inserting video frame row: ${video.id.sessionId}, ${video.id.timeStamp}")
                 videoDao!!.addVideo(video)
-                Log.d("SYR", "Inserted video frame row: ${video.id.sessionId}, ${video.id}")
             }
             else
             {
@@ -113,8 +113,8 @@ class DataBaseManager {
         {
             if (locationDao != null)
             {
+                Log.d("SYR", "SYR -> Inserting location in session: ${location.id.sessionId}, ${location.id.timeStamp}")
                 locationDao!!.addLocation(location)
-                Log.d("SYR", "SYR -> Inserted sign session: ${location.id.sessionId}, ${location.id}")
             }
             else
             {
@@ -130,8 +130,8 @@ class DataBaseManager {
         {
             if (bodyDao != null)
             {
+                Log.d("SYR", "SYR -> Inserting body data in session: ${body.id.sessionId}, ${body.id.timeStamp}")
                 bodyDao!!.addBody(body)
-                Log.d("SYR", "SYR -> Inserted sign session: ${body.id.sessionId}, ${body.id}")
             }
             else
             {
@@ -147,8 +147,8 @@ class DataBaseManager {
         {
             if (environmentDao != null)
             {
+                Log.d("SYR", "SYR -> Inserting environment data in session: ${environment.id.sessionId}, ${environment.id.timeStamp}")
                 environmentDao!!.addEnvironment(environment)
-                Log.d("SYR", "SYR -> Inserted sign session: ${environment.id.sessionId}, ${environment.id}")
             }
             else
             {
@@ -164,8 +164,11 @@ class DataBaseManager {
         {
             if (inclinationDao != null)
             {
+                Log.d("SYR", "SYR -> Inserting inclination data in session: ${inclination.id.sessionId}," +
+                        "rx ${inclination.orientationVector[0]} ry ${inclination.orientationVector[1]} rz ${inclination.orientationVector[2]} " +
+                        "gx ${inclination.gravity[0]} gy ${inclination.gravity[1]} gz ${inclination.gravity[2]} " +
+                        "ax ${inclination.acceleration[0]} ay ${inclination.acceleration[1]} az ${inclination.acceleration[2]}")
                 inclinationDao!!.addInclination(inclination)
-                Log.d("SYR", "SYR -> Inserted sign session: ${inclination.id.sessionId}, ${inclination.id}")
             }
             else
             {

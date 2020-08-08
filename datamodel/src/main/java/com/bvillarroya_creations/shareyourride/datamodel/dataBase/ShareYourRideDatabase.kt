@@ -1,11 +1,10 @@
 package com.bvillarroya_creations.shareyourride.datamodel.dataBase
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.bvillarroya_creations.shareyourride.datamodel.converters.FloatArrayToStringConverter
+import com.bvillarroya_creations.shareyourride.datamodel.converters.IntArrayToStringConverter
 import com.bvillarroya_creations.shareyourride.datamodel.dao.*
 import com.bvillarroya_creations.shareyourride.datamodel.data.*
 
@@ -18,12 +17,12 @@ import com.bvillarroya_creations.shareyourride.datamodel.data.*
     Location::class,
     Environment::class,
     Body::class,
-    Inclination::class], version = 2)
-@TypeConverters(FloatArrayToStringConverter::class)
+    Inclination::class], version = 6)
+@TypeConverters(FloatArrayToStringConverter::class,IntArrayToStringConverter::class)
 abstract class ShareYourRideDatabase : RoomDatabase()
 {
     companion object {
-        val  DATABASE_NAME = "ShareYourRideDatabase"
+        const val  DATABASE_NAME = "ShareYourRideDatabase"
     }
 
     abstract fun sessionDao(): SessionDao

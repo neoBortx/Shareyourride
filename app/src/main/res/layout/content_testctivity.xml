@@ -14,7 +14,10 @@
                 type="com.bvillarroya_creations.shareyourride.viewmodel.location.LocationViewModel" />
         <variable
                 name="inclination"
-                type="com.bvillarroya_creations.shareyourride.viewmodel.inclination.InclinationViewModel" />-->
+                type="com.bvillarroya_creations.shareyourride.viewmodel.inclination.InclinationViewModel" />
+        <variable
+            name="environment"
+            type="com.bvillarroya_creations.shareyourride.viewmodel.environment.EnvironmentViewModel" />
     </data>
     <LinearLayout
             android:layout_width="match_parent"
@@ -43,29 +46,342 @@
             android:onClick="@{() -> session.stopSession()}"/>
 
     </LinearLayout>
-    <LinearLayout
+   <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
         <TextView
-            android:id="@+id/holaaaa"
+            android:id="@+id/sessionStateSectionLabel"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="HOLAAAAAAA" />
+            android:layout_height="20dp"
+            android:text="@string/session_state_test" />
 
         <TextView
                 android:id="@+id/sessionIdLabel"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="20dp"
                 android:text="@{session.sessionId}" />
 
         <TextView
             android:id="@+id/sessionStateLabel"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="@{session.sessionState}" />
-    </LinearLayout>
+            android:layout_height="20dp"
+            android:text="@{session.sessionState.toString()}" />
+
+
+        <TextView
+            android:id="@+id/InclinationStateSection"
+            android:layout_width="match_parent"
+            android:textStyle="bold|italic"
+            android:layout_height="30dp"
+            android:text="@string/rotation_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+           <TextView
+               android:id="@+id/rotation_x_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/x" />
+
+            <TextView
+                android:id="@+id/rotation_x_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.rotationX.toString()}" />
+
+           <TextView
+               android:id="@+id/rotation_y_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/y" />
+
+            <TextView
+                android:id="@+id/rotation_y_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.rotationY.toString()}" />
+
+           <TextView
+               android:id="@+id/rotation_z_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/z" />
+
+            <TextView
+                android:id="@+id/rotation_z_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.rotationZ.toString()}" />
+       </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/GravityStateLabel"
+            android:layout_width="match_parent"
+            android:textStyle="bold|italic"
+            android:layout_height="30dp"
+            android:text="@string/gravity_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+
+           <TextView
+               android:id="@+id/gravity_x_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/x" />
+
+            <TextView
+                android:id="@+id/gravity_x_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.gravityX.toString()}" />
+
+           <TextView
+               android:id="@+id/gravity_y_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/y" />
+
+            <TextView
+                android:id="@+id/gravity_y_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.gravityY.toString()}" />
+
+           <TextView
+               android:id="@+id/gravity_z_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/z" />
+
+            <TextView
+                android:id="@+id/gravity_z_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.gravityZ.toString()}" />
+       </LinearLayout>
+
+        <TextView
+            android:id="@+id/AccelerationStateLabel"
+            android:layout_width="wrap_content"
+            android:textStyle="bold|italic"
+            android:layout_height="30dp"
+            android:text="@string/accelartion_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+
+           <TextView
+               android:id="@+id/acceleration_x_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/x" />
+
+            <TextView
+                android:id="@+id/acceleration_x_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.accelerationX.toString()}" />
+
+           <TextView
+               android:id="@+id/acceleration_y_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/y" />
+
+            <TextView
+                android:id="@+id/acceleration_y_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.accelerationY.toString()}" />
+
+           <TextView
+               android:id="@+id/acceleration_z_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/z" />
+
+            <TextView
+                android:id="@+id/acceleration_z_value"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="@{inclination.accelerationZ.toString()}" />
+       </LinearLayout>
+
+       <TextView
+           android:id="@+id/LocationStateLabel"
+           android:layout_width="wrap_content"
+           android:textStyle="bold|italic"
+           android:layout_height="30dp"
+           android:text="@string/accelartion_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+
+           <TextView
+               android:id="@+id/latitude_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/latitude" />
+
+           <TextView
+               android:id="@+id/latitude_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{location.latitude.toString()}" />
+
+           <TextView
+               android:id="@+id/longitude_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/longitude" />
+
+           <TextView
+               android:id="@+id/longitude_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{location.longitude.toString()}" />
+
+           <TextView
+               android:id="@+id/speed_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/speed" />
+
+           <TextView
+               android:id="@+id/speed_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{location.speed.toString()}" />
+
+           <TextView
+               android:id="@+id/altitude_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/altitude" />
+
+           <TextView
+               android:id="@+id/altitude_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{location.altitude.toString()}" />
+       </LinearLayout>
+
+       <TextView
+           android:id="@+id/weatherSection"
+           android:layout_width="match_parent"
+           android:textStyle="bold|italic"
+           android:layout_height="30dp"
+           android:text="@string/weather_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+           <TextView
+               android:id="@+id/temperature_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/temperature" />
+
+           <TextView
+               android:id="@+id/temperature_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{environment.temperature.toString()}" />
+
+           <TextView
+               android:id="@+id/humidity_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/humidity" />
+
+           <TextView
+               android:id="@+id/humidity_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{environment.humidity.toString()}" />
+
+           <TextView
+               android:id="@+id/pressure_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/pressure" />
+
+           <TextView
+               android:id="@+id/presure_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{environment.pressure.toString()}" />
+       </LinearLayout>
+
+       <TextView
+           android:id="@+id/windSection"
+           android:layout_width="match_parent"
+           android:textStyle="bold|italic"
+           android:layout_height="30dp"
+           android:text="@string/wind_test" />
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:orientation="horizontal">
+           <TextView
+               android:id="@+id/wind_speed_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/wind_speed" />
+
+           <TextView
+               android:id="@+id/wind_speed_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{environment.windSpeed.toString()}" />
+
+           <TextView
+               android:id="@+id/wind_direction_label"
+               android:layout_width="wrap_content"
+               android:textStyle="bold"
+               android:layout_height="20dp"
+               android:text="@string/wind_direction" />
+
+           <TextView
+               android:id="@+id/wind_direction_value"
+               android:layout_width="wrap_content"
+               android:layout_height="20dp"
+               android:text="@{environment.windDirection.toString()}" />
+
+       </LinearLayout>
+
+   </LinearLayout>
 
 
     </LinearLayout>

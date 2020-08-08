@@ -1,3 +1,5 @@
+include ':messagesDefinition'
+include ':messagesDefinition'
 include ':Messenger'
 include ':TelemetryViewModel'
 include ':app', ':datamodel', ':telemetry'

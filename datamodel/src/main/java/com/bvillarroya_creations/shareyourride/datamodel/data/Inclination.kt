@@ -1,7 +1,9 @@
 package com.bvillarroya_creations.shareyourride.datamodel.data
 
-import androidx.room.*
-import com.bvillarroya_creations.shareyourride.datamodel.converters.FloatArrayToStringConverter
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 
 /*
     Store the inclination of the device when the video is recorded
@@ -10,33 +12,39 @@ import com.bvillarroya_creations.shareyourride.datamodel.converters.FloatArrayTo
 @Entity(tableName = "Inclination")
 data class Inclination(
 
-    /*
-        Row unique identifier
-        Contains the session id and the frame id
+    /**
+     * Row unique identifier
+     * Contains the session id and the frame id
      */
     @PrimaryKey
-    @Embedded val id: TelemetryId = TelemetryId("",0),
+    @Embedded override val id: TelemetryId = TelemetryId("",0),
 
-    /*
-        the timeStamp when the frame is captured
-     */
-    val timeStamp: Long = 0,
 
-    /*
-        The acceleration of the device
+    /**
+     * gravity applied to the device in m/s2
+     * [0]: x-axis
+     * [1]: y-axis
+     * [2]: z-axis
      */
     val acceleration: FloatArray = FloatArray(3),
 
-    /*
-        The rotation of the device
+    /**
+     * linear acceleration of the device in m/s2
+     * [0]: x-axis
+     * [1]: y-axis
+     * [2]: z-axis
      */
-    val rotationVector: FloatArray= FloatArray(3),
+    val gravity: FloatArray = FloatArray(3),
 
-    /*
-        The rotation of the device
+    /**
+     * Rotation angles of the device, in degrees
+     * [0]:Pitch, angle of rotation about the x axis.
+     * [1]:Roll, angle of rotation about the y axis
+     * [2]:Azimuth, angle of rotation about the -z axis.
      */
-    val gravity: FloatArray = FloatArray(3)
-) {
+    val orientationVector: IntArray = IntArray(3)
+): IDataBaseTelemetry
+{
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -44,9 +52,8 @@ data class Inclination(
         other as Inclination
 
         if (id != other.id) return false
-        if (timeStamp != other.timeStamp) return false
         if (!acceleration.contentEquals(other.acceleration)) return false
-        if (!rotationVector.contentEquals(other.rotationVector)) return false
+        if (!orientationVector.contentEquals(other.orientationVector)) return false
         if (!gravity.contentEquals(other.gravity)) return false
 
         return true
@@ -54,9 +61,8 @@ data class Inclination(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + timeStamp.hashCode()
         result = 31 * result + acceleration.contentHashCode()
-        result = 31 * result + rotationVector.contentHashCode()
+        result = 31 * result + orientationVector.contentHashCode()
         result = 31 * result + gravity.contentHashCode()
         return result
     }

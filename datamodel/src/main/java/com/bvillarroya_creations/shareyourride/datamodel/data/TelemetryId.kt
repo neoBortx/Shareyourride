@@ -19,32 +19,19 @@ import androidx.room.Index
             onDelete = CASCADE),
         ForeignKey(entity = Video::class,
             parentColumns = ["id"],
-            childColumns = ["videoId"],
+            childColumns = ["timeStamp"],
             onDelete = CASCADE)],
-    indices = [ Index(value = ["sessionId", "videoId"])]
+    indices = [ Index(value = ["sessionId", "timeStamp"])]
 )
-class TelemetryId {
-
-    /*
-        The session that owns this video frame
-    */
-    var sessionId: String = ""
-    /*
-        The video frame that owns this row
-    */
-    var videoId: Long = 0
-
-    constructor(sessionId: String, videoId: Long)
-    {
-        this.sessionId = sessionId
-        this.videoId = videoId
-    }
+data class TelemetryId (
 
     /**
-     * Default constructor
-     * Put @ignore tag to avoid compilation warnings related to the auto generated code with Room library
+     * The session that owns this video frame
      */
-    @Ignore
-    constructor()
+    var sessionId: String,
 
-}
+    /**
+     * The time stamp related to this data
+    */
+    var timeStamp: Long
+)

@@ -14,33 +14,33 @@ interface InclinationDao {
      * Insert a new Inclination into the collection
      * If the Inclination already existing, rollback and return an error
      *
-     * @param Inclination: the new Inclination to add
+     * @param inclination: the new Inclination to add
      * @return The Inclination identifier
      */
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun addInclination(Inclination: Inclination): Long
+    fun addInclination(inclination: Inclination): Long
 
     /**
      * Update an existing Inclination with the given one
      *
-     * @param Inclination: the new Inclination to update
+     * @param inclination: the new Inclination to update
      */
     @Update
-    fun updateInclination(Inclination: Inclination)
+    fun updateInclination(inclination: Inclination)
 
     /**
      * Delete the given Inclination from the database
      *
-     * @param Inclination: the new Inclination to delete
+     * @param inclination: the new Inclination to delete
      */
     @Delete
-    fun deleteInclination(Inclination: Inclination)
+    fun deleteInclination(inclination: Inclination)
 
     /**
      * Get the whole Inclination collection from the database
      *
      * @return: The list of Inclination
      */
-    @Query("SELECT * FROM Inclination Where sessionId like :session and videoId like :videoFrame")
-    fun getInclinationList(session: Int, videoFrame: Int): List<Inclination>
+    @Query("SELECT * FROM Inclination Where sessionId like :session and timeStamp like :timeStamp")
+    fun getInclinationList(session: Int, timeStamp: Int): List<Inclination>
 }

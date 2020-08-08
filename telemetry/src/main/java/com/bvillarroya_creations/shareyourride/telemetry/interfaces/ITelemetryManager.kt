@@ -4,30 +4,34 @@ import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.telemetry.constants.TelemetryConstants
 import com.bvillarroya_creations.shareyourride.telemetry.events.TelemetryEvent
 
+/**
+ * Common interface that all telemetry managers have to implement
+ */
 interface ITelemetryManager {
 
-    /*
-        Event triggered when the data provider detects a new value for the telemetry
+    /**
+     * Event triggered when the data provider detects a new value for the telemetry
      */
     val telemetryChanged : MutableLiveData<TelemetryEvent>
 
-    /*
-        Points the kind of telemetry sent in the event
+    /**
+     * Points the kind of telemetry sent in the event
      */
     val telemetryEventType: TelemetryConstants.Companion.TelemetryEventType
 
-    /*
-        Start to monitoring sensors
+    /**
+     * Start to monitoring sensors
      */
     fun startAcquiringData()
 
-    /*
-        Stop monitoring sensors
+    /**
+     * Stop monitoring sensors
      */
     fun stopAcquiringData()
 
-    /*
-        Returns the current state of the manager
+    /**
+     * To known the current state of the manager
+     * @return the current state of the manager
      */
     fun getManagerState(): IDataProvider.ProviderState
 }

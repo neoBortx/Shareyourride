@@ -14,33 +14,33 @@ interface LocationDao {
      * Insert a new Location into the collection
      * If the Location already existing, rollback and return an error
      *
-     * @param Location: the new Location to add
+     * @param location: the new Location to add
      * @return The Location identifier
      */
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun addLocation(Location: Location): Long
+    fun addLocation(location: Location): Long
 
     /**
      * Update an existing Location with the given one
      *
-     * @param Location: the new Location to update
+     * @param location: the new Location to update
      */
     @Update
-    fun updateLocation(Location: Location)
+    fun updateLocation(location: Location)
 
     /**
      * Delete the given Location from the database
      *
-     * @param Location: the new Location to delete
+     * @param location: the new Location to delete
      */
     @Delete
-    fun deleteLocation(Location: Location)
+    fun deleteLocation(location: Location)
 
     /**
      * Get the whole Location collection from the database
      *
      * @return: The list of Location
      */
-    @Query("SELECT * FROM Location Where sessionId like :session and videoId like :videoFrame")
-    fun getLocationList(session: Int, videoFrame: Int): List<Location>
+    @Query("SELECT * FROM Location Where sessionId like :session and timeStamp like :timeStamp")
+    fun getLocationList(session: Int, timeStamp: Int): List<Location>
 }

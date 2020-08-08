@@ -37,7 +37,8 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to send telemetry to upper layers, exception: ${ex.message} - ${ex.stackTrace}")
+            Log.e("SYR", "SYR -> Unable to send telemetry to upper layers, exception: ${ex.message}")
+            ex.printStackTrace()
         }
     }
     //endregion
@@ -56,15 +57,16 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
      * Returns the state of the data provider
      */
     override fun getManagerState(): IDataProvider.ProviderState {
-        return mDataProvider?.getProviderState() ?:  IDataProvider.ProviderState.STOPED
+        return mDataProvider?.getProviderState() ?:  IDataProvider.ProviderState.STOPPED
     }
 
     /**
-     * Start the provider of the dat aprovider
+     * Start the provider of the data provider
      */
     override fun startAcquiringData() {
         Log.d("SYR", "Start AcquiringData")
         if (mDataProvider != null) {
+            mDataProvider?.configureProvider()
             mDataProvider?.subscribeProvider(::processTelemetryData)
         }
     }

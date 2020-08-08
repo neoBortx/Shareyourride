@@ -43,6 +43,11 @@ dependencies {
     // explicitly depend on RxJava's latest version for bug fixes and new features.
     // (see https://github.com/ReactiveX/RxJava/releases for latest 3.x.x version)
     implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
+
+    //To make http request
+    implementation 'com.android.volley:volley:1.1.1'
+
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
 }
 repositories {
     mavenCentral()

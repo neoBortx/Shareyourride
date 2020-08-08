@@ -4,11 +4,37 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 
-data class InclinationData(val gravity: FloatArray, val acceleration: FloatArray, val rotationVector: FloatArray, val TimeStamp: Long) : ITelemetryData {
+/**
+ * Holds the information related to an event produced by movement sensors
+ */
+data class InclinationData(
+    /**
+     * gravity applied to the device in m/s2
+     * [0]: x-axis
+     * [1]: y-axis
+     * [2]: z-axis
+     */
+    val gravity: FloatArray,
+    /**
+     * linear acceleration of the device in m/s2
+     * [0]: x-axis
+     * [1]: y-axis
+     * [2]: z-axis
+     */
+    val acceleration: FloatArray,
+    /**
+     * Rotation angles of the device, in degrees
+     * [0]:Pitch, angle of rotation about the x axis.
+     * [1]:Roll, angle of rotation about the y axis
+     * [2]:Azimuth, angle of rotation about the -z axis.
+     */
+    val orientationVector: IntArray,
+
+    val timeStamp: Long) : ITelemetryData {
     constructor(parcel: Parcel) : this(
         parcel.createFloatArray()!!,
         parcel.createFloatArray()!!,
-        parcel.createFloatArray()!!,
+        parcel.createIntArray()!!,
         parcel.readLong()
     ) {
     }
@@ -16,8 +42,8 @@ data class InclinationData(val gravity: FloatArray, val acceleration: FloatArray
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeFloatArray(gravity)
         parcel.writeFloatArray(acceleration)
-        parcel.writeFloatArray(rotationVector)
-        parcel.writeLong(TimeStamp)
+        parcel.writeIntArray(orientationVector)
+        parcel.writeLong(timeStamp)
     }
 
     override fun describeContents(): Int {
@@ -32,8 +58,8 @@ data class InclinationData(val gravity: FloatArray, val acceleration: FloatArray
 
         if (!gravity.contentEquals(other.gravity)) return false
         if (!acceleration.contentEquals(other.acceleration)) return false
-        if (!rotationVector.contentEquals(other.rotationVector)) return false
-        if (TimeStamp != other.TimeStamp) return false
+        if (!orientationVector.contentEquals(other.orientationVector)) return false
+        if (timeStamp != other.timeStamp) return false
 
         return true
     }
@@ -41,8 +67,8 @@ data class InclinationData(val gravity: FloatArray, val acceleration: FloatArray
     override fun hashCode(): Int {
         var result = gravity.contentHashCode()
         result = 31 * result + acceleration.contentHashCode()
-        result = 31 * result + rotationVector.contentHashCode()
-        result = 31 * result + TimeStamp.hashCode()
+        result = 31 * result + orientationVector.contentHashCode()
+        result = 31 * result + timeStamp.hashCode()
         return result
     }
 

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Share your ride</string>
-    <string name="title_activity_testctivity">Testctivity</string>
+    <string name="title_activity_testctivity">TestActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -12,4 +12,22 @@
     <string name="stop">Stop</string>
     <string name="pause">Pause</string>
     <string name="start">Start</string>
+    <string name="session_state_test">Session state</string>
+    <string name="rotation_test">Rotation</string>
+    <string name="accelartion_test">Acceleration</string>
+    <string name="gravity_test">Gravity</string>
+    <string name="x"> x = </string>
+    <string name="y"> y = </string>
+    <string name="z"> z =</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="speed">Speed</string>
+    <string name="altitude">Altitude</string>
+    <string name="weather_test">weather</string>
+    <string name="temperature">temperature</string>
+    <string name="humidity">humidity</string>
+    <string name="pressure">pressure</string>
+    <string name="wind_test">wind</string>
+    <string name="wind_speed">wind speed</string>
+    <string name="wind_direction">wind direction</string>
 </resources>
