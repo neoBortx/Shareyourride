@@ -15,5 +15,10 @@ data class Body(
      * Contains the session id and the frame id
      */
     @PrimaryKey
-    @Embedded override val id: TelemetryId
+    @Embedded override val id: TelemetryId,
+
+    /**
+     * Hearth rate
+     */
+    val heartRate: Double
 ): IDataBaseTelemetry

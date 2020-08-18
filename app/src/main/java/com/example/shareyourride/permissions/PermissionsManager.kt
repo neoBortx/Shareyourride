@@ -1,4 +1,4 @@
-package com.example.shareyourride.Permissions
+package com.example.shareyourride.permissions
 
 import android.app.Activity
 import android.content.ContentValues

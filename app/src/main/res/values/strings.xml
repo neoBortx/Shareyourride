@@ -23,11 +23,50 @@
     <string name="longitude">Longitude</string>
     <string name="speed">Speed</string>
     <string name="altitude">Altitude</string>
-    <string name="weather_test">weather</string>
-    <string name="temperature">temperature</string>
-    <string name="humidity">humidity</string>
-    <string name="pressure">pressure</string>
-    <string name="wind_test">wind</string>
+    <string name="weather_test">Weather</string>
+    <string name="temperature">Temperature</string>
+    <string name="humidity">Humidity</string>
+    <string name="pressure">Pressure</string>
+    <string name="wind_test">Wind</string>
     <string name="wind_speed">wind speed</string>
-    <string name="wind_direction">wind direction</string>
+    <string name="wind_direction">Wind direction</string>
+    <string name="body">body_test</string>
+    <string name="heart_rate">Heart rate</string>
+    <string name="title_activity_test_tabbed">TestTabbedActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="title_activity_settings">Configuration</string>
+
+    <!-- Preference Titles -->
+    <string name="units_header">Unit System</string>
+    <string name="telemetry_header">Telemetry data</string>
+
+    <!-- Units Preferences -->
+    <string name="unit_system_title">System</string>
+    <string name="imperial_system">Imperial</string>
+    <string name="metric_system">Metric</string>
+    <string name="custom_system">Custom</string>
+    <string name="celsius">Celsius</string>
+    <string name="fahrenheit">Fahrenheit</string>
+    <string name="kmh">Km/h</string>
+    <string name="mph">Mph</string>
+    <string name="mps">m/s</string>
+
+    <!-- telemetry Preferences -->
+    <string name="telemetry_title">Metrics</string>
+    <string name="attachment_title">Configure the metrics that are to be included in the activity</string>
+    <string name="gforce">G force</string>
+    <string name="wind">Wind</string>
+    <string name="inclination_terrain">Inclination</string>
+    <string name="lean_angle">Lean angle</string>
+    <string name="motorbike">Motorbike</string>
+    <string name="bike">Bike</string>
+    <string name="car">Car</string>
+    <string name="snowboard">Snowboard/Ski</string>
+    <string name="longboard">Longboard</string>
+    <string name="skydiving">Skydiving</string>
+    <string name="sailing">Sailing</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+
 </resources>

@@ -1,0 +1,37 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <ListPreference
+        app:key="unit_system"
+        app:title="@string/unit_system_title"
+        app:useSimpleSummaryProvider="true"
+        app:defaultValue="metric"
+        app:entries="@array/unit_system_entries"
+        app:entryValues="@array/unit_system_values" />
+
+    <SwitchPreference
+        app:key="speed_unit"
+        app:title="@string/speed"
+        app:useSimpleSummaryProvider="true"
+        app:summaryOff="@string/kmh"
+        app:summaryOn="@string/mph"
+        app:enabled="false" />
+
+    <SwitchPreference
+        app:key="temperature_unit"
+        app:title="@string/temperature"
+        app:useSimpleSummaryProvider="true"
+        app:summaryOff="@string/celsius"
+        app:summaryOn="@string/fahrenheit"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="wind_speed_unit"
+        app:title="@string/wind_speed"
+        app:useSimpleSummaryProvider="true"
+        app:summaryOff="@string/mps"
+        app:summaryOn="@string/mph"
+        app:enabled="false"/>
+
+</PreferenceScreen>

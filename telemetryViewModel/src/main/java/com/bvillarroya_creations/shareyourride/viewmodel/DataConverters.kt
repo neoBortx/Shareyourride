@@ -1,9 +1,7 @@
 package com.bvillarroya_creations.shareyourride.viewmodel
 
-import com.bvillarroya_creations.shareyourride.datamodel.data.Environment
-import com.bvillarroya_creations.shareyourride.datamodel.data.Inclination
-import com.bvillarroya_creations.shareyourride.datamodel.data.Location
-import com.bvillarroya_creations.shareyourride.datamodel.data.TelemetryId
+import com.bvillarroya_creations.shareyourride.datamodel.data.*
+import com.bvillarroya_creations.shareyourride.telemetry.body.BodyData
 import com.bvillarroya_creations.shareyourride.telemetry.environment.EnvironmentData
 import com.bvillarroya_creations.shareyourride.telemetry.inclination.InclinationData
 import com.bvillarroya_creations.shareyourride.telemetry.location.LocationData
@@ -45,6 +43,12 @@ class DataConverters {
                 data.pressure)
         }
 
+        fun convertData(data: BodyData, sessionId: String, videoId: Long): Body
+        {
 
+            return Body(
+                    TelemetryId(sessionId,videoId),
+                    data.heartRate)
+        }
     }
 }

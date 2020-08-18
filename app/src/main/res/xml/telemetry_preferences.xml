@@ -1,0 +1,71 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ListPreference
+        app:key="activity_kind"
+        app:title="Activity"
+        app:useSimpleSummaryProvider="true"
+        app:defaultValue="custom"
+        app:entries="@array/activity_kind_entries"
+        app:entryValues="@array/activity_kind_values"
+        />
+
+    <SwitchPreference
+        app:key="speed_metric"
+        app:title="@string/speed"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="gforce_metric"
+        app:title="@string/gforce"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="lean_angle_metric"
+        app:title="@string/lean_angle"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="temperature_metric"
+        app:title="@string/temperature"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="wind_metric"
+        app:title="@string/wind"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="pressure_metric"
+        app:title="@string/pressure"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="heart_rate_metric"
+        app:title="@string/heart_rate"
+        app:summaryOff="@string/disabled"
+        app:summaryOn="@string/enabled"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="inclination_metric"
+        app:title="@string/inclination_terrain"
+        app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="altitude_metric"
+        app:title="@string/altitude"
+        app:enabled="false"/>
+
+</PreferenceScreen>

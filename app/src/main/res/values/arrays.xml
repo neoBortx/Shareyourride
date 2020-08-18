@@ -1,0 +1,37 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="unit_system_entries">
+        <item>@string/metric_system</item>
+        <item>@string/imperial_system</item>
+        <item>@string/custom_system</item>
+    </string-array>
+
+    <string-array name="unit_system_values">
+        <item>metric</item>
+        <item>imperial</item>
+        <item>custom</item>
+    </string-array>
+
+    <!-- Reply Preference -->
+    <string-array name="activity_kind_entries">
+        <item>@string/custom_system</item>
+        <item>@string/motorbike</item>
+        <item>@string/bike</item>
+        <item>@string/car</item>
+        <item>@string/snowboard</item>
+        <item>@string/longboard</item>
+        <item>@string/skydiving</item>
+        <item>@string/sailing</item>
+    </string-array>
+
+    <string-array name="activity_kind_values">
+        <item>custom</item>
+        <item>motorbike</item>
+        <item>bike</item>
+        <item>car</item>
+        <item>snowboard</item>
+        <item>longboard</item>
+        <item>skydiving</item>
+        <item>sailing</item>
+    </string-array>
+</resources>

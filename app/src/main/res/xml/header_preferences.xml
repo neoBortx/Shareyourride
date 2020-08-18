@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:fragment="com.example.shareyourride.configuration.UnitsFragment"
+        app:icon="@drawable/messages"
+        app:key="units_header"
+        app:title="@string/units_header" />
+
+    <Preference
+        app:fragment="com.example.shareyourride.configuration.TelemetryFragment"
+        app:icon="@drawable/sync"
+        app:key="telemetry_header"
+        app:title="@string/telemetry_title" />
+
+</PreferenceScreen>
