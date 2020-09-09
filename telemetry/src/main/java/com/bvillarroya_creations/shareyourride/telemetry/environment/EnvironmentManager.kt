@@ -1,6 +1,5 @@
 package com.bvillarroya_creations.shareyourride.telemetry.environment
 
-import android.app.Activity
 import android.content.Context
 import com.bvillarroya_creations.shareyourride.telemetry.base.ClientManager
 import com.bvillarroya_creations.shareyourride.telemetry.constants.TelemetryConstants

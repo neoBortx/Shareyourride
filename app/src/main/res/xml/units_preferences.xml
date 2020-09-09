@@ -3,7 +3,7 @@
 
 
     <ListPreference
-        app:key="unit_system"
+        app:key="@string/unit_system"
         app:title="@string/unit_system_title"
         app:useSimpleSummaryProvider="true"
         app:defaultValue="metric"
@@ -11,7 +11,7 @@
         app:entryValues="@array/unit_system_values" />
 
     <SwitchPreference
-        app:key="speed_unit"
+        app:key="@string/speed_unit"
         app:title="@string/speed"
         app:useSimpleSummaryProvider="true"
         app:summaryOff="@string/kmh"
@@ -19,7 +19,7 @@
         app:enabled="false" />
 
     <SwitchPreference
-        app:key="temperature_unit"
+        app:key="@string/temperature_unit"
         app:title="@string/temperature"
         app:useSimpleSummaryProvider="true"
         app:summaryOff="@string/celsius"
@@ -27,7 +27,7 @@
         app:enabled="false"/>
 
     <SwitchPreference
-        app:key="wind_speed_unit"
+        app:key="@string/wind_speed_unit"
         app:title="@string/wind_speed"
         app:useSimpleSummaryProvider="true"
         app:summaryOff="@string/mps"

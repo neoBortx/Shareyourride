@@ -1,6 +1,7 @@
 package com.example.shareyourride.configuration
 
 import android.os.Bundle
+import android.util.Log
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -22,12 +23,33 @@ class UnitsFragment : PreferenceFragmentCompat() {
 
     //region overrides
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        configurePreferenceChangeListeners()
+        try
+        {
+            super.onCreate(savedInstanceState)
+            configurePreferenceChangeListeners()
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure onCreate: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.units_preferences, rootKey)
+        try
+        {
+            setPreferencesFromResource(R.xml.units_preferences, rootKey)
+
+            val listPreference: ListPreference? = findPreference(getString(R.string.unit_system)) as ListPreference?
+            if (listPreference?.value == "custom") {
+                configureCustom()
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure onCreatePreferences: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
     //endregion
 
@@ -37,11 +59,18 @@ class UnitsFragment : PreferenceFragmentCompat() {
      */
     private fun configurePreferenceChangeListeners()
     {
-        val listPreference: ListPreference? = findPreference("unit_system") as ListPreference?
+        try {
+            val listPreference: ListPreference? = findPreference(getString(R.string.unit_system)) as ListPreference?
 
-        listPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-            manageUnitSystemChanged(newValue as String)
-            true
+            listPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+                manageUnitSystemChanged(newValue as String)
+                true
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure at configuring list changes manager: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
@@ -71,18 +100,25 @@ class UnitsFragment : PreferenceFragmentCompat() {
      */
     private fun configureImperial()
     {
-        val speed: SwitchPreference? = findPreference("speed_unit") as SwitchPreference?
-        val temperature: SwitchPreference? = findPreference("temperature_unit") as SwitchPreference?
-        val wind: SwitchPreference? = findPreference("wind_speed_unit") as SwitchPreference?
+        try
+        {
+            val speed: SwitchPreference? = findPreference(getString(R.string.speed_unit)) as SwitchPreference?
+            val temperature: SwitchPreference? = findPreference(getString(R.string.temperature_unit)) as SwitchPreference?
+            val wind: SwitchPreference? = findPreference(getString(R.string.wind_speed_unit)) as SwitchPreference?
 
-        manageSwitchPreferenceChanged(true, speed)
-        manageSwitchPreferenceChanged(true, temperature)
-        manageSwitchPreferenceChanged(true, wind)
+            manageSwitchPreferenceChanged(true, speed)
+            manageSwitchPreferenceChanged(true, temperature)
+            manageSwitchPreferenceChanged(true, wind)
 
-        speed?.isEnabled = false
-        temperature?.isEnabled = false
-        wind?.isEnabled = false
-
+            speed?.isEnabled = false
+            temperature?.isEnabled = false
+            wind?.isEnabled = false
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure at managing imperial units: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     /**
@@ -91,17 +127,24 @@ class UnitsFragment : PreferenceFragmentCompat() {
      */
     private fun configureMetric()
     {
-        val speed: SwitchPreference? = findPreference("speed_unit") as SwitchPreference?
-        val temperature: SwitchPreference? = findPreference("temperature_unit") as SwitchPreference?
-        val wind: SwitchPreference? = findPreference("wind_speed_unit") as SwitchPreference?
+        try {
+            val speed: SwitchPreference? = findPreference(getString(R.string.speed_unit)) as SwitchPreference?
+            val temperature: SwitchPreference? = findPreference(getString(R.string.temperature_unit)) as SwitchPreference?
+            val wind: SwitchPreference? = findPreference(getString(R.string.wind_speed_unit)) as SwitchPreference?
 
-        manageSwitchPreferenceChanged(false, speed)
-        manageSwitchPreferenceChanged(false, temperature)
-        manageSwitchPreferenceChanged(false, wind)
+            manageSwitchPreferenceChanged(false, speed)
+            manageSwitchPreferenceChanged(false, temperature)
+            manageSwitchPreferenceChanged(false, wind)
 
-        speed?.isEnabled = false
-        temperature?.isEnabled = false
-        wind?.isEnabled = false
+            speed?.isEnabled = false
+            temperature?.isEnabled = false
+            wind?.isEnabled = false
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure at managing metric units: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     /**
@@ -110,13 +153,21 @@ class UnitsFragment : PreferenceFragmentCompat() {
      */
     private fun configureCustom()
     {
-        val speed: SwitchPreference? = findPreference("speed_unit") as SwitchPreference?
-        val temperature: SwitchPreference? = findPreference("temperature_unit") as SwitchPreference?
-        val wind: SwitchPreference? = findPreference("wind_speed_unit") as SwitchPreference?
+        try
+        {
+            val speed: SwitchPreference? = findPreference(getString(R.string.speed_unit)) as SwitchPreference?
+            val temperature: SwitchPreference? = findPreference(getString(R.string.temperature_unit)) as SwitchPreference?
+            val wind: SwitchPreference? = findPreference(getString(R.string.wind_speed_unit)) as SwitchPreference?
 
-        speed?.isEnabled = true
-        temperature?.isEnabled = true
-        wind?.isEnabled = true
+            speed?.isEnabled = true
+            temperature?.isEnabled = true
+            wind?.isEnabled = true
+        }
+        catch (ex: Exception)
+        {
+            Log.e("UnitsFragment", "SYR -> Failure at managing custom units: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     /**

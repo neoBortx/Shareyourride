@@ -1,0 +1,41 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        app:key="@string/camera_kind"
+        app:title="@string/camera_model"
+        app:useSimpleSummaryProvider="true"
+        />
+
+    <EditTextPreference
+        app:key="@string/camera_name"
+        app:title="@string/name"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"/>
+
+    <EditTextPreference
+        app:key="@string/camera_ssidName"
+        app:title="@string/ssid"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false" />
+
+    <ListPreference
+        app:key="@string/camera_connection_type"
+        app:title="@string/security"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"/>
+
+    <EditTextPreference
+        app:key="@string/camera_password"
+        app:title="@string/password"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"/>
+
+    <EditTextPreference
+        app:key="@string/camera_ip"
+        app:title="@string/ipAddress"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"
+        />
+
+</PreferenceScreen>

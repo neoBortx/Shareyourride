@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Camera preferences window-->
+    <string name="camera_kind">camera_kind</string>
+    <string name="camera_name">camera_name</string>
+    <string name="camera_ssidName">camera_ssidName</string>
+    <string name="camera_connection_type">camera_connection_type</string>
+    <string name="camera_password">camera_password</string>
+    <string name="camera_ip">camera_ip</string>
+
+    <!-- telemetry preferences window -->
+    <string name="activity_kind">activity_kind</string>
+    <string name="speed_metric">speed_metric</string>
+    <string name="gforce_metric">gforce_metric</string>
+    <string name="lean_angle_metric">lean_angle_metric</string>
+    <string name="temperature_metric">temperature_metric</string>
+    <string name="wind_metric">wind_metric</string>
+    <string name="pressure_metric">pressure_metric</string>
+    <string name="heart_rate_metric">heart_rate_metric</string>
+    <string name="inclination_metric">inclination_metric</string>
+    <string name="altitude_metric">altitude_metric</string>
+
+    <!-- Unit preferences window -->
+    <string name="unit_system">unit_system</string>
+    <string name="speed_unit">speed_unit</string>
+    <string name="temperature_unit">temperature_unit</string>
+    <string name="wind_speed_unit">wind_speed_unit</string>
+
+    <string name="custom">custom</string>
+
+</resources>

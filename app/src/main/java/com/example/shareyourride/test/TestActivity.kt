@@ -1,6 +1,7 @@
 package com.example.shareyourride.test
 
 import android.Manifest
+import android.net.wifi.ScanResult
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +33,8 @@ class TestActivity : AppCompatActivity() {
         initializePermissions()
 
         // Inflate view and obtain an instance of the binding class.
-        val binding = DataBindingUtil.setContentView<ContentTestctivityBinding>(this, R.layout.content_testctivity)
+        val binding =
+            DataBindingUtil.setContentView<ContentTestctivityBinding>(this, R.layout.content_testctivity)
         binding.lifecycleOwner = this
         // Assign the component to a property in the binding class.
         binding.session = sessionViewModel
@@ -49,7 +51,12 @@ class TestActivity : AppCompatActivity() {
     private fun initializePermissions()
     {
         permissions.addFunctionality(Manifest.permission.ACCESS_FINE_LOCATION)
-        permissions.addFunctionality(Manifest.permission.ACCESS_COARSE_LOCATION)
+        permissions.addFunctionality(Manifest.permission.ACCESS_COARSE_LOCATION.toString())
+        permissions.addFunctionality(Manifest.permission.CHANGE_WIFI_STATE)
+        permissions.addFunctionality(Manifest.permission.ACCESS_WIFI_STATE)
+        permissions.addFunctionality(Manifest.permission.CHANGE_NETWORK_STATE)
+        permissions.addFunctionality(Manifest.permission.ACCESS_NETWORK_STATE)
+        permissions.addFunctionality(Manifest.permission.INTERNET)
 
         permissions.checkPermissions()
     }

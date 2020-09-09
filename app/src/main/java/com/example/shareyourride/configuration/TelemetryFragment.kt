@@ -1,6 +1,7 @@
 package com.example.shareyourride.configuration
 
 import android.os.Bundle
+import android.util.Log
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -21,13 +22,34 @@ class TelemetryFragment : PreferenceFragmentCompat() {
 
     //region overrides
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        configurePreferenceChangeListeners()
+        try
+        {
+            super.onCreate(savedInstanceState)
+            configurePreferenceChangeListeners()
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure onCreate: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.telemetry_preferences, rootKey)
+        try
+        {
+            setPreferencesFromResource(R.xml.telemetry_preferences, rootKey)
+
+            val listPreference: ListPreference? = findPreference(getString(R.string.unit_system)) as ListPreference?
+            if (listPreference?.value == "custom") {
+                configureCustom()
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure onCreatePreferences: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
     //endregion
 
@@ -38,11 +60,18 @@ class TelemetryFragment : PreferenceFragmentCompat() {
      */
     private fun configurePreferenceChangeListeners()
     {
-        val listPreference: ListPreference? = findPreference("activity_kind") as ListPreference?
+        try {
+            val listPreference: ListPreference? = findPreference(getString(R.string.activity_kind)) as ListPreference?
 
-        listPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-            manageActivityChanged(newValue as String)
-            true
+            listPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+                manageActivityChanged(newValue as String)
+                true
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure at configuring list changes handlers: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
@@ -53,32 +82,39 @@ class TelemetryFragment : PreferenceFragmentCompat() {
      */
     private fun manageActivityChanged(newValue: String)
     {
+        try {
 
-        when (newValue) {
-            "custom" -> {
-                configureCustom()
+            when (newValue) {
+                "custom" -> {
+                    configureCustom()
+                }
+                "motorbike" -> {
+                    configureValues(speed = true, force = true, lean = true, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
+                }
+                "bike" -> {
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = false, heart = true, inclination = true, altitude = true)
+                }
+                "car" -> {
+                    configureValues(speed = true, force = true, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
+                }
+                "snowboard" -> {
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
+                }
+                "longboard" -> {
+                    configureValues(speed = true, force = false, lean = false, temperature = false, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
+                }
+                "skydiving" -> {
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = true)
+                }
+                "sailing" -> {
+                    configureValues(speed = false, force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = false)
+                }
             }
-            "motorbike" -> {
-                configureValues(speed = true,force = true, lean = true, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
-            }
-            "bike" -> {
-                configureValues(speed = true,force = false, lean = false, temperature = true, wind = true, pressure = false, heart = true, inclination = true, altitude = true)
-            }
-            "car" -> {
-                configureValues(speed = true,force = true, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
-            }
-            "snowboard" -> {
-                configureValues(speed = true,force = false, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
-            }
-            "longboard" -> {
-                configureValues(speed = true,force = false, lean = false, temperature = false, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
-            }
-            "skydiving" -> {
-                configureValues(speed = true,force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = true)
-            }
-            "sailing" -> {
-                configureValues(speed = false,force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = false)
-            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure at managing activity kind changes: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
@@ -88,25 +124,32 @@ class TelemetryFragment : PreferenceFragmentCompat() {
      */
     private fun configureCustom()
     {
-        val speedPref: SwitchPreference? = findPreference("speed_metric") as SwitchPreference?
-        val forcePref: SwitchPreference? = findPreference("gforce_metric") as SwitchPreference?
-        val leanPref: SwitchPreference? = findPreference("lean_angle_metric") as SwitchPreference?
-        val temperaturePref: SwitchPreference? = findPreference("temperature_metric") as SwitchPreference?
-        val windPref: SwitchPreference? = findPreference("wind_metric") as SwitchPreference?
-        val pressurePref: SwitchPreference? = findPreference("pressure_metric") as SwitchPreference?
-        val heartPref: SwitchPreference? = findPreference("heart_rate_metric") as SwitchPreference?
-        val inclinationPref: SwitchPreference? = findPreference("inclination_metric") as SwitchPreference?
-        val altitudePref: SwitchPreference? = findPreference("altitude_metric") as SwitchPreference?
+        try {
+            val speedPref: SwitchPreference? = findPreference(getString(R.string.speed_metric)) as SwitchPreference?
+            val forcePref: SwitchPreference? = findPreference(getString(R.string.gforce_metric)) as SwitchPreference?
+            val leanPref: SwitchPreference? = findPreference(getString(R.string.lean_angle_metric)) as SwitchPreference?
+            val temperaturePref: SwitchPreference? = findPreference(getString(R.string.temperature_metric)) as SwitchPreference?
+            val windPref: SwitchPreference? = findPreference(getString(R.string.wind_metric)) as SwitchPreference?
+            val pressurePref: SwitchPreference? = findPreference(getString(R.string.pressure_metric)) as SwitchPreference?
+            val heartPref: SwitchPreference? = findPreference(getString(R.string.heart_rate_metric)) as SwitchPreference?
+            val inclinationPref: SwitchPreference? = findPreference(getString(R.string.inclination_metric)) as SwitchPreference?
+            val altitudePref: SwitchPreference? = findPreference(getString(R.string.altitude_metric)) as SwitchPreference?
 
-        speedPref?.isEnabled = true
-        forcePref?.isEnabled = true
-        leanPref?.isEnabled = true
-        temperaturePref?.isEnabled = true
-        windPref?.isEnabled = true
-        pressurePref?.isEnabled = true
-        heartPref?.isEnabled = true
-        inclinationPref?.isEnabled = true
-        altitudePref?.isEnabled = true
+            speedPref?.isEnabled = true
+            forcePref?.isEnabled = true
+            leanPref?.isEnabled = true
+            temperaturePref?.isEnabled = true
+            windPref?.isEnabled = true
+            pressurePref?.isEnabled = true
+            heartPref?.isEnabled = true
+            inclinationPref?.isEnabled = true
+            altitudePref?.isEnabled = true
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure at enabling custom controls: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     /**
@@ -125,35 +168,42 @@ class TelemetryFragment : PreferenceFragmentCompat() {
      */
     private fun configureValues(speed: Boolean, force: Boolean, lean: Boolean, temperature: Boolean, wind: Boolean, pressure: Boolean, heart: Boolean, inclination: Boolean, altitude: Boolean)
     {
-        val speedPref: SwitchPreference? = findPreference("speed_metric") as SwitchPreference?
-        val forcePref: SwitchPreference? = findPreference("gforce_metric") as SwitchPreference?
-        val leanPref: SwitchPreference? = findPreference("lean_angle_metric") as SwitchPreference?
-        val temperaturePref: SwitchPreference? = findPreference("temperature_metric") as SwitchPreference?
-        val windPref: SwitchPreference? = findPreference("wind_metric") as SwitchPreference?
-        val pressurePref: SwitchPreference? = findPreference("pressure_metric") as SwitchPreference?
-        val heartPref: SwitchPreference? = findPreference("heart_rate_metric") as SwitchPreference?
-        val inclinationPref: SwitchPreference? = findPreference("inclination_metric") as SwitchPreference?
-        val altitudePref: SwitchPreference? = findPreference("altitude_metric") as SwitchPreference?
+        try {
+            val speedPref: SwitchPreference? = findPreference(getString(R.string.speed_metric)) as SwitchPreference?
+            val forcePref: SwitchPreference? = findPreference(getString(R.string.gforce_metric)) as SwitchPreference?
+            val leanPref: SwitchPreference? = findPreference(getString(R.string.lean_angle_metric)) as SwitchPreference?
+            val temperaturePref: SwitchPreference? = findPreference(getString(R.string.temperature_metric)) as SwitchPreference?
+            val windPref: SwitchPreference? = findPreference(getString(R.string.wind_metric)) as SwitchPreference?
+            val pressurePref: SwitchPreference? = findPreference(getString(R.string.pressure_metric)) as SwitchPreference?
+            val heartPref: SwitchPreference? = findPreference(getString(R.string.heart_rate_metric)) as SwitchPreference?
+            val inclinationPref: SwitchPreference? = findPreference(getString(R.string.inclination_metric)) as SwitchPreference?
+            val altitudePref: SwitchPreference? = findPreference(getString(R.string.altitude_metric)) as SwitchPreference?
 
-        manageSwitchPreferenceChanged(speed,speedPref)
-        manageSwitchPreferenceChanged(force,forcePref)
-        manageSwitchPreferenceChanged(lean,leanPref)
-        manageSwitchPreferenceChanged(temperature,temperaturePref)
-        manageSwitchPreferenceChanged(wind,windPref)
-        manageSwitchPreferenceChanged(pressure,pressurePref)
-        manageSwitchPreferenceChanged(heart,heartPref)
-        manageSwitchPreferenceChanged(inclination,inclinationPref)
-        manageSwitchPreferenceChanged(altitude,altitudePref)
+            manageSwitchPreferenceChanged(speed, speedPref)
+            manageSwitchPreferenceChanged(force, forcePref)
+            manageSwitchPreferenceChanged(lean, leanPref)
+            manageSwitchPreferenceChanged(temperature, temperaturePref)
+            manageSwitchPreferenceChanged(wind, windPref)
+            manageSwitchPreferenceChanged(pressure, pressurePref)
+            manageSwitchPreferenceChanged(heart, heartPref)
+            manageSwitchPreferenceChanged(inclination, inclinationPref)
+            manageSwitchPreferenceChanged(altitude, altitudePref)
 
-        speedPref?.isEnabled = false
-        forcePref?.isEnabled = false
-        leanPref?.isEnabled = false
-        temperaturePref?.isEnabled = false
-        windPref?.isEnabled = false
-        pressurePref?.isEnabled = false
-        heartPref?.isEnabled = false
-        inclinationPref?.isEnabled = false
-        altitudePref?.isEnabled = false
+            speedPref?.isEnabled = false
+            forcePref?.isEnabled = false
+            leanPref?.isEnabled = false
+            temperaturePref?.isEnabled = false
+            windPref?.isEnabled = false
+            pressurePref?.isEnabled = false
+            heartPref?.isEnabled = false
+            inclinationPref?.isEnabled = false
+            altitudePref?.isEnabled = false
+        }
+        catch (ex: Exception)
+        {
+            Log.e("TelemetryFragment", "SYR -> Failure at configuring custom controls: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
 

@@ -47,12 +47,12 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
         {
             Log.e("SYR", "SYR -> Unable to add functionality to the list of permissions to request" +
                     " ${ex.message}")
-ex.printStackTrace()
+            ex.printStackTrace()
         }
     }
 
     /**
-     * Delete a functionality from the list of functionalities to request
+     * Delete a functionality from the list of functionality to request
      */
     fun removeFunctionality(functionality: String)
     {
@@ -64,7 +64,7 @@ ex.printStackTrace()
         {
             Log.e("SYR", "SYR -> Unable to remove functionality to the list of permissions to request" +
                     " ${ex.message}")
-ex.printStackTrace()
+            ex.printStackTrace()
         }
 
     }
@@ -103,9 +103,8 @@ ex.printStackTrace()
         }
         catch(ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to remove functionality to the list of permissions to request" +
-                    " ${ex.message}")
-ex.printStackTrace()
+            Log.e("SYR", "SYR -> Unable to remove functionality to the list of permissions to request ${ex.message}")
+            ex.printStackTrace()
         }
 
     }
@@ -117,44 +116,50 @@ ex.printStackTrace()
     fun checkPermissions() {
         try {
             var askForPermission = false
+            var permissionsDenied = mutableListOf<String>()
             mPermissionList.forEach{
                 val permission = ContextCompat.checkSelfPermission(activity, it)
 
                 if (permission != PackageManager.PERMISSION_GRANTED) {
                     askForPermission = true
-                    Log.i("SYR", "SYR -> Permission to $it denied")
+                    permissionsDenied.add(it)
+                    Log.i("SYR", "SYR -> Permission to access to functionality $it denied")
+                }
+                else
+                {
+                    Log.i("SYR", "SYR -> Permission to access to functionality $it granted")
                 }
             }
 
             if (askForPermission)
             {
-                makeRequest()
+                makeRequest(permissionsDenied)
             }
         }
         catch(ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to check or ask for permissions" +
-                    " ${ex.message}")
-ex.printStackTrace()
+            Log.e("SYR", "SYR -> Unable to check or ask for permissions ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
 
     /**
      * Request to the user to grant permissions
+     *
+     * @param list: The list of permissions to ask
      */
-    private fun makeRequest()
+    private fun makeRequest(list: MutableList<String>)
     {
         try
         {
-            Log.e("SYR", "SYR -> Asking permissions for $mPermissionList")
-            ActivityCompat.requestPermissions(activity, mPermissionList.toTypedArray(),mRequestPermissionsCode)
+            Log.i("SYR", "SYR -> Asking permissions for $list")
+            activity.requestPermissions(list.toTypedArray(),mRequestPermissionsCode)
         }
         catch(ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to make the permission request" +
-                    " ${ex.message}")
-ex.printStackTrace()
+            Log.e("SYR", "SYR -> Unable to make the permission request ${ex.message}")
+            ex.printStackTrace()
         }
     }
 

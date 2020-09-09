@@ -1,7 +1,5 @@
 package com.bvillarroya_creations.shareyourride.telemetry.inclination
 
-import android.app.Activity
-import android.app.Application
 import android.content.Context
 import com.bvillarroya_creations.shareyourride.telemetry.base.ClientManager
 import com.bvillarroya_creations.shareyourride.telemetry.constants.TelemetryConstants

@@ -8,27 +8,29 @@ import com.bvillarroya_creations.shareyourride.telemetry.interfaces.IDataProvide
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryManager
 
-
+/**
+ * This is the access point or the facade to access the telemetry provider
+ */
 abstract class ClientManager(protected val context: Context): ITelemetryManager {
 
     //region abstract properties
-    /*
-        Class in charge of getting the data from the different system sensors
+    /**
+     * Class in charge of getting the data from the different system sensors
      */
     abstract var mDataProvider: IDataProvider?
     //endregion
 
     //region properties
-    /*
-        Notifies upper layers that new data is available
+    /**
+     * Notifies upper layers that new data is available
      */
     override val telemetryChanged: MutableLiveData<TelemetryEvent> = MutableLiveData()
     //endregion
 
     //region telemetry data handler
-    /*
-        Process the telemetry that the client is managing and send it to upper layers using
-        the observable pattern
+    /**
+     * Process the telemetry that the client is managing and send it to upper layers using
+     * the observable pattern
      */
     private fun processTelemetryData(data: ITelemetryData) {
 
@@ -37,7 +39,7 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to send telemetry to upper layers, exception: ${ex.message}")
+            Log.e("ClientManager", "SYR -> Unable to send telemetry to upper layers, exception: ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -64,7 +66,7 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
      * Start the provider of the data provider
      */
     override fun startAcquiringData() {
-        Log.d("SYR", "Start AcquiringData")
+        Log.d("ClientManager", "Start AcquiringData")
         if (mDataProvider != null) {
             mDataProvider?.configureProvider()
             mDataProvider?.subscribeProvider(::processTelemetryData)

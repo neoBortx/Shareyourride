@@ -2,14 +2,26 @@
 
     <Preference
         app:fragment="com.example.shareyourride.configuration.UnitsFragment"
-        app:icon="@drawable/messages"
+        app:icon="@drawable/settings"
         app:key="units_header"
         app:title="@string/units_header" />
 
     <Preference
         app:fragment="com.example.shareyourride.configuration.TelemetryFragment"
-        app:icon="@drawable/sync"
+        app:icon="@drawable/speed"
         app:key="telemetry_header"
         app:title="@string/telemetry_title" />
+
+    <Preference
+        app:fragment="com.example.shareyourride.configuration.CameraFragment"
+        app:icon="@drawable/camera"
+        app:key="camera_header"
+        app:title="@string/camera" />
+
+    <Preference
+        app:fragment="com.example.shareyourride.configuration.VideoFragment"
+        app:icon="@drawable/video"
+        app:key="video_header"
+        app:title="@string/video" />
 
 </PreferenceScreen>

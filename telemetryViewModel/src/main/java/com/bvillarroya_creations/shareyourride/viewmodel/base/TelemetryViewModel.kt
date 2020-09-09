@@ -52,9 +52,9 @@ abstract class TelemetryViewModel(application: Application): ITelemetryViewModel
      */
     private val handleTelemetryChanged = Observer<TelemetryEvent> { event ->
         if (event != null
-            && event.EventType == mTelemetryManager.telemetryEventType)
+            && event.eventType == mTelemetryManager.telemetryEventType)
         {
-            processTelemetry(event.TelemetryData)
+            processTelemetry(event.telemetryData)
         }
     }
     //endregion

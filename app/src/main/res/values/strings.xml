@@ -68,5 +68,13 @@
     <string name="sailing">Sailing</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="camera">Camera</string>
+    <string name="video">Video</string>
+    <string name="ipAddress">IP address</string>
+    <string name="password">Password</string>
+    <string name="security">Security</string>
+    <string name="ssid">SSID</string>
+    <string name="name">Name</string>
+    <string name="camera_model">Camera model</string>
 
 </resources>
