@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.wifi.ScanResult
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
-import com.bvillarroya_creations.ffmpegWrapper.RtspClient
 import com.bvillarroya_creations.shareyourride.wifi.interfaces.WifiClient
 import com.example.shareyourride.camera.CameraConnectionData
 
@@ -47,9 +46,6 @@ class CameraWifiClient(private val context: Context,
         {
             Log.i("CameraWifiClient", "SYR -> Connected to the wifi created by ${cameraData.name} " +
                     "SSID: ${cameraData.connectionData.ssidName}")
-
-            val rtp = RtspClient();
-            rtp.getStream(/*cameraData.connectionData.gateway*/);
         }
     }
 

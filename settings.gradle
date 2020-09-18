@@ -1,4 +1,4 @@
-include ':ffmpegWrapper'
+include ':videoUtils'
 include ':wifi'
 include ':bluetooth'
 include ':messagesDefinition'

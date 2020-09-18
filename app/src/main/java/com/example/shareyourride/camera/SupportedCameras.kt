@@ -41,7 +41,9 @@ class SupportedCameras
                                 ConnectionType.Open,
                                 "",
                                 ""
-                        )
+                        ),
+                        "rstp",
+                        ""
                 )
         )
 
@@ -52,9 +54,11 @@ class SupportedCameras
                         WifiConnectionData(
                                 "MiCam_",
                                 ConnectionType.WPA2,
-                                "81844614",
+                                "",
                                 "192.168.42.1"
-                        )
+                        ),
+                        "rstp",
+                        "live"
                 )
         )
     }

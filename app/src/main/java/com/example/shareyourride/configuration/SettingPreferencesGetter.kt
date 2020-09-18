@@ -21,6 +21,8 @@ enum class SettingPreferencesIds{
     CameraConnectionType,
     CameraPassword,
     CameraIp,
+    CameraProtocol,
+    CameraPath,
 
     /**
      * Activity Ids
@@ -61,6 +63,8 @@ class SettingPreferencesGetter(context: Context) {
         idToString[SettingPreferencesIds.CameraConnectionType] = context.getString(R.string.camera_connection_type)
         idToString[SettingPreferencesIds.CameraPassword] = context.getString(R.string.camera_password)
         idToString[SettingPreferencesIds.CameraIp] = context.getString(R.string.camera_ip)
+        idToString[SettingPreferencesIds.CameraPath] = context.getString(R.string.camera_path)
+        idToString[SettingPreferencesIds.CameraProtocol] = context.getString(R.string.camera_protocol)
 
         idToString[SettingPreferencesIds.ActivityKind] = context.getString(R.string.activity_kind)
         idToString[SettingPreferencesIds.SpeedMetric] = context.getString(R.string.speed_metric)
@@ -80,7 +84,6 @@ class SettingPreferencesGetter(context: Context) {
         idToString[SettingPreferencesIds.WindSpeedUnit] = context.getString(R.string.wind_speed_unit)
 
         idToString[SettingPreferencesIds.Custom] = context.getString(R.string.custom)
-
     }
 
     /**

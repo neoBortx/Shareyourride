@@ -10,7 +10,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.bvillarroya_creations.shareyourride"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -52,7 +52,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation project(path: ':wifi')
-    implementation project(path: ':ffmpegWrapper')
+    implementation project(path: ':videoUtils')
     kapt 'com.android.databinding:compiler:3.1.4'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])

@@ -38,4 +38,11 @@
         app:enabled="false"
         />
 
+    <EditTextPreference
+        app:key="@string/camera_path"
+        app:title="@string/video_path"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"
+        />
+
 </PreferenceScreen>

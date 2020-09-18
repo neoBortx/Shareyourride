@@ -18,5 +18,13 @@ data class CameraConnectionData(
     /**
      * The data required to connect to the wifi created by the camera
      */
-     val connectionData: WifiConnectionData
+    val connectionData: WifiConnectionData,
+    /**
+     * The network protocol required to access to the video stream of the camara
+     */
+    val networkProtocol: String,
+    /**
+     * The path thats is used by the network camera to serve the video
+     */
+    val streamPath: String
 )

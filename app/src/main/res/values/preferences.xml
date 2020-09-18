@@ -7,6 +7,8 @@
     <string name="camera_connection_type">camera_connection_type</string>
     <string name="camera_password">camera_password</string>
     <string name="camera_ip">camera_ip</string>
+    <string name="camera_path">camera_path</string>
+    <string name="camera_protocol">camera_protocol</string>
 
     <!-- telemetry preferences window -->
     <string name="activity_kind">activity_kind</string>
