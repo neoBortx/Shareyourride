@@ -1,6 +1,10 @@
 package com.bvillarroya_creations.shareyourride.telemetry.base
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.telemetry.events.TelemetryEvent
@@ -11,7 +15,7 @@ import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryMa
 /**
  * This is the access point or the facade to access the telemetry provider
  */
-abstract class ClientManager(protected val context: Context): ITelemetryManager {
+abstract class ClientManager(protected val context: Context): BroadcastReceiver(), ITelemetryManager {
 
     //region abstract properties
     /**
@@ -25,6 +29,13 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
      * Notifies upper layers that new data is available
      */
     override val telemetryChanged: MutableLiveData<TelemetryEvent> = MutableLiveData()
+    //endregion
+
+    //region client state
+    /**
+     * Flag that points if the provider is ready
+     */
+    override var providerReady: MutableLiveData<Boolean> = MutableLiveData()
     //endregion
 
     //region telemetry data handler
@@ -46,6 +57,14 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
     //endregion
 
     //region ITelemetryManager implementation
+    /**
+     * Initialize internal handlers
+     */
+    override fun configure() {
+        context.applicationContext.registerReceiver(this, IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+        context.applicationContext.registerReceiver(this, IntentFilter(LocationManager.GPS_PROVIDER));
+    }
+
     /**
      * Stop the data provider of listening telemetry events
      */
@@ -71,6 +90,10 @@ abstract class ClientManager(protected val context: Context): ITelemetryManager 
             mDataProvider?.configureProvider()
             mDataProvider?.subscribeProvider(::processTelemetryData)
         }
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("AAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     }
     //endregion
 }

@@ -11,5 +11,7 @@ class InclinationManager(context: Context): ClientManager(context) {
     override val telemetryEventType = TelemetryConstants.Companion.TelemetryEventType.Inclination
 
     override var mDataProvider: IDataProvider? = InclinationProvider(context)
+
+
     //endregion
 }

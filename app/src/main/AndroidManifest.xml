@@ -17,27 +17,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.example.shareyourride.test.TestTabbedActivity"
-            android:label="@string/title_activity_test_tabbed"
-            android:theme="@style/AppTheme.NoActionBar">
+
+        <!--The login activity also show the splash screen -->
+        <activity android:name="com.example.shareyourride.login.LoginActivity"
+            android:theme="@style/SplashTheme"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name="com.example.shareyourride.configuration.SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:name="com.example.shareyourride.userplayground.MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
-        </activity>
+        <activity
+            android:name="com.example.shareyourride.test.TestTabbedActivity"
+            android:label="@string/title_activity_test_tabbed"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name="com.example.shareyourride.configuration.SettingsActivity"
+            android:label="@string/title_activity_settings" />
+
         <activity
             android:name="com.example.shareyourride.test.TestActivity"
             android:label="@string/title_activity_testctivity"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

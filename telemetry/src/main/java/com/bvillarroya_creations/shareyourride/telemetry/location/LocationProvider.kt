@@ -13,6 +13,7 @@ import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessa
 import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTypes
 import com.google.android.gms.location.*
 
+
 /**
  * Class in charge of manage the location services
  */
@@ -39,20 +40,22 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
      * To request location updates
      */
     private var mLocationRequest: LocationRequest? = null
-
     //endregion
 
     //region IDataProvider
     /**
      * Configure Location services with the priority and the pooling interval
-     * Configure the location client
+     * PRIORITY_BALANCED_POWER_ACCURACY to keep the location working in second plane
+     * Pooling interval of 10 locations per second (100 millis)
+     * https://developer.android.com/guide/topics/location/battery
      */
     override fun configureProvider() {
         try {
             //Get updates each one second
+            //
             mLocationRequest = LocationRequest.create()?.apply {
-                interval = 1000
-                fastestInterval = 1000
+                interval = 100
+                fastestInterval = 100
                 priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
             }
 
@@ -63,6 +66,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
                 val client: SettingsClient = LocationServices.getSettingsClient(context)
                 client.checkLocationSettings(builder.build())
             }
+
         }
         catch (ex: Exception)
         {

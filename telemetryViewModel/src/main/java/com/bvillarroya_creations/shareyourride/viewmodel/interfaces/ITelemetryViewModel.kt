@@ -1,5 +1,6 @@
 package com.bvillarroya_creations.shareyourride.viewmodel.interfaces
 
+import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 
 /**
@@ -16,4 +17,9 @@ interface ITelemetryViewModel: IMessageHandlerClient {
      * Stop collecting data
      */
     fun stopTelemetry()
+
+    /**
+     * Flag that points if the provider is ready
+     */
+    var providerReady: MutableLiveData<Boolean>
 }

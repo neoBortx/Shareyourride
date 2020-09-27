@@ -50,10 +50,6 @@ data class WifiConnectionData(
     /**
      * Credentials
      */
-    val password: String,
-    /**
-     * The IP address of the default gateway
-     */
-    val gateway: String
+    val password: String
 
 )

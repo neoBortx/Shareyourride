@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Camera preferences window-->
-    <string name="camera_kind">camera_kind</string>
+    <string name="camera_id">camera_id</string>
     <string name="camera_name">camera_name</string>
     <string name="camera_ssidName">camera_ssidName</string>
     <string name="camera_connection_type">camera_connection_type</string>
@@ -27,6 +27,11 @@
     <string name="speed_unit">speed_unit</string>
     <string name="temperature_unit">temperature_unit</string>
     <string name="wind_speed_unit">wind_speed_unit</string>
+
+
+    <!-- User perferences-->
+    <string name="profile_image">profile_image</string>
+    <string name="profile_name">profile_name</string>
 
     <string name="custom">custom</string>
 

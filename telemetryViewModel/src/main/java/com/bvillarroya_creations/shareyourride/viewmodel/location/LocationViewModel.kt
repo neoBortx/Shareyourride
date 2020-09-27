@@ -14,8 +14,8 @@ import com.bvillarroya_creations.shareyourride.viewmodel.base.TelemetryViewModel
 import com.bvillarroya_creations.shareyourride.viewmodel.environment.EnvironmentViewModel
 import kotlinx.coroutines.runBlocking
 
-/*
-    View model for location data
+/**
+ * View model for location data
  */
 class LocationViewModel(application: Application) : TelemetryViewModel(application) {
 
@@ -42,6 +42,11 @@ class LocationViewModel(application: Application) : TelemetryViewModel(applicati
      * The speed of the device, in meters per second
      */
     val speed = MutableLiveData<Float>()
+
+    init {
+        providerReady = mTelemetryManager.providerReady
+        mTelemetryManager.configure()
+    }
 
     /**
      * Process the telemetry data to make easy upper layers to manage it

@@ -1,9 +1,7 @@
 package com.example.shareyourride.camera
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
-import androidx.preference.PreferenceManager
 import com.bvillarroya_creations.shareyourride.wifi.ConnectionType
 import com.bvillarroya_creations.shareyourride.wifi.WifiConnectionData
 import com.example.shareyourride.configuration.SettingPreferencesGetter
@@ -39,10 +37,9 @@ class SupportedCameras
                         WifiConnectionData(
                                 "",
                                 ConnectionType.Open,
-                                "",
-                                ""
-                        ),
-                        "rstp",
+                                ""),
+                        "rtsp",
+                        "",
                         ""
                 )
         )
@@ -54,10 +51,9 @@ class SupportedCameras
                         WifiConnectionData(
                                 "MiCam_",
                                 ConnectionType.WPA2,
-                                "",
-                                "192.168.42.1"
-                        ),
-                        "rstp",
+                                ""),
+                        "rtsp",
+                        "192.168.42.1",
                         "live"
                 )
         )
@@ -69,14 +65,33 @@ class SupportedCameras
      *
      * @param context: Required to access a shared preferences
      */
-    fun getSavedCameraData(context: Context): CameraConnectionData? {
+    fun getSavedCameraData(context: Context): CameraConnectionData?
+    {
         try {
             val preferences = SettingPreferencesGetter(context)
-            val cameraId = preferences.getStringOption(SettingPreferencesIds.CameraKind)
+
+            val cameraId = preferences.getStringOption(SettingPreferencesIds.CameraId)
+
             val index = supportedCamerasList.indexOfFirst{ it.cameraId == cameraId }
+
             if (index >= 0)
             {
-                return supportedCamerasList[index]
+                val connectionData = WifiConnectionData(
+                        preferences.getStringOption(SettingPreferencesIds.CameraSsidName),
+                        enumValueOf(preferences.getStringOption(SettingPreferencesIds.CameraConnectionType)),
+                        preferences.getStringOption(SettingPreferencesIds.CameraPassword))
+
+                return CameraConnectionData(
+                        cameraId,
+                        preferences.getStringOption(SettingPreferencesIds.CameraName),
+                        connectionData,
+                        "rtsp",
+                        preferences.getStringOption(SettingPreferencesIds.CameraPath),
+                        preferences.getStringOption(SettingPreferencesIds.CameraIp))
+            }
+            else
+            {
+                Log.e("SupportCamera", "SYR -> Saved camara id $cameraId not supported")
             }
         }
         catch (ex: Exception)

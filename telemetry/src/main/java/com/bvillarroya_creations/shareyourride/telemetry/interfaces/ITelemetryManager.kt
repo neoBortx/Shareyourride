@@ -20,6 +20,11 @@ interface ITelemetryManager {
     val telemetryEventType: TelemetryConstants.Companion.TelemetryEventType
 
     /**
+     * Initialize internal handlers
+     */
+    fun configure()
+
+    /**
      * Start to monitoring sensors
      */
     fun startAcquiringData()
@@ -34,4 +39,9 @@ interface ITelemetryManager {
      * @return the current state of the manager
      */
     fun getManagerState(): IDataProvider.ProviderState
+
+    /**
+     * Flag that points if the provider is ready
+     */
+    var providerReady: MutableLiveData<Boolean>
 }

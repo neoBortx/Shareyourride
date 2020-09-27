@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        app:key="@string/profile_image"
+        app:title="Profile image"
+        app:useSimpleSummaryProvider="true"
+        />
+
+    <EditTextPreference
+        app:key="@string/profile_name"
+        app:title= "@string/name"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="true"/>
+
+</PreferenceScreen>

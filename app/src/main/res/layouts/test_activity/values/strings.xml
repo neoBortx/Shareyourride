@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="video_path">Video path</string>
+    <string name="wifi_state">WIFI state</string>
+    <string name="gps_state">GPS state</string>
+    <string name="bluetooth_connection">Bluetooth connection</string>
+    <string name="configure_cam">Configure a camera to start recording an activity</string>
 </resources>

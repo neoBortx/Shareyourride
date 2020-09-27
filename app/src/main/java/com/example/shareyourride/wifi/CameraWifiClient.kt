@@ -1,53 +1,35 @@
 package com.example.shareyourride.wifi
 
 import android.content.Context
-import android.net.wifi.ScanResult
-import android.util.Log
 import androidx.lifecycle.LifecycleOwner
-import com.bvillarroya_creations.shareyourride.wifi.interfaces.WifiClient
+import com.bvillarroya_creations.shareyourride.wifi.WifiClient
 import com.example.shareyourride.camera.CameraConnectionData
+import com.example.shareyourride.userplayground.home.HomeFragment
 
 /**
+ * Client that commands the actions to connect to WIFI networks and handles
+ * commands about the state of the connection
  *
+ * @param context: To perform some operations
+ * @param cycleOwner: To handle observable events
  */
-class CameraWifiClient(private val context: Context,
-                       private val cameraData: CameraConnectionData,
-                       cycleOwner: LifecycleOwner
-                        ): WifiClient(context,cycleOwner) {
+class CameraWifiClient(private val context: Context): WifiClient(context) {
 
-    fun connectToCamera()
+
+    /**
+     * The name of the camera that creates the wifi network
+     */
+    private var cameraName = ""
+
+    /**
+     * Configure the wifi client with the required handlers and the connection
+     * to the wifi network
+     *
+     * @param cameraData: The required data to access to the wifi network
+     */
+    fun configureClient(cameraData: CameraConnectionData )
     {
-        Log.d("CameraWifiClient", "SYR -> Searching for wifi connection of camera: " +
-                " ${cameraData.name} - ssid: ${cameraData.connectionData.ssidName}")
-
-        connectToNetwork(cameraData.connectionData,context)
+        cameraName = cameraData.name
+        configure(cameraData.connectionData)
     }
-
-    override fun processScanFinished(scannedNetworks: List<ScanResult>) {
-        scannedNetworks.forEach {
-            Log.d(
-                    "CameraWifiClient", "SYR -> WIFI network found ${it.SSID} - ${it.level}")
-            }
-    }
-
-    override fun processScanFails() {
-        Log.e("CameraWifiClient", "SYR -> Scan failed")
-    }
-
-    override fun processWifiNetworkFound(network: ScanResult?) {
-        Log.d("CameraWifiClient", "SYR -> Wifi network found for ${cameraData.name} ssid: " +
-                "${network?.SSID}")
-
-        connectToNetwork(cameraData.connectionData, context)
-    }
-
-    override fun processWifiConnectionEstablished(connected: Boolean?) {
-        if (connected != null)
-        {
-            Log.i("CameraWifiClient", "SYR -> Connected to the wifi created by ${cameraData.name} " +
-                    "SSID: ${cameraData.connectionData.ssidName}")
-        }
-    }
-
-
 }

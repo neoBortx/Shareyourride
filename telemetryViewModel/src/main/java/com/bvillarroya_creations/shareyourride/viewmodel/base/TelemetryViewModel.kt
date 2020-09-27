@@ -3,6 +3,7 @@ package com.bvillarroya_creations.shareyourride.viewmodel.base
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
@@ -25,6 +26,8 @@ abstract class TelemetryViewModel(application: Application): ITelemetryViewModel
     }
 
     override lateinit var messageHandler: MessageHandler
+
+
 
     //region protected vars
     /**
@@ -101,6 +104,11 @@ abstract class TelemetryViewModel(application: Application): ITelemetryViewModel
     //endregion
 
     //region override ITelemetryViewModel and AndroidViewModel
+    /**
+     * Flag that points if the provider is ready
+     */
+    override lateinit var providerReady :MutableLiveData<Boolean>
+
     /**
      * Start acquiring telemetry data initialization the data observer and commanding
      * the providers to star using telemetry tools

@@ -34,6 +34,11 @@ class WifiScanner(private val context: Context): IWifiScanner {
      * Class to manage wifi service
      */
     private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+    /**
+     * Common functions for wifi management
+     */
+    private val wifiCommons = WifiCommons(context)
     //endregion
 
     //region result handlers
@@ -69,15 +74,15 @@ class WifiScanner(private val context: Context): IWifiScanner {
      *
      * @remarks StartScan method is masked as deprecated but there aren't any alternative, so i keep using it
      */
-    @Suppress("DEPRECATION")
     override fun startScanning()
     {
         try {
-            if (!wifiManager.isWifiEnabled)
-            {
-                wifiManager.isWifiEnabled = true
-            }
 
+            if (!wifiCommons.isWifiEnabled())
+            {
+                Log.e("WifiScanner", "SYR -> Unable to scan networks but wifi is disabled")
+                return
+            }
 
             val intentFilter = IntentFilter()
             intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
@@ -86,14 +91,14 @@ class WifiScanner(private val context: Context): IWifiScanner {
             val success = wifiManager.startScan()
             if (!success) {
                 // scan failure handling
-                //scanFailure()
+                scanFailure()
             }
         }
         catch (ex: Exception)
         {
             Log.e("WifiScanner", "SYR -> Unable to get the wifi networks list, exception: ${ex.message}")
             ex.printStackTrace()
-            //scanFailure()
+            scanFailure()
         }
     }
 

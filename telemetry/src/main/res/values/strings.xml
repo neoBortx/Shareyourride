@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Telemetry</string>
+    <string name="switch_on_wifi">Please switch on the GPS</string>
 </resources>

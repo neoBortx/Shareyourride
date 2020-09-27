@@ -2,7 +2,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
-        app:key="@string/camera_kind"
+        app:key="@string/camera_id"
         app:title="@string/camera_model"
         app:useSimpleSummaryProvider="true"
         />

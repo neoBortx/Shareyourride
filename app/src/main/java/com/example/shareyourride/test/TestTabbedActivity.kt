@@ -35,8 +35,8 @@ class TestTabbedActivity : AppCompatActivity() {
             val cameraData= cameras.getSavedCameraData(this)
             if (cameraData != null)
             {
-                val wifiClient = CameraWifiClient(this, cameraData,this);
-                wifiClient.connectToCamera()
+                //val wifiClient = CameraWifiClient(this, cameraData,this);
+                //wifiClient.connectToCamera()
             }
         }
 

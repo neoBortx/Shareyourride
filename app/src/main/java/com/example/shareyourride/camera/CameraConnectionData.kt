@@ -24,6 +24,10 @@ data class CameraConnectionData(
      */
     val networkProtocol: String,
     /**
+     * The IP address of the default gateway
+     */
+    val videoServerIp: String,
+    /**
      * The path thats is used by the network camera to serve the video
      */
     val streamPath: String

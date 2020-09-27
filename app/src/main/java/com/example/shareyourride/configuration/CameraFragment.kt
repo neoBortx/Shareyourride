@@ -43,7 +43,7 @@ class CameraFragment : PreferenceFragmentCompat() {
         setPreferencesFromResource(R.xml.camera_preferences, rootKey)
 
         try {
-            val listPreference: ListPreference? = findPreference(getString(R.string.camera_kind)) as ListPreference?
+            val listPreference: ListPreference? = findPreference(getString(R.string.camera_id)) as ListPreference?
             if (listPreference?.value == SupportedCameras.customId) {
                 enableCustom()
             }
@@ -66,8 +66,9 @@ class CameraFragment : PreferenceFragmentCompat() {
      */
     private fun configureListPreferences()
     {
-        try {
-            val listPreference: ListPreference? = findPreference(getString(R.string.camera_kind)) as ListPreference?
+        try
+        {
+            val listPreference: ListPreference? = findPreference(getString(R.string.camera_id)) as ListPreference?
             val cameraSecurity: ListPreference? = findPreference(getString(R.string.camera_connection_type)) as ListPreference?
 
             cameraSecurity?.entries = ConnectionType.values().map { it.toString() }.toTypedArray()
@@ -130,10 +131,12 @@ class CameraFragment : PreferenceFragmentCompat() {
     {
         try
         {
-            if (newValue == SupportedCameras.customId) {
+            if (newValue == SupportedCameras.customId)
+            {
                 enableCustom()
             }
-            else {
+            else
+            {
                 configurePredefinedParams(newValue)
             }
         }
@@ -222,7 +225,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraSsid?.text = cameraInfo.connectionData.ssidName
             cameraSecurity?.value = cameraInfo.connectionData.connectionType.toString()
             cameraPassword?.text = cameraInfo.connectionData.password
-            cameraIp?.text = cameraInfo.connectionData.gateway
+            cameraIp?.text = cameraInfo.videoServerIp
             cameraPath?.text = cameraInfo.streamPath
         }
         catch (ex: Exception)

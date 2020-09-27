@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view"
+    android:layout_height="10dp"
+    android:layout_width="10dp">
+
+    <group android:checkableBehavior="single" android:id="@+id/menu_group_1">
+        <item
+            android:id="@+id/nav_settings_button"
+            android:icon="@drawable/settings"
+            android:fillColor="@color/colorPrimary"
+            android:title="@string/action_settings" />
+        <item
+            android:id="@+id/nav_gallery_button"
+            android:icon="@drawable/ic_menu_gallery"
+            android:fillColor="@color/colorPrimary"
+            android:title="@string/menu_gallery" />
+    </group>
+
+    <group android:checkableBehavior="single" android:id="@+id/menu_group_2">
+        <item
+            android:id="@+id/nav_logout_button"
+            android:icon="@drawable/settings"
+            android:fillColor="@color/colorPrimary"
+            android:title="@string/logout" />
+        <item
+            android:id="@+id/nav_delete_account"
+            android:icon="@drawable/delete_forever"
+            android:fillColor="@color/colorPrimary"
+            android:title="@string/delete_user_account" />
+    </group>
+</menu>
