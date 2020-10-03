@@ -11,7 +11,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -22,9 +21,7 @@ import com.example.shareyourride.login.LoginActivity
 import com.example.shareyourride.permissions.PermissionsManager
 import com.example.shareyourride.viewmodels.login.UserManagementViewModel
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.app_bar_main.*
 
 class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelectedListener {
 
@@ -42,18 +39,26 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
 
     private fun configureToolBar()
     {
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        toolbar.title = "Share your ride"
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(true)
-        supportActionBar?.setDisplayUseLogoEnabled(true)
+        try
+        {
+            val toolbar: Toolbar = findViewById(R.id.toolbar)
+            toolbar.title=""
+            setSupportActionBar(toolbar)
 
-        val toggle = ActionBarDrawerToggle(
-                this, main_drawer_layout, toolbar, R.string.app_name,
-                R.string.close)
+            supportActionBar?.setDisplayShowTitleEnabled(true)
+            supportActionBar?.setDisplayUseLogoEnabled(true)
 
-        main_drawer_layout.addDrawerListener(toggle)
-        toggle.syncState()
+            val toggle = ActionBarDrawerToggle(
+                    this, main_drawer_layout, toolbar, R.string.app_name, R.string.close)
+
+            main_drawer_layout.addDrawerListener(toggle)
+            toggle.syncState()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e("Main Activity", "SYR -> Unable to configure the tool bar : ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,12 +66,8 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         setContentView(R.layout.activity_main)
 
         initializePermissions()
-
         configureToolBar()
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
-        }
         main_nav_view.setNavigationItemSelectedListener(this)
     }
 
@@ -86,8 +87,11 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
      */
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         try {
-            when (item.itemId) {
-
+            when (item.itemId)
+            {
+                R.id.nav_settings_home -> {
+                    processHomeButton()
+                }
                 R.id.nav_settings_button -> {
                     processSettingsButton()
                 }
@@ -120,6 +124,14 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         Log.i("MainActivity","SYR -> User has press the settings button")
         val intent = Intent(this, SettingsActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun processHomeButton()
+    {
+        Log.i("MainActivity","SYR -> User has press the home button")
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        navController.navigate(R.id.nav_home_fragment)
     }
 
     /**

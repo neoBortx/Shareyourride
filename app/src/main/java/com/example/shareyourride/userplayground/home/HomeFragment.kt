@@ -1,51 +1,53 @@
 package com.example.shareyourride.userplayground.home
 
-import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ArrayAdapter
+import android.widget.Button
 import androidx.core.widget.ImageViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.NavHostFragment
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.R.color
 import com.bvillarroya_creations.shareyourride.R.layout
 import com.bvillarroya_creations.shareyourride.databinding.FragmentHomeBinding
 import com.bvillarroya_creations.shareyourride.viewmodel.location.LocationViewModel
+import com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel
 import com.example.shareyourride.viewmodels.SettingsViewModel
-import com.example.shareyourride.viewmodels.userplayground.HomeViewModel
 import com.example.shareyourride.wifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment()  {
 
+    //region view models
     /**
-     * Local view model
+     *
      */
-    private lateinit var homeViewModel: HomeViewModel
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     /**
      * View model that handles the GPS data
      */
-    private val locationViewModel: LocationViewModel by activityViewModels()
+    private val locationViewModel: LocationViewModel by viewModels()
 
     /**
      *
      */
-    private val wifiViewModel: WifiViewModel  by activityViewModels()
+    private val wifiViewModel: WifiViewModel  by viewModels()
 
     /**
      *
      */
-    private val settingsViewModel: SettingsViewModel by activityViewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
+    //endregion
 
     //region observers
     /**
@@ -93,30 +95,78 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private val cameravaluesChangedObserver = Observer<String> {
-
+    /**
+     * Observer that manages the state of the wifi connection
+     */
+    private val cameraValuesChangedObserver = Observer<Boolean> {
         wifiViewModel.changeWifiNetwork()
+    }
 
+    /**
+     * Observer that manages the state of the list of telemetry values
+     */
+    private val listConfigurationObserver =  Observer<List<String>> { newState ->
+
+        if (settingsViewModel.configuredTelemetryList.value != null)
+        {
+            Log.i("SYR","HomeFragment -> Processing changes in the list of telemetry  elements ${settingsViewModel.configuredTelemetryList.value!!})")
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1,
+                                       settingsViewModel.configuredTelemetryList.value!!)
+            telemetry_list.adapter = adapter
+        }
+        else
+        {
+            Log.e("SYR", "HomeFragment -> preference data is null")
+        }
+    }
+
+    private val activityKindChangedObserver =  Observer<String> { newState ->
+
+        if (settingsViewModel.activityName.value != null)
+        {
+            Log.i("SYR","HomeFragment -> Processing changes in the activity name: ${settingsViewModel.activityName.value!!})")
+            text_activity_kind_value.text = settingsViewModel.activityName.value
+        }
+        else
+        {
+            Log.e("SYR", "HomeFragment -> preference data is null")
+        }
+    }
+
+    private val startActivityButton = View.OnClickListener {
+
+        Log.d("SYR", "HomeFragment -> Processing start button clicked")
+        val navHostFragment = this.activity?.supportFragmentManager?.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        if(settingsViewModel.leanAngleMetric.value != null && settingsViewModel.leanAngleMetric.value!!)
+        {
+            Log.i("SYR", "HomeFragment -> Opening gyroscope calibration activity")
+            navController.navigate(R.id.nav_gyroscope_calibration_fragment)
+        }
+        else
+        {
+            Log.i("SYR", "HomeFragment -> Opening start activity activity")
+            navController.navigate(R.id.nav_activity_started_fragment)
+        }
     }
     //endregion
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
-        val root = inflater.inflate(layout.fragment_home, container, false)
-        val textView: TextView = root.findViewById(R.id.text_home)
-        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
+
+        inflater.inflate(R.layout.fragment_home, container, false)
 
         val binding: FragmentHomeBinding = DataBindingUtil.inflate(
                 inflater, layout.fragment_home, container, false)
         
         val view: View = binding.root
-        //here data must be an instance of the class MarsDataProvider
-        //here data must be an instance of the class MarsDataProvider
+
         binding.location = locationViewModel
+        binding.settings = settingsViewModel
+        binding.session = sessionViewModel
 
         locationViewModel.providerReady.observe(viewLifecycleOwner, locationStateObserver)
+
+        (binding.root.findViewById(R.id.start_activity_button) as Button).setOnClickListener(startActivityButton)
 
         if (context != null)
         {
@@ -124,11 +174,9 @@ class HomeFragment : Fragment() {
             wifiViewModel.wifiEnabled.observe(viewLifecycleOwner, wifiStateObserver)
             wifiViewModel.openSettingsActivity.observe(viewLifecycleOwner, wifiStateObserver)
 
-            settingsViewModel.cameraIp.observe(viewLifecycleOwner,cameravaluesChangedObserver)
-            settingsViewModel.cameraPassword.observe(viewLifecycleOwner,cameravaluesChangedObserver)
-            settingsViewModel.cameraPath.observe(viewLifecycleOwner,cameravaluesChangedObserver)
-            settingsViewModel.cameraSsidName.observe(viewLifecycleOwner,cameravaluesChangedObserver)
-            settingsViewModel.cameraConnectionType .observe(viewLifecycleOwner,cameravaluesChangedObserver)
+            settingsViewModel.cameraConfigChangedFlag.observe(viewLifecycleOwner, cameraValuesChangedObserver)
+            settingsViewModel.configuredTelemetryList.observe(viewLifecycleOwner,listConfigurationObserver)
+            settingsViewModel.activityName.observe(viewLifecycleOwner, activityKindChangedObserver)
         }
 
         wifiViewModel.connectToWifi(requireActivity())

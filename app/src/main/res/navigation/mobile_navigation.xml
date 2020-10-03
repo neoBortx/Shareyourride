@@ -9,7 +9,11 @@
         android:id="@+id/nav_home_fragment"
         android:name="com.example.shareyourride.userplayground.home.HomeFragment"
         android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_nav_home_fragment_to_nav_gyroscope_calibration_fragment"
+            app:destination="@id/nav_gyroscope_calibration_fragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_gallery_fragment"
@@ -22,4 +26,14 @@
         android:name="com.example.shareyourride.userplayground.session.SessionFragment"
         android:label="Share your ride"
         tools:layout="@layout/fragment_activity_started" />
+
+    <fragment
+        android:id="@+id/nav_gyroscope_calibration_fragment"
+        android:name="com.example.shareyourride.userplayground.session.GyroscopeCalibration"
+        android:label="Share your ride"
+        tools:layout="@layout/fragment_activity_started" >
+        <action
+            android:id="@+id/action_nav_gyroscope_calibration_fragment_to_nav_activity_started_fragment"
+            app:destination="@id/nav_activity_started_fragment" />
+    </fragment>
 </navigation>

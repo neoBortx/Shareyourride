@@ -2,7 +2,7 @@
 
     <ListPreference
         app:key="@string/activity_kind"
-        app:title="Activity"
+        app:title="@string/activity_kind_label"
         app:useSimpleSummaryProvider="true"
         app:defaultValue="custom"
         app:entries="@array/activity_kind_entries"

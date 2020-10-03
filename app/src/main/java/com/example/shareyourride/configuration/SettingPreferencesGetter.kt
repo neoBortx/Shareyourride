@@ -63,36 +63,44 @@ class SettingPreferencesGetter(context: Context) {
     private var idToString: HashMap<SettingPreferencesIds, String> = HashMap()
 
     init {
-        idToString[SettingPreferencesIds.CameraId] = context.getString(R.string.camera_id)
-        idToString[SettingPreferencesIds.CameraName] = context.getString(R.string.camera_name)
-        idToString[SettingPreferencesIds.CameraSsidName] = context.getString(R.string.camera_ssidName)
-        idToString[SettingPreferencesIds.CameraConnectionType] = context.getString(R.string.camera_connection_type)
-        idToString[SettingPreferencesIds.CameraPassword] = context.getString(R.string.camera_password)
-        idToString[SettingPreferencesIds.CameraIp] = context.getString(R.string.camera_ip)
-        idToString[SettingPreferencesIds.CameraPath] = context.getString(R.string.camera_path)
-        idToString[SettingPreferencesIds.CameraProtocol] = context.getString(R.string.camera_protocol)
-
-        idToString[SettingPreferencesIds.ActivityKind] = context.getString(R.string.activity_kind)
-        idToString[SettingPreferencesIds.SpeedMetric] = context.getString(R.string.speed_metric)
-        idToString[SettingPreferencesIds.GforceMetric] = context.getString(R.string.gforce_metric)
-        idToString[SettingPreferencesIds.LeanAngleMetric] = context.getString(R.string.lean_angle_metric)
-        idToString[SettingPreferencesIds.TemperatureMetric] = context.getString(R.string.temperature_metric)
-        idToString[SettingPreferencesIds.WindMetric] = context.getString(R.string.wind_metric)
-        idToString[SettingPreferencesIds.PressureMetric] = context.getString(R.string.pressure_metric)
-        idToString[SettingPreferencesIds.HeartRateMetric] = context.getString(R.string.heart_rate_metric)
-        idToString[SettingPreferencesIds.InclinationMetric] = context.getString(R.string.inclination_metric)
-        idToString[SettingPreferencesIds.AltitudeMetric] = context.getString(R.string.altitude_metric)
+        try {
 
 
-        idToString[SettingPreferencesIds.UnitSystem] = context.getString(R.string.unit_system)
-        idToString[SettingPreferencesIds.SpeedUnit] = context.getString(R.string.speed_unit)
-        idToString[SettingPreferencesIds.TemperatureUnit] = context.getString(R.string.temperature_unit)
-        idToString[SettingPreferencesIds.WindSpeedUnit] = context.getString(R.string.wind_speed_unit)
+            idToString[SettingPreferencesIds.CameraId] = context.getString(R.string.camera_id)
+            idToString[SettingPreferencesIds.CameraName] = context.getString(R.string.camera_name)
+            idToString[SettingPreferencesIds.CameraSsidName] = context.getString(R.string.camera_ssidName)
+            idToString[SettingPreferencesIds.CameraConnectionType] = context.getString(R.string.camera_connection_type)
+            idToString[SettingPreferencesIds.CameraPassword] = context.getString(R.string.camera_password)
+            idToString[SettingPreferencesIds.CameraIp] = context.getString(R.string.camera_ip)
+            idToString[SettingPreferencesIds.CameraPath] = context.getString(R.string.camera_path)
+            idToString[SettingPreferencesIds.CameraProtocol] = context.getString(R.string.camera_protocol)
 
-        idToString[SettingPreferencesIds.ProfileImage] = context.getString(R.string.profile_image)
-        idToString[SettingPreferencesIds.ProfileName] = context.getString(R.string.profile_name)
+            idToString[SettingPreferencesIds.ActivityKind] = context.getString(R.string.activity_kind)
+            idToString[SettingPreferencesIds.SpeedMetric] = context.getString(R.string.speed_metric)
+            idToString[SettingPreferencesIds.GforceMetric] = context.getString(R.string.gforce_metric)
+            idToString[SettingPreferencesIds.LeanAngleMetric] = context.getString(R.string.lean_angle_metric)
+            idToString[SettingPreferencesIds.TemperatureMetric] = context.getString(R.string.temperature_metric)
+            idToString[SettingPreferencesIds.WindMetric] = context.getString(R.string.wind_metric)
+            idToString[SettingPreferencesIds.PressureMetric] = context.getString(R.string.pressure_metric)
+            idToString[SettingPreferencesIds.HeartRateMetric] = context.getString(R.string.heart_rate_metric)
+            idToString[SettingPreferencesIds.InclinationMetric] = context.getString(R.string.inclination_metric)
+            idToString[SettingPreferencesIds.AltitudeMetric] = context.getString(R.string.altitude_metric)
 
-        idToString[SettingPreferencesIds.Custom] = context.getString(R.string.custom)
+
+            idToString[SettingPreferencesIds.UnitSystem] = context.getString(R.string.unit_system)
+            idToString[SettingPreferencesIds.SpeedUnit] = context.getString(R.string.speed_unit)
+            idToString[SettingPreferencesIds.TemperatureUnit] = context.getString(R.string.temperature_unit)
+            idToString[SettingPreferencesIds.WindSpeedUnit] = context.getString(R.string.wind_speed_unit)
+
+            idToString[SettingPreferencesIds.ProfileImage] = context.getString(R.string.profile_image)
+            idToString[SettingPreferencesIds.ProfileName] = context.getString(R.string.profile_name)
+
+            idToString[SettingPreferencesIds.Custom] = context.getString(R.string.custom)
+        }
+        catch(ex: java.lang.Exception)
+        {
+            ex.printStackTrace()
+        }
     }
 
     /**
@@ -108,13 +116,25 @@ class SettingPreferencesGetter(context: Context) {
      */
     fun getBooleanOption(key: SettingPreferencesIds): Boolean
     {
-        return if (idToString.containsKey(key)) {
-            prefs.getBoolean(idToString[key], false)
+        try
+        {
+            return if (idToString.containsKey(key))
+            {
+                prefs.getBoolean(idToString[key], false)
+            }
+            else
+            {
+                Log.e("SettingPreferences", "GIS -> Key $key not supported")
+                false
+            }
         }
-        else {
-            Log.e("SettingPreferences", "GIS -> Key $key not supported")
-            false
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SettingPreferencesGetter -> exception getting $key: ${ex.message}")
+            ex.printStackTrace()
         }
+
+        return false
     }
 
     /**
@@ -125,13 +145,25 @@ class SettingPreferencesGetter(context: Context) {
      */
     fun getStringOption(key: SettingPreferencesIds): String
     {
-        return if (idToString.containsKey(key)) {
-            prefs.getString(idToString[key], "") ?: ""
+        try
+        {
+            return if (idToString.containsKey(key))
+            {
+                prefs.getString(idToString[key], "") ?: ""
+            }
+            else
+            {
+                Log.e("SYR", "SettingPreferencesGetter -> Key $key not supported")
+                ""
+            }
         }
-        else {
-            Log.e("SettingPreferences", "GIS -> Key $key not supported")
-            ""
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SettingPreferencesGetter -> exception getting $key: ${ex.message}")
+            ex.printStackTrace()
         }
+
+        return ""
     }
 
     /**
@@ -142,12 +174,41 @@ class SettingPreferencesGetter(context: Context) {
      */
     fun getIntOption(key: SettingPreferencesIds): Int
     {
-        return if (idToString.containsKey(key)) {
-            prefs.getInt(idToString[key], 0)
+        try
+        {
+            return if (idToString.containsKey(key))
+            {
+                prefs.getInt(idToString[key], 0)
+            }
+            else
+            {
+                Log.e("SettingPreferences", "GIS -> Key $key not supported")
+                0
+            }
         }
-        else {
-            Log.e("SettingPreferences", "GIS -> Key $key not supported")
-            0
+        catch (ex: Exception)
+        {
+            Log.e("SYR", "SettingPreferencesGetter -> exception getting $key: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        return 0
+    }
+
+    /**
+     * Checks if the given setting ID is supported by the application
+     *
+     * id: String that has to match with any of the id defined in SettingPreferencesIds
+     */
+    fun checkIfIdIsManaged(id: String): Boolean
+    {
+        return try {
+            val preferenceId = SettingPreferencesIds.valueOf(id)
+            idToString.containsKey(preferenceId)
+        }
+        catch (ex: java.lang.Exception) {
+            Log.d("SYR", "SettingPreferencesGetter -> id $id is not managed by the app logic")
+            false
         }
     }
 }

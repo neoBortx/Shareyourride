@@ -3,14 +3,12 @@ package com.example.shareyourride.login
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.bvillarroya_creations.shareyourride.R
+import androidx.fragment.app.viewModels
 import com.example.shareyourride.userplayground.MainActivity
+import com.example.shareyourride.viewmodels.SettingsViewModel
 import com.example.shareyourride.viewmodels.login.UserManagementViewModel
-import com.firebase.ui.auth.AuthUI
-import java.lang.Exception
 
 /**
  * Class to manage the login window
@@ -27,6 +25,12 @@ class LoginActivity : AppCompatActivity() {
      * in this layer
      */
     private val userManagementViewModel: UserManagementViewModel by viewModels()
+
+    //region view models
+    /**
+     *
+     */
+    private val settingsViewModel: SettingsViewModel by viewModels()
     //endregion
 
     /**
@@ -34,8 +38,6 @@ class LoginActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_login)
-
         createSignInWindow()
     }
 
@@ -52,7 +54,7 @@ class LoginActivity : AppCompatActivity() {
 
         try {
 
-            Log.e("LoginActivity", "SYR -> Processing onActivityResult $requestCode")
+            Log.d("LoginActivity", "SYR -> Processing onActivityResult $requestCode")
             if (requestCode == UserManagementViewModel.LOGIN_OPERATION_RESULT_CODE)
             {
                 if (userManagementViewModel.processLoginResult(resultCode, data))
@@ -88,6 +90,7 @@ class LoginActivity : AppCompatActivity() {
     {
         try
         {
+            Log.i("LoginActivity", "SYR -> Creating login window")
             //launch the authentication activity
             val intent = userManagementViewModel.getSignInIntent()
             if (intent != null)

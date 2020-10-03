@@ -9,8 +9,6 @@ import androidx.lifecycle.AndroidViewModel
 import com.bvillarroya_creations.shareyourride.R
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.credentials.CredentialsOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -70,6 +68,7 @@ class UserManagementViewModel(application: Application) : AndroidViewModel(appli
                 .setAvailableProviders(providers)
                 .setLogo(R.drawable.full_title) // Set logo drawable
                 .setTheme(R.style.LoginTheme) // Set theme
+                //.setIsSmartLockEnabled(!BuildConfig.DEBUG /* credentials */, true /* hints */)
                 .build()
         }
         catch (ex: java.lang.Exception)

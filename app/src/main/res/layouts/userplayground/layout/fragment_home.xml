@@ -2,14 +2,19 @@
  the view model layout. -->
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
-        <!--<variable
-            name="session"
-            type="com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel" />-->
+        <variable
+            name="settings"
+            type="com.example.shareyourride.viewmodels.SettingsViewModel" />
         <variable
             name="location"
             type="com.bvillarroya_creations.shareyourride.viewmodel.location.LocationViewModel" />
+        <variable
+            name="session"
+            type="com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel" />
+
         <!--<variable
             name="inclination"
             type="com.bvillarroya_creations.shareyourride.viewmodel.inclination.InclinationViewModel" />-->
@@ -22,61 +27,89 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.example.shareyourride.userplayground.home.HomeFragment">
 
-    <TextView
-        android:id="@+id/text_home"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
         <!--app:tint="@{location.providerReady ? @color/colorProviderOk : @color/colorProviderError}"-->
-    <ImageView
-        android:id="@+id/gps_state_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/wifi_state"
-        android:src="@drawable/gps_ok"
-        app:layout_constraintEnd_toStartOf="@+id/bluetooth_state_img"
-        app:layout_constraintHorizontal_bias="0.172"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-         />
+        <TextView
+            android:id="@+id/text_activity_kind_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.13"
+            android:text="@string/activity_kind_label"/>
 
-    <ImageView
-        android:id="@+id/wifi_state_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="36dp"
-        android:contentDescription="@string/gps_state"
-        android:src="@drawable/wifi_ok"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/text_activity_kind_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:text="@{settings.activityName}"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label"
+            app:layout_constraintVertical_bias="0.024" />
 
-    <ImageView
-        android:id="@+id/bluetooth_state_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="136dp"
-        android:contentDescription="@string/bluetooth_connection"
-        android:src="@drawable/bluetooth_ok"
-        app:layout_constraintBottom_toTopOf="@+id/text_home"
-        app:layout_constraintEnd_toStartOf="@+id/wifi_state_img"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.048" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/gps_state_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/wifi_state"
+            android:src="@drawable/gps_ok"
+            app:layout_constraintEnd_toStartOf="@+id/wifi_state_img"
+            app:layout_constraintHorizontal_bias="0.172"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/wifi_state_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="48dp"
+            android:contentDescription="@string/gps_state"
+            android:src="@drawable/wifi_ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ListView
+            android:id="@+id/telemetry_list"
+            android:layout_width="match_parent"
+            android:layout_height="367dp"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="40dp"
+            app:flow_horizontalAlign="center"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value"
+            tools:layout_editor_absoluteX="1dp" />
+
+        <Button
+            android:id="@+id/start_activity_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_activity"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/whiteColor"
+            android:paddingHorizontal="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/telemetry_list"
+            android:clickable="true"
+            android:focusable="true" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

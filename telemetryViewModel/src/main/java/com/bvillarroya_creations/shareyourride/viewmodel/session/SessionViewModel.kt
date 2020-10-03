@@ -74,6 +74,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
      */
     fun startSession()
     {
+        Log.i("SYR","SessionViewModel -> starting session")
         sessionState.value = SessionState.Started
         val id = UUID.randomUUID().toString()
         sessionId.value = id

@@ -5,4 +5,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorProviderOk">#00FF0A</color>
     <color name="colorProviderError">#DA1515</color>
+    <color name="whiteColor">#FFFFFF</color>
+    <color name="shadow">#422D25</color>
 </resources>
