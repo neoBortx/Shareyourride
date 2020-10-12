@@ -1,6 +1,5 @@
 package com.example.shareyourride.viewmodels
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
@@ -24,7 +23,10 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
 
     private var activitiesHasMap: HashMap<String, String> = HashMap()
 
-    val subject: BehaviorSubject<Boolean> = BehaviorSubject.create()
+    /**
+     * Throttle to not invoke to many changes about the configuration
+     */
+    private val subject: BehaviorSubject<Boolean> = BehaviorSubject.create()
     //region mutable live data
     /**
      * Camera Ids
@@ -82,8 +84,6 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
         sharedPreferences.registerOnSharedPreferenceChangeListener(this)
 
         Log.i("SettingsViewModel", "SYR -> INITIAL LOAD")
-        composePreferences()
-
         var index = 0
         application.resources.getStringArray(R.array.activity_kind_values).forEach {
             if (application.resources.getStringArray(R.array.activity_kind_entries).count() > index) {
@@ -92,10 +92,12 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
             }
         }
 
-        val observable: Observable<Boolean>? = subject.debounce(3, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
+        val observable: Observable<Boolean>? = subject.debounce(5, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
         val subscribe = observable?.subscribe {
             composePreferences()
         }
+
+        composePreferences()
     }
 
     /**
@@ -105,7 +107,7 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
     {
         try
         {
-            Log.i("SettingsViewModel", "SYR -> Handling changes in the configuration - $keyChanged, new value ${settingsGetter.getStringOption(SettingPreferencesIds.CameraId)}")
+            //Log.d("SettingsViewModel", "SYR -> Handling changes in the configuration - $keyChanged, new value ${settingsGetter.getStringOption(SettingPreferencesIds.CameraId)}")
             if (keyChanged != null && settingsGetter.checkIfIdIsManaged(keyChanged)) {
                 subject.onNext(false)
             }
@@ -133,7 +135,7 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
          cameraIp.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraIp)
          cameraProtocol.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraProtocol)
          cameraPath.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraPath)
-        cameraConfigChangedFlag.value = true;
+        cameraConfigChangedFlag.value = true
 
         /**
          * Activity Ids

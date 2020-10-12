@@ -39,6 +39,14 @@
         />
 
     <EditTextPreference
+        app:key="@string/camera_port"
+        app:title="@string/port"
+        app:useSimpleSummaryProvider="true"
+        android:inputType="number"
+        app:enabled="false"
+        />
+
+    <EditTextPreference
         app:key="@string/camera_path"
         app:title="@string/video_path"
         app:useSimpleSummaryProvider="true"

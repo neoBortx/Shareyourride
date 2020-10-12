@@ -30,6 +30,6 @@ class CameraWifiClient(private val context: Context): WifiClient(context) {
     fun configureClient(cameraData: CameraConnectionData )
     {
         cameraName = cameraData.name
-        configure(cameraData.connectionData)
+        configureConnection(cameraData.connectionData)
     }
 }

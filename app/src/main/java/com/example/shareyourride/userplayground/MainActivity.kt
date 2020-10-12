@@ -20,6 +20,7 @@ import com.example.shareyourride.configuration.SettingsActivity
 import com.example.shareyourride.login.LoginActivity
 import com.example.shareyourride.permissions.PermissionsManager
 import com.example.shareyourride.viewmodels.login.UserManagementViewModel
+import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
      * in this layer
      */
     private val userManagementViewModel: UserManagementViewModel by viewModels()
+
+    private val videoViewModel: VideoViewModel by viewModels()
     //endregion
 
     private fun configureToolBar()
@@ -181,6 +184,8 @@ Fill the list of permissions to request and check of
         permissions.addFunctionality(Manifest.permission.CHANGE_NETWORK_STATE)
         permissions.addFunctionality(Manifest.permission.ACCESS_NETWORK_STATE)
         permissions.addFunctionality(Manifest.permission.INTERNET)
+        permissions.addFunctionality(Manifest.permission.READ_EXTERNAL_STORAGE)
+        permissions.addFunctionality(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         permissions.checkPermissions()
     }

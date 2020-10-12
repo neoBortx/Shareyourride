@@ -48,32 +48,38 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
     {
         try
         {
-            val cameras = SupportedCameras()
+            val cameras = SupportedCameras(getApplication())
             val cameraData = cameras.getSavedCameraData(context)
 
-            if (wifiClient.wifiEnabled.value!!)
+            if (cameraData != null)
             {
-                if (cameraData != null) {
-                    wifiClient.configureClient(cameraData)
+                wifiClient.configureClient(cameraData)
+                Log.i("WifiViewModel", "SYR -> Stablising connection to camera ${cameraData.name}")
 
+                if (wifiClient.wifiEnabled.value!!)
+                {
                     if (wifiClient.wifiConnected.value!!)
                     {
                         Log.i("WifiViewModel", "SYR -> Connection with ${cameraData.name} -${cameraData.connectionData.ssidName} already established")
                     }
-                    else {
+                    else
+                    {
                         Log.i("WifiViewModel", "SYR -> Proceeding to connect with ${cameraData.name} -${cameraData.connectionData.ssidName}")
                         wifiClient.disconnectFromNetwork()
                         wifiClient.connectToNetwork()
                     }
                 }
-                else {
-                    Log.e("WifiViewModel", "SYR -> No camera data configured")
-                    Toast.makeText(context, context.getString(R.string.configure_cam), Toast.LENGTH_LONG).show()
+                else
+                {
+                    Log.i("WifiViewModel", "SYR -> Enabling WIFI because the device is disconnected")
+                    wifiClient.enableWifi(activity)
                 }
             }
             else
             {
-                wifiClient.enableWifi(activity)
+                Log.e("WifiViewModel", "SYR -> No camera data configured")
+                Toast.makeText(context, context.getString(R.string.configure_cam), Toast.LENGTH_LONG).show()
+
             }
         }
         catch (ex: Exception)

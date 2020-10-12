@@ -11,24 +11,34 @@ data class CameraConnectionData(
      * The unique identifier of the camera kind, for internal use
      */
     val cameraId: String,
+
     /**
      * The name of the camera, just to show to the user
      */
     val name: String,
+
     /**
      * The data required to connect to the wifi created by the camera
      */
     val connectionData: WifiConnectionData,
+
     /**
      * The network protocol required to access to the video stream of the camara
      */
     val networkProtocol: String,
+
     /**
      * The IP address of the default gateway
      */
     val videoServerIp: String,
+
     /**
-     * The path thats is used by the network camera to serve the video
+     * The port used by the server POrt
      */
-    val streamPath: String
+    val videoServerPort: String,
+
+    /**
+     * The path that is used by the network camera to serve the video
+     */
+    val videoNAme: String
 )

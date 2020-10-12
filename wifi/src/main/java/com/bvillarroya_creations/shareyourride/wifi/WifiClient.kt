@@ -26,7 +26,7 @@ abstract class WifiClient(private val context: Context) {
     /**
      * Class in charge of connects to a WFI network
      */
-    private val wifiConnectionManager = WifiConnectionManager(context, ::processWifiCallbackEvent)
+    private val wifiConnectionManager = WifiConnectionManager()
 
     /**
      * Common functions for wifi management
@@ -55,6 +55,7 @@ abstract class WifiClient(private val context: Context) {
 
     //region init
     init {
+        wifiConnectionManager.configureManager(context, ::processWifiCallbackEvent)
         wifiConnected.value = false
         wifiEnabled.value = wifiCommons.isWifiEnabled()
     }
@@ -69,7 +70,6 @@ abstract class WifiClient(private val context: Context) {
      * look for a wifi network that contains part of the given SSID
      */
     private val scanFinishedWhileConnectingObserver = Observer<List<ScanResult>> { items ->
-        stopScanning()
         if (wifiConnectionData != null)
         {
             val index = items.indexOfFirst { it.SSID.contains(wifiConnectionData!!.ssidName) }
@@ -78,6 +78,7 @@ abstract class WifiClient(private val context: Context) {
                 Log.i("WifiClient", "SYR -> Trying to connect to network with SSID: ${items[index].SSID}")
 
                 wifiConnectionManager.connectToNetwork(items[index].SSID)
+                stopScanning()
             }
             else {
                 Log.e("WifiClient", "SYR -> SSID ${wifiConnectionData!!.ssidName} not found, unable to connect to wfi")
@@ -108,12 +109,12 @@ abstract class WifiClient(private val context: Context) {
      *
      * @param connectionData: THe wifi connection data to use in scan and connect operation
      */
-    fun configure(connectionData: WifiConnectionData)
+    fun configureConnection(connectionData: WifiConnectionData)
     {
         try {
             wifiConnectionData = connectionData
             //initialize
-            wifiConnectionManager.configure(connectionData)
+            wifiConnectionManager.configureConnection(connectionData)
             //update the connection state
             wifiConnectionManager.checkIfConnected()
         }
@@ -213,6 +214,7 @@ abstract class WifiClient(private val context: Context) {
     {
         try
         {
+            Log.d("WifiClient", "SYR -> Processing wifi call back ${wifiCallbackData.event}")
             when (wifiCallbackData.event)
             {
                 WifiCallbackData.Companion.EventType.WifiDeviceStateEvent ->

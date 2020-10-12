@@ -21,6 +21,7 @@ enum class SettingPreferencesIds{
     CameraConnectionType,
     CameraPassword,
     CameraIp,
+    CameraPort,
     CameraProtocol,
     CameraPath,
 
@@ -72,6 +73,7 @@ class SettingPreferencesGetter(context: Context) {
             idToString[SettingPreferencesIds.CameraConnectionType] = context.getString(R.string.camera_connection_type)
             idToString[SettingPreferencesIds.CameraPassword] = context.getString(R.string.camera_password)
             idToString[SettingPreferencesIds.CameraIp] = context.getString(R.string.camera_ip)
+            idToString[SettingPreferencesIds.CameraPort] = context.getString(R.string.camera_port)
             idToString[SettingPreferencesIds.CameraPath] = context.getString(R.string.camera_path)
             idToString[SettingPreferencesIds.CameraProtocol] = context.getString(R.string.camera_protocol)
 
@@ -207,7 +209,6 @@ class SettingPreferencesGetter(context: Context) {
             idToString.containsKey(preferenceId)
         }
         catch (ex: java.lang.Exception) {
-            Log.d("SYR", "SettingPreferencesGetter -> id $id is not managed by the app logic")
             false
         }
     }

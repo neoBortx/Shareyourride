@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
+        <import type="android.view.View" />
         <variable
             name="settings"
             type="com.example.shareyourride.viewmodels.SettingsViewModel" />
@@ -15,9 +16,9 @@
             name="session"
             type="com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel" />
 
-        <!--<variable
-            name="inclination"
-            type="com.bvillarroya_creations.shareyourride.viewmodel.inclination.InclinationViewModel" />-->
+        <variable
+            name="video"
+            type="com.example.shareyourride.viewmodels.userplayground.VideoViewModel" />
         <!--<variable
             name="environment"
             type="com.bvillarroya_creations.shareyourride.viewmodel.environment.EnvironmentViewModel" />-->
@@ -44,7 +45,7 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.13"
+            app:layout_constraintVertical_bias="0.08"
             android:text="@string/activity_kind_label"/>
 
         <TextView
@@ -87,14 +88,25 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!---->
+        <TextureView
+            android:id="@+id/video_placeholder_home"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginHorizontal="30dp"
+            app:flow_horizontalAlign="center"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value"
+            android:layout_marginTop="40dp"
+            />
+
         <ListView
             android:id="@+id/telemetry_list"
             android:layout_width="match_parent"
-            android:layout_height="367dp"
+            android:layout_height="200dp"
             android:layout_marginHorizontal="30dp"
             android:layout_marginTop="40dp"
             app:flow_horizontalAlign="center"
-            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value"
+            app:layout_constraintTop_toBottomOf="@+id/video_placeholder_home"
             tools:layout_editor_absoluteX="1dp" />
 
         <Button

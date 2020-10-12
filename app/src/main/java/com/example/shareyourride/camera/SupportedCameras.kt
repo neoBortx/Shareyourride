@@ -2,6 +2,7 @@ package com.example.shareyourride.camera
 
 import android.content.Context
 import android.util.Log
+import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.wifi.ConnectionType
 import com.bvillarroya_creations.shareyourride.wifi.WifiConnectionData
 import com.example.shareyourride.configuration.SettingPreferencesGetter
@@ -10,7 +11,7 @@ import com.example.shareyourride.configuration.SettingPreferencesIds
 /**
  * Manages the list of supported cameras
  */
-class SupportedCameras
+class SupportedCameras(context: Context)
 {
 
     companion object
@@ -38,8 +39,9 @@ class SupportedCameras
                                 "",
                                 ConnectionType.Open,
                                 ""),
-                        "rtsp",
+                        context.getString(R.string.rtsp_protocol),
                         "",
+                        "0",
                         ""
                 )
         )
@@ -54,6 +56,7 @@ class SupportedCameras
                                 ""),
                         "rtsp",
                         "192.168.42.1",
+                        "0",
                         "live"
                 )
         )
@@ -86,8 +89,9 @@ class SupportedCameras
                         preferences.getStringOption(SettingPreferencesIds.CameraName),
                         connectionData,
                         "rtsp",
-                        preferences.getStringOption(SettingPreferencesIds.CameraPath),
-                        preferences.getStringOption(SettingPreferencesIds.CameraIp))
+                        preferences.getStringOption(SettingPreferencesIds.CameraIp),
+                        preferences.getStringOption(SettingPreferencesIds.CameraPort),
+                        preferences.getStringOption(SettingPreferencesIds.CameraPath))
             }
             else
             {

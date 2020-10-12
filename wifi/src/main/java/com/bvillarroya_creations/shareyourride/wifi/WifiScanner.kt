@@ -116,7 +116,7 @@ class WifiScanner(private val context: Context): IWifiScanner {
                         " freq: ${it.frequency} width: ${it.channelWidth}")
             }
 
-            scanFinished.postValue(results)
+            scanFinished.value = results
         }
         catch (ex: Exception)
         {

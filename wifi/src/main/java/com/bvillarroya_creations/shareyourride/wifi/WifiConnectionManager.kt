@@ -13,24 +13,29 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.bvillarroya_creations.shareyourride.wifi.data.WifiCallbackData
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.BehaviorSubject
+import java.util.concurrent.TimeUnit
 
 
 /**
  *
  */
-class WifiConnectionManager(private val context: Context, private val connectionCallback: (WifiCallbackData) -> Unit): BroadcastReceiver() {
+class WifiConnectionManager(): BroadcastReceiver() {
+
 
 
     //region wifi service
     /**
      * Class to manage wifi service
      */
-    private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    private var wifiManager: WifiManager? = null
 
     /**
      * Common functions for wifi management
      */
-    private val wifiCommons = WifiCommons(context)
+    private var wifiCommons: WifiCommons? = null
     //endregion
 
     //region private properties
@@ -43,25 +48,62 @@ class WifiConnectionManager(private val context: Context, private val connection
      * The list of networks to suggest to the user
      */
     private var suggestionsList: MutableList<WifiNetworkSuggestion> = mutableListOf()
+
+    private var context: Context? = null
+
+    private var connectionCallback: ((WifiCallbackData) -> Unit)? = null
+
+    /**
+     * Throttle to not invoke to many changes about the configuration
+     */
+    private val subject: BehaviorSubject<Boolean> = BehaviorSubject.create()
+
+    private var alreadyConfigured = false
     //endregion
 
     //region configure manager
     /**
      * Initialize internal handlers and the wifi connection data
      *
+     * @param context: app context
+     * @param connectionCallback: Call back
+     */
+    fun configureManager( context: Context?, connectionCallback: (WifiCallbackData) -> Unit)
+    {
+        if (!alreadyConfigured)
+        {
+            this.context = context
+            this.connectionCallback = connectionCallback
+
+            wifiCommons = WifiCommons(context!!)
+            wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+            context.applicationContext.registerReceiver(this, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
+
+            //context.applicationContext.registerReceiver(this, IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"))*/
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                context.applicationContext.registerReceiver(this, IntentFilter(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION))
+            };
+
+            val observable: Observable<Boolean>? = subject.debounce(5, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
+            val subscribe = observable?.subscribe {
+
+                checkIfConnected()
+            }
+        }
+
+
+    }
+    /**
+     * Configure the wifi connection
+     *
      * @param connectionData: preconfigured data to connect to the wifi network
      */
-    fun configure(connectionData: WifiConnectionData) {
-
+    fun configureConnection(connectionData: WifiConnectionData)
+    {
+        Log.d("WifiConnectionManager", "SYR -> Configuring WIFI connection ${connectionData.ssidName}")
         wifiConnectionData = connectionData
-
-        context.applicationContext.registerReceiver(this, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
-        context.applicationContext.registerReceiver(this, IntentFilter(WifiManager.NETWORK_IDS_CHANGED_ACTION))
-        context.applicationContext.registerReceiver(this, IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            context.applicationContext.registerReceiver(this, IntentFilter(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION))
-        };
     }
     //endregion
 
@@ -76,7 +118,8 @@ class WifiConnectionManager(private val context: Context, private val connection
      */
     fun connectToNetwork(ssid: String)
     {
-        if (!wifiCommons.isWifiEnabled())
+        if (wifiCommons != null
+            && !wifiCommons!!.isWifiEnabled())
         {
             Log.e("WifiConnectionManager", "SYR -> Enabling WIFI to connect with $ssid")
             return
@@ -104,7 +147,7 @@ class WifiConnectionManager(private val context: Context, private val connection
     {
         try {
 
-            if (wifiConnectionData == null)
+            if (wifiConnectionData == null || wifiManager == null)
             {
                 Log.e("WifiConnectionManager", "SYR -> Unable to connect with old API to wifi with $ssid because connection data is null")
                 return
@@ -135,14 +178,14 @@ class WifiConnectionManager(private val context: Context, private val connection
                 }
             }
 
-            wifiManager.addNetwork(conf)
+            wifiManager!!.addNetwork(conf)
 
-            val list = wifiManager.configuredNetworks
+            val list = wifiManager!!.configuredNetworks
             for (i in list) {
                 if (i.SSID != null && i.SSID == "\"" + ssid + "\"") {
-                    wifiManager.disconnect()
-                    wifiManager.enableNetwork(i.networkId, true)
-                    wifiManager.reconnect()
+                    wifiManager!!.disconnect()
+                    wifiManager!!.enableNetwork(i.networkId, true)
+                    wifiManager!!.reconnect()
                     break
                 }
             }
@@ -162,7 +205,7 @@ class WifiConnectionManager(private val context: Context, private val connection
     {
         try {
 
-            if (wifiConnectionData == null)
+            if (wifiConnectionData == null || wifiManager == null)
             {
                 Log.e("WifiConnectionManager", "SYR -> Unable to connect with new API to wifi with $ssid because connection data is null")
                 return
@@ -199,8 +242,8 @@ class WifiConnectionManager(private val context: Context, private val connection
             suggestionsList.clear()
             suggestionsList.addAll(listOf(suggestion.build()))
 
-            wifiManager.removeNetworkSuggestions(suggestionsList)
-            val status = wifiManager.addNetworkSuggestions(suggestionsList)
+            wifiManager!!.removeNetworkSuggestions(suggestionsList)
+            val status = wifiManager!!.addNetworkSuggestions(suggestionsList)
 
             if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
                 Log.e("WifiConnectionManager", "SYR -> Unable to connect to wifi $ssid, error code: $status")
@@ -221,17 +264,23 @@ class WifiConnectionManager(private val context: Context, private val connection
     fun disconnect()
     {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            {
-                Log.d("WifiConnectionManager", "SYR -> Disconnect from WIFI network with the new API")
-                wifiManager.disconnect()
-                wifiManager.removeNetworkSuggestions(suggestionsList)
+            if(wifiManager != null) {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    Log.d("WifiConnectionManager", "SYR -> Disconnect from WIFI network with the new API")
+                    wifiManager!!.disconnect()
+                    wifiManager!!.removeNetworkSuggestions(suggestionsList)
+                }
+                else {
+                    Log.d("WifiConnectionManager", "SYR -> Disconnect to WIFI network with the old API")
+                    wifiManager!!.disconnect()
+                }
             }
             else
             {
-                Log.d("WifiConnectionManager", "SYR -> Disconnect to WIFI network with the old API")
-                wifiManager.disconnect()
+                Log.e("WifiConnectionManager", "SYR -> Unable to disconnect because wifiManager is null")
             }
+
         }
         catch(ex: Exception)
         {
@@ -252,16 +301,16 @@ class WifiConnectionManager(private val context: Context, private val connection
         try
         {
 
-            if (wifiConnectionData != null)
+            if (wifiConnectionData != null && connectionCallback != null && wifiManager != null)
             {
-                val info: WifiInfo? = wifiManager.connectionInfo
+                val info: WifiInfo? = wifiManager!!.connectionInfo
 
                 if (info != null)
                 {
                     if (/*info.supplicantState == SupplicantState.COMPLETED
                         && */info.ssid.contains(wifiConnectionData!!.ssidName)) {
                         Log.i("WifiConnectionManager", "SYR -> Connected to SSID ${wifiConnectionData!!.ssidName}")
-                        connectionCallback(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, true))
+                        connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, true)) }
                         return
                     }
                     else
@@ -284,7 +333,7 @@ class WifiConnectionManager(private val context: Context, private val connection
             Log.e("WifiConnectionManager", "SYR -> Unable to check the connection, because: ${ex.message}")
             ex.printStackTrace()
         }
-        connectionCallback(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, false))
+        connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, false)) }
     }
 
     /**
@@ -293,23 +342,29 @@ class WifiConnectionManager(private val context: Context, private val connection
     override fun onReceive(context: Context?, intent: Intent?) {
         try
         {
-            if (intent?.action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION))
-            {
-                Log.d("WifiConnectionManager","SYR -> onReceive NETWORK_STATE_CHANGED_ACTION event when connect")
-                checkIfConnected()
-                return
-            }
-            else if (intent?.action.equals(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION))
-            {
-                Log.d("WifiConnectionManager","SYR -> onReceive ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION event when connect")
-                checkIfConnected()
-                return
-            }
-            else
-            {
-                Log.d("WifiConnectionManager","SYR -> onReceive TYPE_WIFI event when connect")
-                connectionCallback(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiDeviceStateEvent, wifiCommons.isWifiEnabled()))
-                return
+
+            when {
+                intent?.action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION) -> {
+                    Log.d("WifiConnectionManager","SYR -> onReceive NETWORK_STATE_CHANGED_ACTION event when connect")
+                    subject.onNext(false)
+                    return
+                }
+                intent?.action.equals(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION) -> {
+                    Log.d("WifiConnectionManager","SYR -> onReceive ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION event when connect")
+                    subject.onNext(false)
+                    return
+                }
+                else -> {
+                    if (connectionCallback != null && wifiCommons != null) {
+                        Log.d("WifiConnectionManager", "SYR -> onReceive TYPE_WIFI event when connect")
+                        //connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiDeviceStateEvent, wifiCommons!!.isWifiEnabled())) }
+                    }
+                    else
+                    {
+                        Log.e("WifiConnectionManager", "SYR -> Unable to process the TYPE_WIFI because the call back function or wifiCommons are null")
+                    }
+                    return
+                }
             }
         }
         catch(ex: Exception)

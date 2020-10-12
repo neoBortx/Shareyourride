@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -20,7 +21,9 @@ import com.bvillarroya_creations.shareyourride.R.layout
 import com.bvillarroya_creations.shareyourride.databinding.FragmentHomeBinding
 import com.bvillarroya_creations.shareyourride.viewmodel.location.LocationViewModel
 import com.bvillarroya_creations.shareyourride.viewmodel.session.SessionViewModel
+import com.example.shareyourride.video.statemcahine.VideoClientState
 import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
 import com.example.shareyourride.wifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 
@@ -47,6 +50,12 @@ class HomeFragment : Fragment()  {
      *
      */
     private val sessionViewModel: SessionViewModel by viewModels()
+
+    /*
+
+
+     */
+    private val videoViewModel: VideoViewModel by viewModels()
     //endregion
 
     //region observers
@@ -72,11 +81,20 @@ class HomeFragment : Fragment()  {
 
         if (newState)
         {
+            Log.d("SYR", "HomeFragment -> processing changes in wifi wifiConnectionObserver, new state ok")
             ImageViewCompat.setImageTintList(wifi_state_img, context?.getColor(color.colorProviderOk)?.let { ColorStateList.valueOf(it) })
+
+            if (videoViewModel.clientState.value == VideoClientState.Disconnected
+                || videoViewModel.clientState.value == VideoClientState.None)
+            {
+                videoViewModel.connect()
+            }
         }
         else
         {
+            Log.d("SYR", "HomeFragment -> processing changes in wifi wifiConnectionObserver, new state nok")
             ImageViewCompat.setImageTintList(wifi_state_img, context?.getColor(color.colorProviderError)?.let { ColorStateList.valueOf(it) })
+            videoViewModel.disconnect()
         }
     }
 
@@ -87,11 +105,19 @@ class HomeFragment : Fragment()  {
 
         if (newState)
         {
-            ImageViewCompat.setImageTintList(wifi_state_img, context?.getColor(color.colorProviderOk)?.let { ColorStateList.valueOf(it) })
+            Log.d("SYR", "HomeFragment -> processing changes in wifi wifiStateObserver state ok")
+            /*ImageViewCompat.setImageTintList(wifi_state_img, context?.getColor(color.colorProviderOk)?.let { ColorStateList.valueOf(it) })
+
+            if (videoViewModel.clientState.value == VideoClientState.Disconnected
+                || videoViewModel.clientState.value == VideoClientState.None)
+            {
+                createClient()
+            }*/
         }
         else
         {
-            Log.e("SYR", "HomeFragment -> wifi device has been disabled")
+            Log.e("SYR", "HomeFragment -> processing changes in wifi wifiStateObserver state nok")
+            videoViewModel.disconnect()
         }
     }
 
@@ -163,6 +189,7 @@ class HomeFragment : Fragment()  {
         binding.location = locationViewModel
         binding.settings = settingsViewModel
         binding.session = sessionViewModel
+        binding.video = videoViewModel
 
         locationViewModel.providerReady.observe(viewLifecycleOwner, locationStateObserver)
 
@@ -178,6 +205,13 @@ class HomeFragment : Fragment()  {
             settingsViewModel.configuredTelemetryList.observe(viewLifecycleOwner,listConfigurationObserver)
             settingsViewModel.activityName.observe(viewLifecycleOwner, activityKindChangedObserver)
         }
+        else
+        {
+            Log.e("HomeFragment","CONTEXT IS NULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+        }
+
+        val textureView: TextureView = binding.root.findViewById(R.id.video_placeholder_home)
+        videoViewModel.configureClient(textureView)
 
         wifiViewModel.connectToWifi(requireActivity())
 
