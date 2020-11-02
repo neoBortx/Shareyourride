@@ -23,8 +23,6 @@ import com.example.shareyourride.camera.SupportedCameras
 @Suppress("unused")
 class CameraFragment : PreferenceFragmentCompat() {
 
-    private val supportedCameras = SupportedCameras(requireContext())
-
     //region overrides
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
@@ -68,6 +66,8 @@ class CameraFragment : PreferenceFragmentCompat() {
     {
         try
         {
+            val supportedCameras = SupportedCameras(requireContext())
+
             val listPreference: ListPreference? = findPreference(getString(R.string.camera_id)) as ListPreference?
             val cameraSecurity: ListPreference? = findPreference(getString(R.string.camera_connection_type)) as ListPreference?
 
@@ -214,6 +214,8 @@ class CameraFragment : PreferenceFragmentCompat() {
     {
         try
         {
+            val supportedCameras = SupportedCameras(requireContext())
+
             disableCustom()
 
             val cameraName: EditTextPreference? = findPreference(getString(R.string.camera_name)) as EditTextPreference?
@@ -231,7 +233,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraSecurity?.value = cameraInfo.connectionData.connectionType.toString()
             cameraPassword?.text = cameraInfo.connectionData.password
             cameraIp?.text = cameraInfo.videoServerIp
-            cameraPort?.text = cameraInfo.videoServerPort.toString()
+            cameraPort?.text = cameraInfo.videoServerPort
             cameraPath?.text = cameraInfo.videoNAme
         }
         catch (ex: Exception)

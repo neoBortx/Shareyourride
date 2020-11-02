@@ -31,10 +31,8 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
     var wifiEnabled : MutableLiveData<Boolean> = wifiClient.wifiEnabled
 
     /**
-     * Flag to open the setting activity
+     * The application context
      */
-    var openSettingsActivity : MutableLiveData<Boolean> = wifiClient.wifiEnabled
-
     private var context = application.applicationContext
 
     /**
@@ -94,12 +92,12 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
         try {
             Log.i("WifiViewModel", "SYR -> changing the wifi parameters")
             wifiClient.disconnectFromNetwork()
-
             wifiClient.connectToNetwork()
         }
         catch(ex: java.lang.Exception)
         {
-
+            Log.e("WifiViewModel", "SYR -> Unable to change wifi network because: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 }

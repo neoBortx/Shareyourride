@@ -4,27 +4,36 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.GravityCompat
+import androidx.core.view.forEach
+import androidx.lifecycle.Observer
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.configuration.SettingsActivity
-import com.example.shareyourride.login.LoginActivity
 import com.example.shareyourride.permissions.PermissionsManager
-import com.example.shareyourride.viewmodels.login.UserManagementViewModel
-import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
-import com.google.android.material.navigation.NavigationView
-import kotlinx.android.synthetic.main.activity_main.*
+import com.example.shareyourride.services.inclination.InclinationService
+import com.example.shareyourride.services.location.LocationService
+import com.example.shareyourride.services.session.SessionService
+import com.example.shareyourride.services.session.SessionState
+import com.example.shareyourride.services.video.VideoService
+import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
+import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
+import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
+import com.example.shareyourride.wifi.WifiViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.android.synthetic.main.content_main.*
 
-class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
@@ -32,46 +41,53 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
 
     //region view models
     /**
-     * View model that handles the user information, hides the login provider
-     * in this layer
+     * View model that manage setting changes
      */
-    private val userManagementViewModel: UserManagementViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
-    private val videoViewModel: VideoViewModel by viewModels()
+    /**
+     * View model that holds the current state of the wifi and can be used to command the WIFI system
+     */
+    private val wifiViewModel: WifiViewModel by viewModels()
+
+    /**
+     * View model that holds the current location and the state of the GPS state
+     */
+    private val locationViewModel: LocationViewModel by viewModels()
+
+    /**
+     * View model that holds the current location and the state of the GPS state
+     */
+    private val inclination: InclinationViewModel by viewModels()
+
+    /**
+     * View model that manages session changes, holds the current state of the session and all commands
+     * to manage the user session
+     */
+    private val sessionViewModel: SessionViewModel by viewModels()
     //endregion
 
-    private fun configureToolBar()
-    {
-        try
-        {
-            val toolbar: Toolbar = findViewById(R.id.toolbar)
-            toolbar.title=""
-            setSupportActionBar(toolbar)
-
-            supportActionBar?.setDisplayShowTitleEnabled(true)
-            supportActionBar?.setDisplayUseLogoEnabled(true)
-
-            val toggle = ActionBarDrawerToggle(
-                    this, main_drawer_layout, toolbar, R.string.app_name, R.string.close)
-
-            main_drawer_layout.addDrawerListener(toggle)
-            toggle.syncState()
-        }
-        catch (ex: java.lang.Exception)
-        {
-            Log.e("Main Activity", "SYR -> Unable to configure the tool bar : ${ex.message}")
-            ex.printStackTrace()
-        }
-    }
+    //region navigation controls
+    /**
+     *  Control related to the navigation between fragments
+     */
+    private var navController: NavController? = null
+    //endregion
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        initializeServices()
         super.onCreate(savedInstanceState)
+        setTheme(R.style.NoActionBar)
         setContentView(R.layout.activity_main)
 
         initializePermissions()
-        configureToolBar()
 
-        main_nav_view.setNavigationItemSelectedListener(this)
+        bottom_navigation.setOnNavigationItemSelectedListener(this)
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+
+        configureLocationChanges()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -83,6 +99,59 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
+    private fun configureLocationChanges()
+    {
+        try
+        {
+            sessionViewModel.sessionData.observe(this, Observer {sessionData ->
+                when (sessionData.state)
+                {
+                    SessionState.CalibratingSensors ->
+                    {
+                        disableNavigationControls()
+                        navController?.navigate(R.id.nav_gyroscope_calibration_fragment)
+                    }
+                    SessionState.SensorsCalibrated ->
+                    {
+                        disableNavigationControls()
+                        navController?.navigate(R.id.nav_gyroscope_calibration_fragment)
+                    }
+                    SessionState.Finished ->
+                    {
+                        enableNavigationControls()
+                        navController?.navigate(R.id.nav_activity_finished)
+                    }
+                    SessionState.Started ->
+                    {
+                        disableNavigationControls()
+                        navController?.navigate(R.id.nav_activity_started_fragment)
+                    }
+                    SessionState.Stopped ->
+                    {
+                        enableNavigationControls()
+                        navController?.navigate(R.id.nav_home_fragment)
+                    }
+                    SessionState.CreatingVideo ->
+                    {
+                        disableNavigationControls()
+                        navController?.navigate(R.id.nav_activity_finished)
+                    }
+                    else ->
+                    {
+                        Log.e("MainActivity", "SYR -> Unable to process session state ${sessionData.state}, not supported")
+                    }
+                }
+            })
+        }
+        catch(ex: Exception)
+        {
+            Log.e("HomeFragment", "SYR -> Unable to create location observers because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+
+    //region navigation control
     /**
      * Handles the click of an element of the navigation menu
      * @param item: The pressed item
@@ -101,12 +170,6 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
                 R.id.nav_gallery_button -> {
                     processGalleryButton()
                 }
-                R.id.nav_logout_button -> {
-                    processLogOutButton()
-                }
-                R.id.nav_delete_account -> {
-                    processDeleteAccountButton()
-                }
             }
         }
         catch (ex: Exception)
@@ -114,8 +177,6 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
             Log.e("MainActivity ", "SYR -> Unable to process navigation item selected ${ex.message}")
             ex.printStackTrace()
         }
-
-        main_drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -132,9 +193,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
     private fun processHomeButton()
     {
         Log.i("MainActivity","SYR -> User has press the home button")
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        navController.navigate(R.id.nav_home_fragment)
+        navController?.navigate(R.id.nav_home_fragment)
     }
 
     /**
@@ -147,38 +206,16 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         val navController = navHostFragment.navController
         navController.navigate(R.id.nav_gallery_fragment)
     }
+    //endregion
 
+    //region private function
     /**
-     * logout the current session and show the login activity
-     */
-    private fun processLogOutButton()
-    {
-        Log.i("MainActivity","SYR -> User has press the log out button")
-        userManagementViewModel.signOut()
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finishActivity(0)
-    }
-
-    /**
-     * Remove the user account and show the login activity
-     */
-    private fun processDeleteAccountButton()
-    {
-        Log.i("MainActivity","SYR -> User has press the delete account button")
-        userManagementViewModel.delete()
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finishActivity(0)
-    }
-
-    /*
-Fill the list of permissions to request and check of
-*/
+     * Fill the list of permissions to request and check of
+     * */
     private fun initializePermissions()
     {
         permissions.addFunctionality(Manifest.permission.ACCESS_FINE_LOCATION)
-        permissions.addFunctionality(Manifest.permission.ACCESS_COARSE_LOCATION.toString())
+        permissions.addFunctionality(Manifest.permission.ACCESS_COARSE_LOCATION)
         permissions.addFunctionality(Manifest.permission.CHANGE_WIFI_STATE)
         permissions.addFunctionality(Manifest.permission.ACCESS_WIFI_STATE)
         permissions.addFunctionality(Manifest.permission.CHANGE_NETWORK_STATE)
@@ -189,5 +226,124 @@ Fill the list of permissions to request and check of
 
         permissions.checkPermissions()
     }
+
+    /**
+     * Starts app services
+     */
+    private fun initializeServices()
+    {
+        try {
+            Log.i("MainActivity", "SYR -> Starting services")
+            val li = Intent(this, LocationService::class.java)
+            startService(li)
+
+            val si = Intent(this, SessionService::class.java)
+            startService(si)
+
+            val ii = Intent(this, InclinationService::class.java)
+            startService(ii)
+
+            val vi = Intent(this, VideoService::class.java)
+            startService(vi)
+        }
+        catch(ex: Exception)
+        {
+            Log.e("MainActivity", "SYR -> Unable to initialize services because: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+    }
+
+    /**
+     * Gets the key down event, just for navigation back actions
+     */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            //do your stuff
+            return navigateBackDispatcher()
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    /**
+     * handles the back button event
+     *
+     * @return true if the back button event has to be managed by the system
+     *         false if the back button event has been managed by the app
+     */
+    private fun navigateBackDispatcher(): Boolean
+    {
+        var mustBeManagedByTheSystem = false
+        try
+        {
+            when (sessionViewModel.sessionData.value?.state) {
+                SessionState.Unknown -> {
+                    //do nothing, let the system do its magic
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Unknown state, let the system to rule the navigation ")
+                    mustBeManagedByTheSystem = true
+                }
+                SessionState.Stopped -> {
+                    //do nothing, let the system do its magic
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Stopped state, let the system to rule the navigation ")
+                    mustBeManagedByTheSystem = true
+                }
+                SessionState.CalibratingSensors -> {
+                    //Navigate to home
+                    sessionViewModel.cancelSession()
+                    navController?.navigate(R.id.nav_home_fragment)
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CalibrationSensors state, navigate to home fragment ")
+                }
+                SessionState.SensorsCalibrated -> {
+                    //Navigate to home
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in SensorsCalibrated state, navigate to home fragment ")
+                    sessionViewModel.cancelSession()
+                    navController?.navigate(R.id.nav_home_fragment)
+
+                }
+                SessionState.Started -> {
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CreatingVideo state, show the fisnish activity dialog")
+                    sessionViewModel.showFinishActivityDialog(this)
+                }
+                SessionState.CreatingVideo -> {
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CreatingVideo state, block the action ")
+                    Toast.makeText(applicationContext, getString(R.string.creating_video_notification), Toast.LENGTH_SHORT).show()
+                }
+                SessionState.Finished -> {
+                    //Navigate to home
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Finished state, navigate to home fragment")
+                    navController?.navigate(R.id.nav_home_fragment)
+                }
+                null -> {
+                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Finished state, navigate to home fragment")
+                }
+            }
+        }
+        catch(ex: Exception)
+        {
+            Log.e("MainActivity", "SYR -> Unable to handle back button action because: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        return mustBeManagedByTheSystem
+    }
+
+    /**
+     * Disable buttons of the tool bar
+     * This buttons only must be enabled when the session is in state stopped or finished
+     */
+    private fun disableNavigationControls()
+    {
+        bottom_navigation.menu.forEach { it.isEnabled = false }
+    }
+
+    /**
+     * Enable buttons of the tool bar
+     * This buttons only must be enabled when the session is in state stopped or finished
+     */
+    private fun enableNavigationControls()
+    {
+        bottom_navigation.menu.forEach { it.isEnabled = true }
+    }
+    //endregion
 
 }

@@ -13,11 +13,12 @@ import com.bvillarroya_creations.shareyourride.datamodel.data.*
  * Use the Room library
  */
 @Database(entities = [Session::class,
+    SessionTelemetry::class,
     Video::class,
     Location::class,
     Environment::class,
     Body::class,
-    Inclination::class], version = 7)
+    Inclination::class], version = 14)
 @TypeConverters(FloatArrayToStringConverter::class,IntArrayToStringConverter::class)
 abstract class ShareYourRideDatabase : RoomDatabase()
 {
@@ -26,6 +27,7 @@ abstract class ShareYourRideDatabase : RoomDatabase()
     }
 
     abstract fun sessionDao(): SessionDao
+    abstract fun sessionTelemetryDao(): SessionTelemetryDao
     abstract fun videoDao(): VideoDao
     abstract fun locationDao(): LocationDao
     abstract fun environmentDao(): EnvironmentDao

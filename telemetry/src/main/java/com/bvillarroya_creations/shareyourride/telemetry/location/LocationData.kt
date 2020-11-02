@@ -42,6 +42,19 @@ data class LocationData(
      * If this location does not have a bearing then 0.0 is set
      */
     val bearing: Float,
+
+    /**
+     * The inclination of the terrain expressed in percentage
+     */
+    val terrainInclination: Int,
+    /**
+     * The timeStamp when the frame is captured
+     */
+
+    /**
+     * The accumulated distance of the session
+     */
+    val distance: Long,
     /**
      * The timeStamp when the frame is captured
      */
@@ -52,6 +65,8 @@ data class LocationData(
         parcel.readDouble(),
         parcel.readFloat(),
         parcel.readFloat(),
+        parcel.readInt(),
+        parcel.readLong(),
         parcel.readLong()
     ) {
     }
@@ -62,6 +77,8 @@ data class LocationData(
         parcel.writeDouble(altitude)
         parcel.writeFloat(speed)
         parcel.writeFloat(bearing)
+        parcel.writeInt(terrainInclination)
+        parcel.writeLong(distance)
         parcel.writeLong(timeStamp)
     }
 

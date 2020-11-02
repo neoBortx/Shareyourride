@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit
  */
 class WifiConnectionManager(): BroadcastReceiver() {
 
-
-
     //region wifi service
     /**
      * Class to manage wifi service
@@ -49,8 +47,14 @@ class WifiConnectionManager(): BroadcastReceiver() {
      */
     private var suggestionsList: MutableList<WifiNetworkSuggestion> = mutableListOf()
 
+    /**
+     * The aoo context
+     */
     private var context: Context? = null
 
+    /**
+     * Callback called when the state of the connection has changed
+     */
     private var connectionCallback: ((WifiCallbackData) -> Unit)? = null
 
     /**
@@ -88,12 +92,9 @@ class WifiConnectionManager(): BroadcastReceiver() {
 
             val observable: Observable<Boolean>? = subject.debounce(5, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
             val subscribe = observable?.subscribe {
-
                 checkIfConnected()
             }
         }
-
-
     }
     /**
      * Configure the wifi connection
@@ -355,7 +356,8 @@ class WifiConnectionManager(): BroadcastReceiver() {
                     return
                 }
                 else -> {
-                    if (connectionCallback != null && wifiCommons != null) {
+                    if (connectionCallback != null && wifiCommons != null)
+                    {
                         Log.d("WifiConnectionManager", "SYR -> onReceive TYPE_WIFI event when connect")
                         //connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiDeviceStateEvent, wifiCommons!!.isWifiEnabled())) }
                     }

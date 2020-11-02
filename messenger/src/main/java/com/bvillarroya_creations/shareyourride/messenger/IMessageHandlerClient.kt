@@ -27,9 +27,10 @@ interface IMessageHandlerClient {
      * A handler with filter keyword only will send messages to handlers that contains at least
      * one similar keyword
      *
+     * @param name: The name of the handler, for login and debugging purposes
      * @param filterKeyWordList: the list of keyword used to filter messages and sent and receive time
      */
-    fun createMessageHandler(filterKeyWordList: List<String> = mutableListOf())
+    fun createMessageHandler(name: String, filterKeyWordList: List<String> = mutableListOf())
     {
         /**
          *  Weak reference of the message handler client.
@@ -39,7 +40,7 @@ interface IMessageHandlerClient {
          *  the activity or the view model can't be deleted although the view has been destroyed.
          */
         messageHandler = MessageHandler( WeakReference(this))
-        messageHandler.attachHandler(UUID.randomUUID().toString().hashCode(),filterKeyWordList)
+        messageHandler.attachHandler(UUID.randomUUID().toString().hashCode(),name, filterKeyWordList)
     }
 
     /**

@@ -21,9 +21,14 @@ class MessageHandler(private val messageClient: WeakReference<IMessageHandlerCli
 
     /**
      * The unique identifier of the message handler
-     * Use an integer to speed-up uperations
+     * Use an integer to speed-up operations
      */
     var handlerId: Int = 0
+
+    /**
+     * The name of the message handler
+     */
+    var handlerName: String = ""
 
     /**
      * List of keyword that are used to filter messages
@@ -44,11 +49,13 @@ class MessageHandler(private val messageClient: WeakReference<IMessageHandlerCli
      * one similar keyword
      *
      * @param id: The unique identifier of the message handler
+     * @param name: The name of the handler, for login and debugging purposes
      * @param filterKeyWordList: the list of keyword used to filter messages and sent and receive time
      */
-    internal fun attachHandler(id: Int, filterKeyWordList: List<String> = mutableListOf())
+    internal fun attachHandler(id: Int, name: String, filterKeyWordList: List<String> = mutableListOf())
     {
         handlerId = id
+        handlerName = name
 
         if (filterKeyWordList.any())
         {
@@ -72,17 +79,26 @@ class MessageHandler(private val messageClient: WeakReference<IMessageHandlerCli
             val messageBundleData = msg.data.getParcelable<MessageBundleData>(MessengerConstants.MessageDataKey)
             val messageKey = msg.data.getString(MessengerConstants.MessageTypeKey)
 
-            if(messageKey != null) {
-                messageClient.get()?.processMessage(MessageBundle(messageKey, messageBundleData))
+
+            if(messageKey != null)
+            {
+                if (messageBundleData != null)
+                {
+                    messageClient.get()?.processMessage(MessageBundle(messageKey, messageBundleData, ""))
+                }
+                else
+                {
+                    Log.e("MessageHandler", "SYR -> Unable to handle message from Messenger Queue because the message data is null")
+                }
             }
             else
             {
-                Log.e("SYR", "SYR -> Unable to handle message from Messenger Queue because the message type is null")
+                Log.e("MessageHandler", "SYR -> Unable to handle message from Messenger Queue because the message type is null")
             }
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to handle message ${ex.message}")
+            Log.e("MessageHandler", "SYR -> Unable to handle message ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -97,9 +113,11 @@ class MessageHandler(private val messageClient: WeakReference<IMessageHandlerCli
      */
     internal fun sendMessage(message: MessageBundle)
     {
-        try {
+        try
+        {
             val msg = Message()
             val bundle = Bundle()
+
             bundle.putString(MessengerConstants.MessageTypeKey,message.messageKey)
             bundle.putParcelable(MessengerConstants.MessageDataKey,message.messageData)
 
@@ -108,7 +126,7 @@ class MessageHandler(private val messageClient: WeakReference<IMessageHandlerCli
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to send message ${ex.message}")
+            Log.e("MessageHandler", "SYR -> Unable to send message ${ex.message}")
             ex.printStackTrace()
         }
     }

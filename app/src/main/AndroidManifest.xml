@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -25,44 +27,50 @@
             android:value="ocr" />
         <!-- To use multiple models: android:value="ocr,model2,model3" -->
 
-        <!--The login activity also show the splash screen -->
-        <activity android:name="com.example.shareyourride.login.LoginActivity"
-            android:theme="@style/SplashTheme"
-            android:noHistory="true">
+        <!--region services -->
+        <service
+            android:name="com.example.shareyourride.services.session.SessionService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name="com.example.shareyourride.services.inclination.InclinationService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name="com.example.shareyourride.services.location.LocationService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name="com.example.shareyourride.services.video.VideoService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+        <!--endregion-->
+
+        <!--The main activity also show the splash screen
+        current restriction only portrait mode supported-->
+        <activity
+            android:name="com.example.shareyourride.userplayground.MainActivity"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.example.shareyourride.userplayground.MainActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"/>
-
-        <activity
-            android:name="com.example.shareyourride.test.TestTabbedActivity"
-            android:label="@string/title_activity_test_tabbed"
-            android:theme="@style/AppTheme.NoActionBar" />
-
+        <!--current restriction only portrait mode supported-->
         <activity
             android:name="com.example.shareyourride.configuration.SettingsActivity"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_settings" />
-
-        <activity
-            android:name="com.example.shareyourride.test.TestActivity"
-            android:label="@string/title_activity_testctivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <!--<receiver
-            android:name="com.bvillarroya_creations.shareyourride.wifi.WifiConnectionManager"
-            android:enabled="true"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" > </action>
-                <action android:name="android.net.wifi.STATE_CHANGE" > </action>
-            </intent-filter>
-        </receiver>-->
     </application>
 
 </manifest>

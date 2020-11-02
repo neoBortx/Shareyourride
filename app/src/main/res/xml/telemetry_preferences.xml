@@ -5,8 +5,8 @@
         app:title="@string/activity_kind_label"
         app:useSimpleSummaryProvider="true"
         app:defaultValue="custom"
-        app:entries="@array/activity_kind_entries"
         app:entryValues="@array/activity_kind_values"
+        app:entries="@array/activity_kind_entries"
         />
 
     <SwitchPreference
@@ -30,6 +30,7 @@
         app:summaryOn="@string/enabled"
         app:enabled="false"/>
 
+    <!--
     <SwitchPreference
         app:key="@string/temperature_metric"
         app:title="@string/temperature"
@@ -56,7 +57,7 @@
         app:title="@string/heart_rate"
         app:summaryOff="@string/disabled"
         app:summaryOn="@string/enabled"
-        app:enabled="false"/>
+        app:enabled="false"/>-->
 
     <SwitchPreference
         app:key="@string/inclination_metric"
@@ -64,8 +65,13 @@
         app:enabled="false"/>
 
     <SwitchPreference
-        app:key="@string/altitude_metric"
-        app:title="@string/altitude"
+    app:key="@string/altitude_metric"
+    app:title="@string/altitude"
+    app:enabled="false"/>
+
+    <SwitchPreference
+        app:key="@string/distance_metric"
+        app:title="@string/distance"
         app:enabled="false"/>
 
 </PreferenceScreen>

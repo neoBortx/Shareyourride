@@ -10,7 +10,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.bvillarroya_creations.shareyourride"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -30,8 +30,7 @@ android {
 
     sourceSets {
         main {
-            res.srcDirs = ['src/main/res/layouts/test_activity',
-                           'src/main/res/layouts/settings',
+            res.srcDirs = ['src/main/res/layouts/settings',
                            'src/main/res/layouts/menu',
                            'src/main/res/layouts/userplayground',
                            'src/main/res/layouts/login',
@@ -56,16 +55,15 @@ android {
 dependencies {
     implementation project(path: ':Messenger')
     implementation project(path: ':messagesDefinition')
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
     implementation 'androidx.preference:preference:1.1.1'
     implementation project(path: ':wifi')
     implementation project(path: ':videoUtils')
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.navigation:navigation-fragment:2.3.0'
-    implementation 'androidx.navigation:navigation-ui:2.3.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    kapt 'com.android.databinding:compiler:3.1.4'
+
+    implementation 'androidx.fragment:fragment-ktx:1.2.5'
+
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -73,21 +71,48 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
-    implementation project(path: ':TelemetryViewModel')
+
+    //region navigation
+    //implementation 'androidx.navigation:navigation-fragment:2.3.1'
+    //implementation 'androidx.navigation:navigation-ui:2.3.1'
+    implementation "androidx.navigation:navigation-fragment-ktx:2.3.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.3.1"
+    implementation project(path: ':telemetry')
+    implementation project(path: ':datamodel')
+    //endregion
+
+    //region test
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    //endregion
 
-    //Firebase authentication integration
+    //region live data and  MVVM
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.2.0"
+
+    // optional - helpers for implementing LifecycleOwner in a Service
+    implementation "androidx.lifecycle:lifecycle-service:2.2.0"
+
+    // optional - ProcessLifecycleOwner provides a lifecycle for the whole application process
+    implementation "androidx.lifecycle:lifecycle-process:2.2.0"
+
+    kapt 'com.android.databinding:compiler:3.1.4'
+    //endregion
+
+    //region Firebase authentication integration
     implementation 'com.google.firebase:firebase-auth:19.4.0'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
     implementation 'com.facebook.android:facebook-android-sdk:5.0.0'
+    //endregion
 
-    //rx libraries, mostly to throttling operations
+    //region rx libraries, mostly to throttling operations
     implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    //endregion
+
 
     //Gives us text recognition https://developers.google.com/ml-kit/vision/text-recognition/android
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.1'

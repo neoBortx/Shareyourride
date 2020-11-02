@@ -2,6 +2,7 @@ package com.bvillarroya_creations.shareyourride.telemetry.location
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.os.Looper
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
@@ -12,6 +13,8 @@ import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryDa
 import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTopics
 import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTypes
 import com.google.android.gms.location.*
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 /**
@@ -40,6 +43,26 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
      * To request location updates
      */
     private var mLocationRequest: LocationRequest? = null
+
+    /**
+     * The last known longitude (to calculate terrain inclination and the distance)
+     */
+    private var lastLongitude: Double = 0.0
+
+    /**
+     * The last known latitude (to calculate terrain inclination and the distance)
+     */
+    private var lastLatitude: Double = 0.0
+
+    /**
+     *The last known altitude (to calculate terrain inclination and the distance)
+     */
+    private var lastAltitude: Double = 0.0
+
+    /**
+     * The distance of the activity in meters
+     */
+    private var accumulatedDistance: Long = 0
     //endregion
 
     //region IDataProvider
@@ -70,7 +93,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to configure to location provider ${ex.message}")
+            Log.e("LoctaionProvider", "SYR -> Unable to configure to location provider ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -85,6 +108,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
 
             if (mLocationRequest != null)
             {
+                clearValues()
                 createLocationCallback(callback)
                 mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback,Looper.getMainLooper())
             }
@@ -101,54 +125,12 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
     }
 
     /**
-     * Create the call back function called by the location services to process location updates
-     * This call callback function will forward the location data to upper layers
-     *
-     * @param callback: Function that is going to process location updates
-     */
-    private fun createLocationCallback(callback: (ITelemetryData) -> Unit)
-    {
-        try {
-            mLocationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult?) {
-
-                    locationResult ?: return
-                    for (location in locationResult.locations) {
-
-                        val locationData = LocationData(
-                            location.latitude,
-                            location.longitude,
-                            location.altitude,
-                            location.speed,
-                            location.bearing,
-                            location.time
-                        )
-
-                        //Log.d("SYR","SYR -> Location obtained lat: ${location.latitude} lon: ${location.longitude} " +
-                        //        "altitude: ${location.altitude} speed: ${location.speed} bearing ${location.bearing}")
-
-                        callback(locationData)
-
-                        val message = MessageBundle(TelemetryMessageTypes.LOCATION_DATA, locationData)
-
-                        sendMessage(message)
-                    }
-                }
-            }
-        }
-        catch (ex: Exception)
-        {
-            Log.e("SYR", "SYR -> Unable to create location callback: ${ex.message}")
-            ex.printStackTrace()
-        }
-
-    }
-
-    /**
      * Remove the handler of the location updates
      */
     override fun stopProvider() {
-        try {
+        try
+        {
+            clearValues()
             mFusedLocationClient.removeLocationUpdates(mLocationCallback)
         }
         catch (ex: Exception)
@@ -171,7 +153,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
 
     //region IMessageHandlerClient implementation
     init {
-        this.createMessageHandler( listOf<String>(TelemetryMessageTopics.TELEMETRY_DATA))
+        this.createMessageHandler( "LocationProvider", listOf<String>(TelemetryMessageTopics.TELEMETRY_DATA))
     }
 
     override lateinit var messageHandler: MessageHandler
@@ -180,7 +162,131 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
      * No message required
      */
     override fun processMessage(msg: MessageBundle) {
-        Log.d("SYR", "SYR -> Skipping message")
+        Log.d("LocationProvider", "SYR -> Skipping message")
+    }
+    //endregion
+
+    //region private functions
+    /**
+     * Create the call back function called by the location services to process location updates
+     * This call callback function will forward the location data to upper layers
+     *
+     * @param callback: Function that is going to process location updates
+     */
+    private fun createLocationCallback(callback: (ITelemetryData) -> Unit)
+    {
+        try {
+            mLocationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult?)
+                {
+                    locationResult ?: return
+                    for (location in locationResult.locations) {
+
+                        val (distance , terrainInclination) = calculateTerrainInclination(location.longitude, location.latitude, location.altitude)
+
+                        accumulatedDistance += distance
+
+                        val locationData = LocationData(
+                                location.latitude,
+                                location.longitude,
+                                location.altitude,
+                                location.speed,
+                                location.bearing,
+                                terrainInclination,
+                                accumulatedDistance,
+                                location.time
+                        )
+
+                        //Log.d("SYR","SYR -> Location obtained lat: ${location.latitude} lon: ${location.longitude} " +
+                        //        "altitude: ${location.altitude} speed: ${location.speed} bearing ${location.bearing}")
+
+                        callback(locationData)
+
+                        val message = MessageBundle(TelemetryMessageTypes.LOCATION_DATA, locationData,TelemetryMessageTopics.TELEMETRY_DATA)
+
+                        sendMessage(message)
+                    }
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("LocationProvider", "SYR -> Unable to create location callback: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+    }
+
+    /**
+     * Calculates the inclination of the slope of the terrain in percentage
+     * To do that, use the last known point and compare the altitude and the distance
+     * between these two points. Then calculate in percentage the inclination.
+     *
+     * @param newlong: The new longitude obtained
+     * @param newLat: The new Latitude obtained
+     * @param newAlt: The new Altitude obtained
+     *
+     * @return Pair with the distance (first value) and inclination percentage (second value)
+     */
+    private fun calculateTerrainInclination(newlong: Double, newLat: Double, newAlt: Double): Pair<Long,Int>
+    {
+        var percentage = 0
+        var distance: Long = 0
+
+        try
+        {
+            if (newlong == 0.0 || newLat == 0.0 || newAlt == 0.0)
+            {
+                Log.e("LocationProvider", "SYR -> Skipping terrain inclination calculation because new data is incomplete, long = $newlong, lat = $newLat, alt = $newAlt")
+                return Pair(distance, percentage)
+            }
+            else if (lastLongitude != 0.0 && lastLatitude != 0.0 && lastAltitude != 0.0)
+            {
+                val oldLocation = Location("oldLocation")
+                oldLocation.latitude = lastLatitude
+                oldLocation.longitude = lastLongitude
+                oldLocation.altitude = lastAltitude
+
+                val newLocation = Location("newLocation")
+                oldLocation.latitude = newLat
+                oldLocation.longitude = newlong
+                oldLocation.altitude = newAlt
+
+                //Get the distance of two points in meters in the X and Y axis
+                val distanceX: Double = oldLocation.distanceTo(newLocation).toDouble()
+                val distanceY = newAlt - lastAltitude
+
+                //Get the non decimal part of the number
+                percentage = (((distanceY / distanceX) * 100).toInt())
+
+                //Pythagoras  theorem to acquire the distance between two points
+                distance = sqrt(distanceX.pow(2.0) + distanceY.pow(2.0)).toLong()
+            }
+            else
+            {
+                Log.d("LocationProvider", "SYR -> Skipping terrain inclination calculation because we don't have all values to calculate it,"
+                        + " long = $lastLongitude, lat = $lastAltitude, alt = $lastLatitude")
+            }
+
+            lastLongitude = newlong
+            lastLatitude = newLat
+            lastAltitude = newAlt
+        }
+        catch(ex: Exception)
+        {
+            Log.e("LocationProvider", "SYR -> Unable to terrain inclination because: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        return Pair(distance, percentage)
+    }
+
+    private fun clearValues()
+    {
+        accumulatedDistance = 0
+        lastLatitude = 0.0
+        lastLatitude = 0.0
+        lastAltitude = 0.0
     }
     //endregion
 

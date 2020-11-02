@@ -23,18 +23,25 @@ data class InclinationData(
      */
     val acceleration: FloatArray,
     /**
-     * Rotation angles of the device, in degrees
-     * [0]:Pitch, angle of rotation about the x axis.
-     * [1]:Roll, angle of rotation about the y axis
-     * [2]:Azimuth, angle of rotation about the -z axis.
+     * Azimuth, angle of rotation about the -z axis.
      */
-    val orientationVector: IntArray,
+    val azimuth: Int,
+    /**
+     * Pitch, angle of rotation about the x axis.
+     */
+    val pitch: Int,
+    /**
+     * Roll, angle of rotation about the y axis
+     */
+    val roll: Int,
 
     val timeStamp: Long) : ITelemetryData {
     constructor(parcel: Parcel) : this(
         parcel.createFloatArray()!!,
         parcel.createFloatArray()!!,
-        parcel.createIntArray()!!,
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
         parcel.readLong()
     ) {
     }
@@ -42,7 +49,9 @@ data class InclinationData(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeFloatArray(gravity)
         parcel.writeFloatArray(acceleration)
-        parcel.writeIntArray(orientationVector)
+        parcel.writeInt(pitch)
+        parcel.writeInt(roll)
+        parcel.writeInt(azimuth)
         parcel.writeLong(timeStamp)
     }
 
@@ -58,7 +67,9 @@ data class InclinationData(
 
         if (!gravity.contentEquals(other.gravity)) return false
         if (!acceleration.contentEquals(other.acceleration)) return false
-        if (!orientationVector.contentEquals(other.orientationVector)) return false
+        if (pitch != other.pitch) return false
+        if (roll != other.pitch) return false
+        if (azimuth != other.pitch) return false
         if (timeStamp != other.timeStamp) return false
 
         return true
@@ -67,7 +78,9 @@ data class InclinationData(
     override fun hashCode(): Int {
         var result = gravity.contentHashCode()
         result = 31 * result + acceleration.contentHashCode()
-        result = 31 * result + orientationVector.contentHashCode()
+        result = 31 * result + pitch.hashCode()
+        result = 31 * result + roll.hashCode()
+        result = 31 * result + azimuth.hashCode()
         result = 31 * result + timeStamp.hashCode()
         return result
     }

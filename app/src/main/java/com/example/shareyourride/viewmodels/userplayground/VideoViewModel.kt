@@ -72,7 +72,7 @@ class VideoViewModel(application: Application) : AndroidViewModel(application) {
         //}
         /*else
         {
-            Log.e("VideoViewModel", "SYR -> NO supported video protocol $protocol")
+            Log.e("VideoService", "SYR -> NO supported video protocol $protocol")
         }*/
     }
 
@@ -87,15 +87,17 @@ class VideoViewModel(application: Application) : AndroidViewModel(application) {
         val ip = setting.getStringOption(SettingPreferencesIds.CameraIp)
         val path = setting.getStringOption(SettingPreferencesIds.CameraPath)
         val port: String = setting.getStringOption(SettingPreferencesIds.CameraPort)
-        val videoStream = if (port != "0")
-        {
-            "rtsp" +"://"+ ip+":"+port.toString()+"/"+ path
-        }
-        else {
-            "rtsp" +"://"+ ip+"/"+ path
-        }
 
-        videoClient.configureClient(RemoteVideoConfiguration(textureView, videoStream))
+        if (!port.isNullOrEmpty() && !path.isNullOrEmpty()) {
+            val videoStream = if (port != "0") {
+                "rtsp" + "://" + ip + ":" + port.toString() + "/" + path
+            }
+            else {
+                "rtsp" + "://" + ip + "/" + path
+            }
+
+            videoClient.configureClient(RemoteVideoConfiguration(textureView, videoStream))
+        }
     }
 
     /**

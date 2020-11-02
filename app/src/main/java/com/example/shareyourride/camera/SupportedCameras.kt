@@ -16,8 +16,8 @@ class SupportedCameras(context: Context)
 
     companion object
     {
-        val customId = "custom"
-        val customName = "Custom"
+        const val customId = "custom"
+        const val customName = "Custom"
     }
 
     /**

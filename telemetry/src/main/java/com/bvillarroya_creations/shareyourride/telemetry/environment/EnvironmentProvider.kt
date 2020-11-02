@@ -166,7 +166,7 @@ class EnvironmentProvider(val context: Context): IDataProvider, IMessageHandlerC
         /**
          * Subscribe the class to telemetry data message
          */
-        this.createMessageHandler( listOf<String>(TelemetryMessageTopics.TELEMETRY_DATA))
+        this.createMessageHandler( "EnvironmentProvider", listOf<String>(TelemetryMessageTopics.TELEMETRY_DATA))
     }
 
     /**

@@ -19,8 +19,8 @@ class ShareYourRideRepository {
         }
 
         //region get data
-        /*
-            Get the full list of sessions
+        /**
+         * Get the full list of sessions
          */
         suspend fun getSessions(): List<Session> {
             return withContext(Dispatchers.Default) {
@@ -28,8 +28,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Get teh list of bodies of the given session and the video frame
+        /**
+         * Get teh list of bodies of the given session and the video frame
          */
         suspend fun getBody(sessionId: Int, videoId: Int): List<Body> {
             return withContext(Dispatchers.Default) {
@@ -37,8 +37,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Get teh list of bodies of the given session and the video frame
+        /**
+         * Get teh list of bodies of the given session and the video frame
         */
         suspend fun getEnvironments(sessionId: Int, videoId: Int): List<Environment> {
             return withContext(Dispatchers.Default) {
@@ -46,17 +46,17 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Get teh list of bodies of the given session and the video frame
+        /**
+         * Get teh list of bodies of the given session and the video frame
         */
         suspend fun getLocations(sessionId: Int, videoId: Int): List<Location> {
             return withContext(Dispatchers.Default) {
-                DataBaseManager.getLoctaions(sessionId, videoId)
+                DataBaseManager.getLocations(sessionId, videoId)
             }
         }
 
-        /*
-            Get teh list of bodies of the given session and the video frame
+        /**
+         *  Get teh list of bodies of the given session and the video frame
         */
         suspend fun getInclinations(sessionId: Int, videoId: Int): List<Inclination> {
             return withContext(Dispatchers.Default) {
@@ -64,8 +64,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Get teh list of bodies of the given session and the video frame
+        /**
+         * Get teh list of bodies of the given session and the video frame
         */
         suspend fun getVideo(sessionId: Int, videoId: Long): Video? {
             return withContext(Dispatchers.Default) {
@@ -110,8 +110,8 @@ class ShareYourRideRepository {
         }
         //endregion
 
-        /*
-            Insert a given video frame in the data base
+        /**
+         * Insert a given video frame in the data base
         */
         suspend fun insertVideo(video: Video) {
             return GlobalScope.async {
@@ -119,8 +119,8 @@ class ShareYourRideRepository {
             }.await()
         }
 
-        /*
-            Insert a given session in the data base
+        /**
+         * Insert a given session in the data base
          */
         suspend fun insertbody(body: Body) {
             return withContext(Dispatchers.Default) {
@@ -128,8 +128,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Insert a given session in the data base
+        /**
+         * Insert a given session in the data base
          */
         suspend fun insertEnvironment(environment: Environment) {
             return withContext(Dispatchers.Default) {
@@ -137,8 +137,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Insert a given session in the data base
+        /**
+         * Insert a given session in the data base
          */
         suspend fun insertInclination(inclination: Inclination) {
             return withContext(Dispatchers.Default) {
@@ -146,8 +146,8 @@ class ShareYourRideRepository {
             }
         }
 
-        /*
-            Insert a given session in the data base
+        /**
+         * Insert a given session in the data base
          */
         suspend fun insertLocation(location: Location) {
             return withContext(Dispatchers.Default) {

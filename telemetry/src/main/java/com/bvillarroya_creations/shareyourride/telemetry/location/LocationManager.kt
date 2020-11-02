@@ -37,11 +37,11 @@ class LocationManager(context: Context) : ClientManager(context) {
         {
 
             if ( mLocationManager!!.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-                providerReady.postValue(true)
+                providerReady?.postValue(true)
             }
             else
             {
-                providerReady.postValue(false)
+                providerReady?.postValue(false)
             }
 
             Log.i("LocationManager", "SYR -> Creating  mGnssStatusCallback")
@@ -55,13 +55,13 @@ class LocationManager(context: Context) : ClientManager(context) {
                 override fun onStarted()
                 {
                     Log.i("LocationManager", "SYR -> GPS started")
-                    providerReady.postValue(true)
+                    providerReady?.postValue(true)
                 }
 
                 override fun onStopped()
                 {
                     Log.d("LocationManager", "SYR ->  GPS stopped")
-                    providerReady.postValue(false)
+                    providerReady?.postValue(false)
                 }
 
                 override fun onSatelliteStatusChanged(status: GnssStatus)
@@ -85,10 +85,10 @@ class LocationManager(context: Context) : ClientManager(context) {
     override fun onReceive(context: Context?, intent: Intent?)
     {
         if (mLocationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            providerReady.postValue(true)
+            providerReady?.postValue(true)
         }
         else {
-            providerReady.postValue(false)
+            providerReady?.postValue(false)
             Toast.makeText(context, context?.getString(R.string.switch_on_wifi), Toast.LENGTH_LONG).show()
         }
     }

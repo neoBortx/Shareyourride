@@ -38,6 +38,7 @@ enum class SettingPreferencesIds{
     HeartRateMetric,
     InclinationMetric,
     AltitudeMetric,
+    DistanceMetric,
 
     /**
      * Metric Ids
@@ -63,10 +64,10 @@ enum class SettingPreferencesIds{
 class SettingPreferencesGetter(context: Context) {
     private var idToString: HashMap<SettingPreferencesIds, String> = HashMap()
 
-    init {
-        try {
-
-
+    init
+    {
+        try
+        {
             idToString[SettingPreferencesIds.CameraId] = context.getString(R.string.camera_id)
             idToString[SettingPreferencesIds.CameraName] = context.getString(R.string.camera_name)
             idToString[SettingPreferencesIds.CameraSsidName] = context.getString(R.string.camera_ssidName)
@@ -87,7 +88,7 @@ class SettingPreferencesGetter(context: Context) {
             idToString[SettingPreferencesIds.HeartRateMetric] = context.getString(R.string.heart_rate_metric)
             idToString[SettingPreferencesIds.InclinationMetric] = context.getString(R.string.inclination_metric)
             idToString[SettingPreferencesIds.AltitudeMetric] = context.getString(R.string.altitude_metric)
-
+            idToString[SettingPreferencesIds.DistanceMetric] = context.getString(R.string.distance_metric)
 
             idToString[SettingPreferencesIds.UnitSystem] = context.getString(R.string.unit_system)
             idToString[SettingPreferencesIds.SpeedUnit] = context.getString(R.string.speed_unit)
@@ -205,8 +206,15 @@ class SettingPreferencesGetter(context: Context) {
     fun checkIfIdIsManaged(id: String): Boolean
     {
         return try {
-            val preferenceId = SettingPreferencesIds.valueOf(id)
-            idToString.containsKey(preferenceId)
+            if (idToString.containsValue(id))
+            {
+                true
+            }
+            else
+            {
+                Log.e("SettingsPreferencesGetter", "SYR -> Configuration value $id not supported")
+                false
+            }
         }
         catch (ex: java.lang.Exception) {
             false

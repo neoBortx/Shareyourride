@@ -35,7 +35,7 @@ abstract class ClientManager(protected val context: Context): BroadcastReceiver(
     /**
      * Flag that points if the provider is ready
      */
-    override var providerReady: MutableLiveData<Boolean> = MutableLiveData()
+    override var providerReady: MutableLiveData<Boolean>? = MutableLiveData()
     //endregion
 
     //region telemetry data handler
@@ -84,7 +84,8 @@ abstract class ClientManager(protected val context: Context): BroadcastReceiver(
     /**
      * Start the provider of the data provider
      */
-    override fun startAcquiringData() {
+    override fun startAcquiringData()
+    {
         Log.d("ClientManager", "Start AcquiringData")
         if (mDataProvider != null) {
             mDataProvider?.configureProvider()

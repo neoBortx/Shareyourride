@@ -3,16 +3,16 @@ package com.bvillarroya_creations.shareyourride.datamodel.data
 import androidx.room.*
 import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 
-/*
-    Store the information of the Location of the video has taken
-    Each Location data belongs to a session and a video frame
+/**
+ * Store the information of the Location of the video has taken
+ * Each Location data belongs to a session and a video fr
  */
 @Entity(tableName = "Location")
 data class Location(
 
-    /*
-        Row unique identifier
-        Contains the session id and the frame id
+    /**
+     * Row unique identifier
+     * Contains the session id and the frame id
      */
     @PrimaryKey
     @Embedded override val id: TelemetryId = TelemetryId("",0),
@@ -50,5 +50,15 @@ data class Location(
      *
      * If this location does not have a bearing then 0.0 is set
      */
-    val bearing: Float = 0F
+    val bearing: Float = 0F,
+
+    /**
+     * The inclination of the terrain in degrees
+     */
+    val terrainInclination: Int = 0,
+
+    /**
+     * The accumulated distance of the session in meters
+     */
+    val distance: Long = 0
 ): IDataBaseTelemetry

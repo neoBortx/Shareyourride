@@ -32,17 +32,23 @@ class MessageBundle ()
      *
      * @param key: the type of message
      * @param data: the content to send
-     * @param filter: keyword to send this message to handlers that are listening to this
+     * @param filter: keyword to send this message to clients that are listening to this
      * this kind of messages
      */
-    constructor(key: String, data: Any?, filter: String = "") : this() {
+    constructor(key: String, data: Any?, filter: String) : this() {
         messageKey = key
+        messageData = MessageBundleData()
+        messageFilter = filter
+
         if (data != null)
         {
-            messageData = MessageBundleData()
             messageData.type = data::class
-            messageFilter = filter
             messageData.data = data
+        }
+        else
+        {
+            messageData.type = String::class
+            messageData.data = ""
         }
     }
 
@@ -55,12 +61,9 @@ class MessageBundle ()
      * this kind of messages
      *
      */
-    constructor(key: String, data: MessageBundleData?, filter: String = "") : this() {
+    constructor(key: String, data: MessageBundleData, filter: String) : this() {
         messageKey = key
         messageFilter = filter
-        if (data != null)
-        {
-            messageData = data
-        }
+        messageData = data
     }
 }

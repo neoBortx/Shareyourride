@@ -9,6 +9,7 @@ import androidx.preference.PreferenceManager
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.configuration.SettingPreferencesIds
+import com.example.shareyourride.services.session.TelemetryType
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
@@ -29,16 +30,16 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
     private val subject: BehaviorSubject<Boolean> = BehaviorSubject.create()
     //region mutable live data
     /**
-     * Camera Ids
+     * Camera properties
      */
-    val cameraId = MutableLiveData<String>()
-    val cameraName = MutableLiveData<String>()
-    val cameraSsidName = MutableLiveData<String>()
-    val cameraConnectionType = MutableLiveData<String>()
-    val cameraPassword = MutableLiveData<String>()
-    val cameraIp = MutableLiveData<String>()
-    val cameraProtocol = MutableLiveData<String>()
-    val cameraPath = MutableLiveData<String>()
+    var cameraId = ""
+    var cameraName = ""
+    var cameraSsidName = ""
+    var cameraConnectionType = ""
+    var cameraPassword = ""
+    var cameraIp = ""
+    var cameraProtocol = ""
+    var cameraPath = ""
 
     /**
      * This is a flag used to control the wifi camera changes that a camera client must observer
@@ -46,37 +47,44 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
     val cameraConfigChangedFlag = MutableLiveData<Boolean>()
 
     /**
-     * Activity Ids
+     * Activity properties
      */
-    val activityKind = MutableLiveData<String>()
-    val activityName = MutableLiveData<String>()
-    val speedMetric = MutableLiveData<Boolean>()
-    val gforceMetric = MutableLiveData<Boolean>()
-    val leanAngleMetric = MutableLiveData<Boolean>()
-    val temperatureMetric = MutableLiveData<Boolean>()
-    val windMetric = MutableLiveData<Boolean>()
-    val pressureMetric = MutableLiveData<Boolean>()
-    val heartRateMetric = MutableLiveData<Boolean>()
-    val inclinationMetric = MutableLiveData<Boolean>()
-    val altitudeMetric = MutableLiveData<Boolean>()
+    var activityKind = ""
+    var activityName = ""
+    var speedMetric = false
+    var gforceMetric = false
+    var leanAngleMetric = false
+    var inclinationMetric = false
+    var altitudeMetric = false
+    var distanceMetric = false
+
+    /**
+     * List of configured activities
+     */
+    val telemetryList  = mutableListOf<TelemetryType>()
+
+
+
+    /**
+     * This is a flag used to control the activity changes that a camera client must observer
+     */
+    val activityDataChangedFlag = MutableLiveData<Boolean>()
 
     /**
      * Metric Ids
      */
-    val unitSystem = MutableLiveData<String>()
-    val speedUnit = MutableLiveData<String>()
-    val temperatureUnit = MutableLiveData<String>()
-    val windSpeedUnit = MutableLiveData<String>()
+    var unitSystem = ""
 
     /**
-     * User params
-     */
-    val profileImage = MutableLiveData<String>()
-    val profileName = MutableLiveData<String>()
-
-    val custom = MutableLiveData<String>()
-
-    val configuredTelemetryList = MutableLiveData<List<String>>()
+     * For future use
+     *
+    private var temperatureMetric = false
+    private var windMetric = false
+    private var pressureMetric = false
+    private var speedUnit = ""
+    private var temperatureUnit = ""
+    private var windSpeedUnit = ""
+    */
     //endregion
 
     init {
@@ -92,8 +100,9 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
             }
         }
 
-        val observable: Observable<Boolean>? = subject.debounce(5, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
-        val subscribe = observable?.subscribe {
+        //Debounce change of the configuration in order to minimize events to upper layers
+        val observable: Observable<Boolean>? = subject.debounce(1, TimeUnit.SECONDS)?.observeOn(AndroidSchedulers.mainThread())
+        observable?.subscribe {
             composePreferences()
         }
 
@@ -124,60 +133,49 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
      */
     private fun composePreferences()
     {
-        /**
-         * Camera Ids
-         */
-         cameraId.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraId)
-         cameraName.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraName)
-         cameraSsidName.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraSsidName)
-         cameraConnectionType.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraConnectionType)
-         cameraPassword.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraPassword)
-         cameraIp.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraIp)
-         cameraProtocol.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraProtocol)
-         cameraPath.value = settingsGetter.getStringOption(SettingPreferencesIds.CameraPath)
-        cameraConfigChangedFlag.value = true
+        //Camera Ids
+        cameraId             = settingsGetter.getStringOption(SettingPreferencesIds.CameraId)
+        cameraName           = settingsGetter.getStringOption(SettingPreferencesIds.CameraName)
+        cameraSsidName       = settingsGetter.getStringOption(SettingPreferencesIds.CameraSsidName)
+        cameraConnectionType = settingsGetter.getStringOption(SettingPreferencesIds.CameraConnectionType)
+        cameraPassword       = settingsGetter.getStringOption(SettingPreferencesIds.CameraPassword)
+        cameraIp             = settingsGetter.getStringOption(SettingPreferencesIds.CameraIp)
+        cameraProtocol       = settingsGetter.getStringOption(SettingPreferencesIds.CameraProtocol)
+        cameraPath           = settingsGetter.getStringOption(SettingPreferencesIds.CameraPath)
+        //Activity Ids
+        activityKind         = settingsGetter.getStringOption(SettingPreferencesIds.ActivityKind)
+        speedMetric          = settingsGetter.getBooleanOption(SettingPreferencesIds.SpeedMetric)
+        gforceMetric         = settingsGetter.getBooleanOption(SettingPreferencesIds.GforceMetric)
+        leanAngleMetric      = settingsGetter.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)
+        inclinationMetric    = settingsGetter.getBooleanOption(SettingPreferencesIds.InclinationMetric)
+        altitudeMetric       = settingsGetter.getBooleanOption(SettingPreferencesIds.AltitudeMetric)
+        distanceMetric       = settingsGetter.getBooleanOption(SettingPreferencesIds.DistanceMetric)
+        //Metric Ids
+        unitSystem           = settingsGetter.getStringOption(SettingPreferencesIds.UnitSystem)
 
-        /**
-         * Activity Ids
-         */
-        activityKind.value = settingsGetter.getStringOption(SettingPreferencesIds.ActivityKind)
-
-         if (activityKind.value != null
-             && activitiesHasMap.containsKey(activityKind.value!!))
-         {
-             activityName.value = activitiesHasMap[activityKind.value!!]
-         }
+        if (activitiesHasMap.containsKey(activityKind))
+        {
+            activityName = activitiesHasMap[activityKind]!!
+        }
         else
-         {
-             Log.e("SettingsViewModel","SYR -> Unable to get the activity name")
-         }
-
-         activityName.value = activitiesHasMap[activityKind.value!!]
-         speedMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.SpeedMetric)
-         gforceMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.GforceMetric)
-         leanAngleMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)
-         temperatureMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.TemperatureMetric)
-         windMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.WindMetric)
-         pressureMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.PressureMetric)
-         heartRateMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.HeartRateMetric)
-         inclinationMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.InclinationMetric)
-         altitudeMetric.value = settingsGetter.getBooleanOption(SettingPreferencesIds.AltitudeMetric)
+        {
+            Log.e("SettingsViewModel","SYR -> Unable to get the activity name")
+        }
 
         /**
-         * Metric Ids
-         */
-         unitSystem.value = settingsGetter.getStringOption(SettingPreferencesIds.UnitSystem)
-         //speedUnit.value = settingsGetter.getStringOption(SettingPreferencesIds.SpeedMetric)
-        //temperatureUnit.value = settingsGetter.getStringOption(SettingPreferencesIds.TemperatureUnit)
-        //windSpeedUnit.value = settingsGetter.getStringOption(SettingPreferencesIds.WindSpeedUnit)
-
-        /**
-         * User params
-         */
-         profileImage.value = settingsGetter.getStringOption(SettingPreferencesIds.ProfileImage)
-         profileName.value = settingsGetter.getStringOption(SettingPreferencesIds.ProfileName)
-
+         * For future use
+         *
+        temperatureMetric = settingsGetter.getBooleanOption(SettingPreferencesIds.TemperatureMetric)
+        pressureMetric    = settingsGetter.getBooleanOption(SettingPreferencesIds.PressureMetric)
+        windMetric        = settingsGetter.getBooleanOption(SettingPreferencesIds.WindMetric)
+        speedUnit         = settingsGetter.getStringOption(SettingPreferencesIds.SpeedMetric)
+        temperatureUnit   = settingsGetter.getStringOption(SettingPreferencesIds.TemperatureUnit)
+        windSpeedUnit     = settingsGetter.getStringOption(SettingPreferencesIds.WindSpeedUnit)
+        */
         composeTelemetryList()
+
+        cameraConfigChangedFlag.postValue(true)
+        activityDataChangedFlag.postValue(true)
     }
 
     /**
@@ -185,48 +183,56 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
      */
     private fun composeTelemetryList()
     {
-        val telemetryList = mutableListOf<String>()
-        if (speedMetric.value!!)
+        telemetryList.clear()
+
+        if (speedMetric)
         {
-            telemetryList.add(getApplication<Application>().getString(R.string.speed))
+            telemetryList.add(TelemetryType.Speed)
         }
 
-        if (gforceMetric.value!!)
+        if (gforceMetric)
         {
-            telemetryList.add(getApplication<Application>().getString(R.string.gforce))
+            telemetryList.add(TelemetryType.Acceleration)
         }
 
-        if (leanAngleMetric.value!!)
+        if (leanAngleMetric)
         {
-            telemetryList.add(getApplication<Application>().getString(R.string.lean_angle))
+            telemetryList.add(TelemetryType.LeanAngle)
         }
 
-        if (temperatureMetric.value!!)
+        if (inclinationMetric)
+        {
+            telemetryList.add(TelemetryType.TerrainInclination)
+        }
+
+        if (altitudeMetric)
+        {
+            telemetryList.add(TelemetryType.Altitude)
+        }
+
+        if (distanceMetric)
+        {
+            telemetryList.add(TelemetryType.Distance)
+        }
+
+        /**
+         * for future use
+         *
+        if (temperatureMetric)
         {
             telemetryList.add(getApplication<Application>().getString(R.string.temperature))
         }
 
-        if (windMetric.value!!)
+        if (windMetric)
         {
             telemetryList.add(getApplication<Application>().getString(R.string.wind))
         }
 
-        if (pressureMetric.value!!)
+        if (pressureMetric)
         {
             telemetryList.add(getApplication<Application>().getString(R.string.pressure))
         }
-
-        if (inclinationMetric.value!!)
-        {
-            telemetryList.add(getApplication<Application>().getString(R.string.inclination_terrain))
-        }
-
-        if (altitudeMetric.value!!)
-        {
-            telemetryList.add(getApplication<Application>().getString(R.string.altitude))
-        }
-
-        configuredTelemetryList.postValue(telemetryList)
+        */
     }
 
 

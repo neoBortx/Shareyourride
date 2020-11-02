@@ -23,6 +23,7 @@
     <string name="longitude">Longitude</string>
     <string name="speed">Speed</string>
     <string name="altitude">Altitude</string>
+    <string name="distance">Distance</string>
     <string name="weather_test">Weather</string>
     <string name="temperature">Temperature</string>
     <string name="humidity">Humidity</string>
@@ -57,7 +58,7 @@
     <string name="attachment_title">Configure the metrics that are to be included in the activity</string>
     <string name="gforce">G force</string>
     <string name="wind">Wind</string>
-    <string name="inclination_terrain">Inclination</string>
+    <string name="inclination_terrain">Terrain inclination</string>
     <string name="lean_angle">Lean angle</string>
     <string name="motorbike">Motorbike</string>
     <string name="bike">Bike</string>
@@ -91,6 +92,7 @@
 
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
+    <string name="menu_sync_camera">Synchronize camera</string>
     <string name="logout">Logout</string>
     <string name="delete_user_account">Delete user account</string>
     <string name="close">close</string>
@@ -106,6 +108,9 @@
     <string name="configure_cam">Configure a camera to start recording an activity</string>
     <string name="activity_kind_label">Activity</string>
     <string name="start_activity">Start activity</string>
+    <string name="continue_activity">Continue</string>
+    <string name="gyroscope_calibration_advise">Please leave the phone in its bracket to calibrate</string>
+    <string name="calibrating">Calibrating…</string>
     <string name="home">Home</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -114,4 +119,11 @@
     <string name="sync_control_text">SYR Requires to synchronize camera</string>
     <string name="sync_delay_text">SYR Getting delay</string>
     <string name="rtsp_protocol">rtsp</string>
+
+    <string name="calibration_success_notification">Calibrated!</string>
+    <string name="calibration_error_notification">Unable to calibrate gyroscopes</string>
+    <string name="retry_calibration">Retry</string>
+    <string name="stop_activity">Stop activity</string>
+    <string name="discard">Discard</string>
+    <string name="save">Save</string>
 </resources>

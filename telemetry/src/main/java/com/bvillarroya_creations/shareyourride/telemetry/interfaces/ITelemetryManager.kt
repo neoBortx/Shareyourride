@@ -43,5 +43,5 @@ interface ITelemetryManager {
     /**
      * Flag that points if the provider is ready
      */
-    var providerReady: MutableLiveData<Boolean>
+    var providerReady: MutableLiveData<Boolean>?
 }

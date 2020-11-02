@@ -28,8 +28,15 @@
         tools:layout="@layout/fragment_session" />
 
     <fragment
+        android:id="@+id/nav_activity_finished"
+        android:name="com.example.shareyourride.userplayground.session.SessionFinishedFragment"
+        android:label="Share your ride"
+        tools:layout="@layout/fragment_session" />
+
+
+    <fragment
         android:id="@+id/nav_gyroscope_calibration_fragment"
-        android:name="com.example.shareyourride.userplayground.session.GyroscopeCalibration"
+        android:name="com.example.shareyourride.userplayground.gyroscopes.GyroscopeCalibrationFragment"
         android:label="Share your ride"
         tools:layout="@layout/fragment_session" >
         <action

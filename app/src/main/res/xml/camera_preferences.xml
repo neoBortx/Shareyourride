@@ -38,11 +38,11 @@
         app:enabled="false"
         />
 
+    <!--android:inputType="number"-->
     <EditTextPreference
         app:key="@string/camera_port"
         app:title="@string/port"
         app:useSimpleSummaryProvider="true"
-        android:inputType="number"
         app:enabled="false"
         />
 

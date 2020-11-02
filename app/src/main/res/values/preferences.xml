@@ -21,6 +21,7 @@
     <string name="heart_rate_metric">heart_rate_metric</string>
     <string name="inclination_metric">inclination_metric</string>
     <string name="altitude_metric">altitude_metric</string>
+    <string name="distance_metric">distance_metric</string>
 
     <!-- Unit preferences window -->
     <string name="unit_system">unit_system</string>

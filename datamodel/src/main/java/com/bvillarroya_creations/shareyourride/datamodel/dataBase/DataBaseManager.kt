@@ -16,6 +16,7 @@ class DataBaseManager {
         private var m_instance: ShareYourRideDatabase? = null
 
         private var sessionDao: SessionDao? = null
+        private var sessionTelemetryDao: SessionTelemetryDao? = null
         private var videoDao: VideoDao? = null
         private var bodyDao: BodyDao? = null
         private var environmentDao: EnvironmentDao? = null
@@ -39,6 +40,7 @@ class DataBaseManager {
                     .fallbackToDestructiveMigration().build()
 
                 sessionDao = m_instance!!.sessionDao()
+                sessionTelemetryDao = m_instance!!.sessionTelemetryDao()
                 videoDao = m_instance!!.videoDao()
                 bodyDao = m_instance!!.bodyDao()
                 environmentDao = m_instance!!.environmentDao()
@@ -89,6 +91,23 @@ class DataBaseManager {
         }
 
         /**
+         * Insert the given session telemetry in the data base
+         * @param sessionTelemetry: The session telemetry to insert
+         */
+        fun insertSessionTelemetry(sessionTelemetry: SessionTelemetry)
+        {
+            if (sessionTelemetryDao != null)
+            {
+                sessionTelemetryDao!!.addSessionTelemetry(sessionTelemetry)
+                Log.d("SYR", "SYR -> Inserted session telemetry $sessionTelemetry")
+            }
+            else
+            {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to insert session telemetry")
+            }
+        }
+
+        /**
          * Insert the given video in the data base
          * @param video: The video to insert
          */
@@ -113,7 +132,6 @@ class DataBaseManager {
         {
             if (locationDao != null)
             {
-                Log.d("SYR", "SYR -> Inserting location in session: ${location.id.sessionId}, ${location.id.timeStamp}")
                 locationDao!!.addLocation(location)
             }
             else
@@ -164,11 +182,7 @@ class DataBaseManager {
         {
             if (inclinationDao != null)
             {
-                Log.d("SYR", "SYR -> Inserting inclination data in session: ${inclination.id.sessionId}," +
-                        "rx ${inclination.orientationVector[0]} ry ${inclination.orientationVector[1]} rz ${inclination.orientationVector[2]} " +
-                        "gx ${inclination.gravity[0]} gy ${inclination.gravity[1]} gz ${inclination.gravity[2]} " +
-                        "ax ${inclination.acceleration[0]} ay ${inclination.acceleration[1]} az ${inclination.acceleration[2]}")
-                inclinationDao!!.addInclination(inclination)
+                  inclinationDao!!.addInclination(inclination)
             }
             else
             {
@@ -195,6 +209,23 @@ class DataBaseManager {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to update session")
             }
         }
+
+        /**
+         * Update the given session telemetry in the data base
+         * @param sessionTelemetry: The session telemetry to update
+         */
+        fun updateSessionTelemetry(sessionTelemetry: SessionTelemetry)
+        {
+            if (sessionTelemetryDao != null)
+            {
+                sessionTelemetryDao!!.updateSessionTelemetry(sessionTelemetry)
+                Log.d("SYR", "SYR -> Updated session telemetry $sessionTelemetry")
+            }
+            else
+            {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to update session")
+            }
+        }
         //endregion
 
         //region get data
@@ -210,6 +241,24 @@ class DataBaseManager {
                 listOf()
             }
         }
+
+        /**
+         * Get the list of the telemetry configured for the given session ID
+         *
+         * @param sessionId: The identifier of the session
+         *
+         * @return The telemetry configuration
+         */
+        fun getSessionTelemetry(sessionId: String): SessionTelemetry?
+        {
+            return if (sessionTelemetryDao != null) {
+                sessionTelemetryDao!!.getSessionTelemetry(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the list of sessions")
+                null
+            }
+        }
+
 
         /**
          * Get the list of bodies related to the given session and frame ide
@@ -261,7 +310,7 @@ class DataBaseManager {
          * @param session: the identifier of the session
          * @param videoFrame: The identifier of the frame
          */
-        fun getLoctaions(session: Int, videoFrame: Int): List<Location>
+        fun getLocations(session: Int, videoFrame: Int): List<Location>
         {
             return if (locationDao != null) {
                 locationDao!!.getLocationList(session,videoFrame)

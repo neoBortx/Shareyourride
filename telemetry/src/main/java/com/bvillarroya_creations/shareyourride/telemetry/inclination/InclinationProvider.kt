@@ -18,28 +18,33 @@ import kotlin.math.roundToInt
 class InclinationProvider(private val context: Context): IDataProvider, SensorEventListener {
 
     //region sensor properties
-    /*
-        Sensor in charge of manage the rotation of the mobile phone
+    /**
+     * Sensor in charge of manage the rotation of the mobile phone
      */
     private var mSensorManagerRotationVector: Sensor? = null
 
-    /*
-        Sensor in charge of manage the g-force of each axis in the mobile phone
+    /**
+     * Sensor in charge of manage the g-force of each axis in the mobile phone
      */
     private var mSensorManagerGravity: Sensor? = null
 
-    /*
-        Sensor in charge of manage the acceleration of each axis of the mobile phone
+    /**
+     * Sensor in charge of manage the acceleration of each axis of the mobile phone
      */
     private var mSensorManagerLinearAcceleration: Sensor? = null
 
-    /*
-        The android sensor manager
+    /**
+     * Sensor in charge of manage the magnetic field
+    */
+    private var mSensorManagerMagnetometer: Sensor? = null
+
+    /**
+     * The android sensor manager
      */
     private lateinit var sensorManager: SensorManager
 
-    /*
-        Store the current state of the telemetry data provider
+    /**
+     * Store the current state of the telemetry data provider
      */
     private var mProviderState: IDataProvider.ProviderState = IDataProvider.ProviderState.STOPPED
 
@@ -56,9 +61,19 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
     private var mLinearAcceleration = FloatArray(3) { 0f }
 
     /**
-     * The rotation ongles of the device
+     * The rotation angles of the device
      */
-    private var mOrientation = IntArray(3) { 0 }
+    private var mAzimuth : Int = 0
+
+    /**
+     * The rotation angles of the device
+     */
+    private var mPitch: Int = 0
+
+    /**
+     * The rotation angles of the device
+     */
+    private var mRoll: Int = 0
     //endregion
     /**
      * Initialize sensors:
@@ -71,10 +86,11 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
         mSensorManagerGravity            = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
         mSensorManagerRotationVector     = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         mSensorManagerLinearAcceleration = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+        mSensorManagerMagnetometer       = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.e("SYR", "SYR -> Accuracy Changed")
+        Log.e("InclinationProvider", "SYR -> Accuracy Changed")
     }
 
     /**
@@ -85,9 +101,10 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
     override fun subscribeProvider(callback: (ITelemetryData) -> Unit)
     {
         try {
-            Log.d("SYR", "SYR-> Subscribing to inclination provider")
-            if (mSensorManagerGravity != null) {
-                Log.d("SYR", "SYR-> Subscribing to mSensorManagerGravity provider")
+            Log.d("InclinationProvider", "SYR-> Subscribing to inclination provider")
+            if (mSensorManagerGravity != null)
+            {
+                Log.d("InclinationProvider", "SYR-> Subscribing to mSensorManagerGravity provider")
                 sensorManager.registerListener(
                     this,
                     mSensorManagerGravity,
@@ -95,8 +112,10 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 )
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
-            if (mSensorManagerRotationVector != null) {
-                Log.d("SYR", "SYR-> Subscribing to mSensorManagerTilt provider")
+
+            if (mSensorManagerRotationVector != null)
+            {
+                Log.d("InclinationProvider", "SYR-> Subscribing to mSensorManagerTilt provider")
                 sensorManager.registerListener(
                     this,
                     mSensorManagerRotationVector,
@@ -105,8 +124,9 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
 
-            if (mSensorManagerLinearAcceleration != null) {
-                Log.d("SYR", "SYR-> Subscribing to mSensorManagerAcceleration provider")
+            if (mSensorManagerLinearAcceleration != null)
+            {
+                Log.d("InclinationProvider", "SYR-> Subscribing to mSensorManagerAcceleration provider")
                 sensorManager.registerListener(
                     this,
                     mSensorManagerLinearAcceleration,
@@ -115,7 +135,15 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
 
-            io.reactivex.rxjava3.core.Observable.interval(1000L, TimeUnit.MILLISECONDS)
+            if (mSensorManagerMagnetometer != null)
+            {
+                Log.d("InclinationProvider", "SYR-> Subscribing to mSensorManagerMagnetometer provider")
+                sensorManager.registerListener(
+                        this, mSensorManagerMagnetometer, SensorManager.SENSOR_DELAY_NORMAL)
+                mProviderState = IDataProvider.ProviderState.SUBSCRIBED
+            }
+
+            io.reactivex.rxjava3.core.Observable.interval(100L, TimeUnit.MILLISECONDS)
                 .timeInterval()
                 .subscribe { notifyValues(callback) }
         }
@@ -131,7 +159,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
      */
     private fun notifyValues(callback: (ITelemetryData) -> Unit)
     {
-        val inclination = InclinationData(mGravity,mLinearAcceleration, mOrientation, System.currentTimeMillis() )
+        val inclination = InclinationData(mGravity, mLinearAcceleration, mAzimuth, mPitch, mRoll, System.currentTimeMillis() )
         callback(inclination)
     }
 
@@ -201,7 +229,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to process the accelemrometer update: ${ex.message}")
+            Log.e("InclinationProvider", "SYR -> Unable to process the accelemrometer update: ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -236,15 +264,15 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
             SensorManager.getOrientation(mRotationMatrix, mOrientationRadians)
 
             //get degrees values and order them in x,y,z
-            mOrientation[0] = Math.toDegrees(mOrientationRadians[2].toDouble()).roundToInt()
-            mOrientation[1] = Math.toDegrees(mOrientationRadians[1].toDouble()).roundToInt()
-            mOrientation[2] = Math.toDegrees(mOrientationRadians[0].toDouble()).roundToInt()
+            mAzimuth = Math.toDegrees(mOrientationRadians[0].toDouble()).roundToInt()
+            mPitch = Math.toDegrees(mOrientationRadians[1].toDouble()).roundToInt()
+            mRoll = Math.toDegrees(mOrientationRadians[2].toDouble()).roundToInt()
 
             //Log.d("SYR", "SYR -> Processing rotation vector Azimuth ${mOrientation[0]} Pitch ${mOrientation[1]} Roll ${mOrientation[2]}")
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to process the rotation vector event ${ex.message}")
+            Log.e("InclinationProvider", "SYR -> Unable to process the rotation vector event ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -271,7 +299,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
         }
         catch (ex: Exception)
         {
-            Log.e("SYR", "SYR -> Unable to process the rotation vector event ${ex.message}")
+            Log.e("InclinationProvider", "SYR -> Unable to process the rotation vector event ${ex.message}")
             ex.printStackTrace()
         }
     }

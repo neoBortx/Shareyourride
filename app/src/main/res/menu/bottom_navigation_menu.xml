@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:showIn="navigation_view"
+    android:layout_height="10dp"
+    android:layout_width="10dp">
+
+    <item
+        android:id="@+id/nav_gallery_button"
+        android:icon="@drawable/ic_menu_gallery"
+        android:iconTint="@color/whiteColor"
+        android:title="@string/menu_gallery" />
+
+    <item
+        android:id="@+id/nav_settings_home"
+        android:icon="@drawable/camera"
+        android:iconTint="@color/whiteColor"
+        android:title="@string/menu_sync_camera" />
+
+    <item
+        android:id="@+id/nav_settings_button"
+        android:icon="@drawable/settings"
+        android:iconTint="@color/whiteColor"
+        android:title="@string/action_settings" />
+
+</menu>

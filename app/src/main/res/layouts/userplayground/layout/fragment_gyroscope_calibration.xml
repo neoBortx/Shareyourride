@@ -1,13 +1,139 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.shareyourride.userplayground.session.GyroscopeCalibration">
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        tools:context="com.example.shareyourride.userplayground.gyroscopes.GyroscopeCalibrationFragment">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/text_activity_kind_label_gyroscopes"
+            android:layout_width="146dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="30dp"
+            android:text="@string/activity_kind_label"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/text_activity_kind_value_gyroscopes"
+            app:layout_constraintStart_toStartOf="@+id/text_activity_kind_value_gyroscopes"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_activity_kind_value_gyroscopes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/calibration_notification_text_view"
+            app:layout_constraintStart_toStartOf="@+id/calibration_notification_text_view"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_gyroscopes" />
+
+        <ImageView
+            android:id="@+id/wifi_state_img_gyroscopes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="50dp"
+            android:contentDescription="@string/gps_state"
+            android:src="@drawable/wifi_ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!---->
+
+        <ImageView
+            android:id="@+id/gps_state_img_gyroscopes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="20dp"
+            android:contentDescription="@string/wifi_state"
+            android:src="@drawable/gps_ok"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/calibration_notification_text_view"
+            android:layout_width="329dp"
+            android:layout_height="53dp"
+            android:layout_marginTop="80dp"
+            android:text="@string/gyroscope_calibration_advise"
+            app:layout_constraintEnd_toEndOf="@+id/gyroscope_image"
+            app:layout_constraintStart_toStartOf="@+id/gyroscope_image"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_gyroscopes" />
+
+        <ImageView
+            android:id="@+id/gyroscope_image"
+            android:layout_width="128dp"
+            android:layout_height="171dp"
+            android:contentDescription="@string/wifi_state"
+            android:layout_marginVertical="57dp"
+            android:src="@drawable/screen_rotation"
+            app:layout_constraintEnd_toEndOf="@+id/calibration_state_text_view"
+            app:layout_constraintStart_toStartOf="@+id/calibration_state_text_view"
+            app:layout_constraintTop_toBottomOf="@id/calibration_notification_text_view"
+            app:layout_constraintBottom_toTopOf="@+id/calibration_state_text_view"
+            app:tint="@color/colorPrimary" />
+
+        <TextView
+            android:id="@+id/calibration_state_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/calibrating"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintEnd_toEndOf="@+id/progressBar_calibrating"
+            app:layout_constraintStart_toStartOf="@+id/progressBar_calibrating"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar_calibrating"
+             />
+
+        <ProgressBar
+            android:id="@+id/progressBar_calibrating"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="105dp"
+            android:layout_height="30dp"
+            android:layout_marginBottom="30dp"
+            android:progressTint="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="@+id/button_gyroscopes_layout"
+            app:layout_constraintStart_toStartOf="@+id/button_gyroscopes_layout"
+            app:layout_constraintBottom_toTopOf="@id/button_gyroscopes_layout"
+            />
+
+        <LinearLayout
+            android:id="@+id/button_gyroscopes_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="20dp">
+            <Button
+                android:id="@+id/retry_calibration_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_style"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:text="@string/retry_calibration"
+                android:textColor="@color/whiteColor"
+                android:layout_marginEnd="40dp"/>
+
+            <Button
+                android:id="@+id/continue_activity_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_style"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:text="@string/continue_activity"
+                android:textColor="@color/whiteColor" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -89,25 +89,26 @@ class TelemetryFragment : PreferenceFragmentCompat() {
                     configureCustom()
                 }
                 "motorbike" -> {
-                    configureValues(speed = true, force = true, lean = true, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
+                    configureValues(speed = true, force = true, lean = true, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false, distance = true)
                 }
                 "bike" -> {
-                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = false, heart = true, inclination = true, altitude = true)
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = false, heart = true, inclination = true, altitude = true, distance = true)
                 }
                 "car" -> {
-                    configureValues(speed = true, force = true, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false)
+                    configureValues(speed = true, force = true, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = false, altitude = false, distance = true)
                 }
                 "snowboard" -> {
-                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = false, pressure = false, heart = false, inclination = true, altitude = true, distance = true)
                 }
                 "longboard" -> {
-                    configureValues(speed = true, force = false, lean = false, temperature = false, wind = false, pressure = false, heart = false, inclination = true, altitude = true)
+                    configureValues(speed = true, force = false, lean = false, temperature = false, wind = false, pressure = false, heart = false, inclination = true, altitude = true, distance = true)
                 }
                 "skydiving" -> {
-                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = true)
+                    configureValues(speed = true, force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = true, distance = false)
                 }
                 "sailing" -> {
-                    configureValues(speed = false, force = false, lean = false, temperature = true, wind = true, pressure = true, heart = false, inclination = false, altitude = false)
+                    configureValues(speed = false, force = false, lean = false, temperature = true, wind = true, pressure = true,
+                                    heart = false, inclination = false, altitude = false, distance =  true)
                 }
             }
         }
@@ -134,6 +135,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
             val heartPref: SwitchPreference? = findPreference(getString(R.string.heart_rate_metric)) as SwitchPreference?
             val inclinationPref: SwitchPreference? = findPreference(getString(R.string.inclination_metric)) as SwitchPreference?
             val altitudePref: SwitchPreference? = findPreference(getString(R.string.altitude_metric)) as SwitchPreference?
+            val distancePref: SwitchPreference? = findPreference(getString(R.string.distance_metric)) as SwitchPreference?
 
             speedPref?.isEnabled = true
             forcePref?.isEnabled = true
@@ -144,6 +146,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
             heartPref?.isEnabled = true
             inclinationPref?.isEnabled = true
             altitudePref?.isEnabled = true
+            distancePref?.isEnabled = true
         }
         catch (ex: Exception)
         {
@@ -164,9 +167,11 @@ class TelemetryFragment : PreferenceFragmentCompat() {
      * @param heart
      * @param inclination
      * @param altitude
+     * @param distance
      *
      */
-    private fun configureValues(speed: Boolean, force: Boolean, lean: Boolean, temperature: Boolean, wind: Boolean, pressure: Boolean, heart: Boolean, inclination: Boolean, altitude: Boolean)
+    private fun configureValues(speed: Boolean, force: Boolean, lean: Boolean, temperature: Boolean, wind: Boolean,
+                                pressure: Boolean, heart: Boolean, inclination: Boolean, altitude: Boolean, distance: Boolean)
     {
         try {
             val speedPref: SwitchPreference? = findPreference(getString(R.string.speed_metric)) as SwitchPreference?
@@ -178,6 +183,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
             val heartPref: SwitchPreference? = findPreference(getString(R.string.heart_rate_metric)) as SwitchPreference?
             val inclinationPref: SwitchPreference? = findPreference(getString(R.string.inclination_metric)) as SwitchPreference?
             val altitudePref: SwitchPreference? = findPreference(getString(R.string.altitude_metric)) as SwitchPreference?
+            val distancePref: SwitchPreference? = findPreference(getString(R.string.distance_metric)) as SwitchPreference?
 
             manageSwitchPreferenceChanged(speed, speedPref)
             manageSwitchPreferenceChanged(force, forcePref)
@@ -188,6 +194,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
             manageSwitchPreferenceChanged(heart, heartPref)
             manageSwitchPreferenceChanged(inclination, inclinationPref)
             manageSwitchPreferenceChanged(altitude, altitudePref)
+            manageSwitchPreferenceChanged(distance, distancePref)
 
             speedPref?.isEnabled = false
             forcePref?.isEnabled = false
@@ -198,6 +205,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
             heartPref?.isEnabled = false
             inclinationPref?.isEnabled = false
             altitudePref?.isEnabled = false
+            distancePref?.isEnabled = false
         }
         catch (ex: Exception)
         {

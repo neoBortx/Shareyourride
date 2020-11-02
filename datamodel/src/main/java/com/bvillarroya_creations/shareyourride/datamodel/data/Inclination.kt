@@ -5,9 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 
-/*
-    Store the inclination of the device when the video is recorded
-    Each row with the inclination to a session and a determined frame
+/**
+ * Store the inclination of the device when the video is recorded
+ * Each row with the inclination to a session and a determined frame
  */
 @Entity(tableName = "Inclination")
 data class Inclination(
@@ -37,12 +37,20 @@ data class Inclination(
     val gravity: FloatArray = FloatArray(3),
 
     /**
-     * Rotation angles of the device, in degrees
-     * [0]:Pitch, angle of rotation about the x axis.
-     * [1]:Roll, angle of rotation about the y axis
-     * [2]:Azimuth, angle of rotation about the -z axis.
+     * Azimuth, angle of rotation about the -z axis.
      */
-    val orientationVector: IntArray = IntArray(3)
+    val azimuth: Int,
+
+    /**
+     * Pitch, angle of rotation about the x axis.
+     */
+
+    val pitch: Int,
+
+    /**
+     * Roll, angle of rotation about the y axis
+     */
+    val roll: Int
 ): IDataBaseTelemetry
 {
     override fun equals(other: Any?): Boolean {
@@ -53,7 +61,9 @@ data class Inclination(
 
         if (id != other.id) return false
         if (!acceleration.contentEquals(other.acceleration)) return false
-        if (!orientationVector.contentEquals(other.orientationVector)) return false
+        if (azimuth != other.azimuth) return false
+        if (pitch != other.pitch) return false
+        if (roll != other.roll) return false
         if (!gravity.contentEquals(other.gravity)) return false
 
         return true
@@ -62,7 +72,9 @@ data class Inclination(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + acceleration.contentHashCode()
-        result = 31 * result + orientationVector.contentHashCode()
+        result = 31 * result + azimuth.hashCode()
+        result = 31 * result + pitch.hashCode()
+        result = 31 * result + roll.hashCode()
         result = 31 * result + gravity.contentHashCode()
         return result
     }

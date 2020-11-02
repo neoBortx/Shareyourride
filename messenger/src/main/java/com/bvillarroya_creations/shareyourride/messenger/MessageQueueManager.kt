@@ -2,6 +2,7 @@ package com.bvillarroya_creations.shareyourride.messenger
 
 import android.os.Message
 import android.util.Log
+import java.util.*
 
 /**
  * This class manages the queue system build for internal app messaging
@@ -12,7 +13,9 @@ internal class MessageQueueManager {
         /**
          * List of all message handlers that are attached to the system
          */
-        private var mListOfHandlers: MutableMap<Int,MessageHandler> = mutableMapOf()
+        private val mListOfHandlers: MutableMap<Int,MessageHandler> = mutableMapOf()
+
+        private val instanceId = UUID.randomUUID().toString().hashCode()
 
         /**
          * Add the given handler to the list of handlers that are listening messages
@@ -27,18 +30,17 @@ internal class MessageQueueManager {
             {
                 if (!mListOfHandlers.containsKey(messageHandler.handlerId))
                 {
-                    Log.d("SYR", "SYR -> Attaching queue handler $messageHandler.id")
+                    Log.d("MessageQueueManager", "SYR -> Instance $instanceId, attaching queue handler ${messageHandler.handlerName} - ${messageHandler.handlerId}")
                     mListOfHandlers.set(messageHandler.handlerId,messageHandler)
                 }
                 else
                 {
-                    Log.e("SYR", "SYR -> The given handler is already attached " +
-                            "to the queue system")
+                    Log.e("MessageQueueManager", "SYR -> Instance $instanceId, the given handler is already attached to the queue system")
                 }
             }
             catch (ex: Exception)
             {
-                Log.e("SYR", "SYR -> Unable to remove handler ${ex.message}")
+                Log.e("MessageQueueManager", "SYR -> Instance $instanceId, , unable to remove handler ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -53,18 +55,17 @@ internal class MessageQueueManager {
             try {
                 if (mListOfHandlers.containsKey(messageHandler.handlerId))
                 {
-                    Log.d("SYR", "SYR -> Removing queue handler ${messageHandler.handlerId}")
+                    Log.d("MessageQueueManager", "SYR -> Instance $instanceId, removing queue handler ${messageHandler.handlerId}")
                     mListOfHandlers.remove(messageHandler.handlerId)
                 }
                 else
                 {
-                    Log.e("SYR", "SYR -> The given handler is not attached "+
-                            "to the queue system")
+                    Log.e("MessageQueueManager", "SYR -> Instance $instanceId, the given handler is not attached to the queue system")
                 }
             }
             catch (ex: Exception)
             {
-                Log.e("SYR", "SYR -> Unable to remove handler ${ex.message}")
+                Log.e("MessageQueueManager", "SYR -> Instance $instanceId, unable to remove handler ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -83,7 +84,8 @@ internal class MessageQueueManager {
          */
         fun sendMessage(id: Int, message: Message, filter: String = "")
         {
-            try {
+            try
+            {
                 if (filter.isEmpty())
                 {
                     sendMessagesWithoutFilter(id, message)
@@ -95,7 +97,7 @@ internal class MessageQueueManager {
             }
             catch (ex: Exception)
             {
-                Log.e("SYR", "SYR -> Unable to send message ${ex.message}")
+                Log.e("MessageQueueManager", "SYR -> Instance $instanceId, unable to send message ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -114,11 +116,13 @@ internal class MessageQueueManager {
             try {
                 mListOfHandlers
                     .filter { it.key != id}
-                    .forEach{ it.value.dispatchMessage(message) }
+                    .forEach{
+                        it.value.dispatchMessage(message)
+                    }
             }
             catch (ex: Exception)
             {
-                Log.e("SYR", "SYR -> Unable to send message ${ex.message}")
+                Log.e("MessageQueueManager", "SYR -> Instance $instanceId, Unable to send message ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -143,13 +147,14 @@ internal class MessageQueueManager {
 
                 mListOfHandlers
                     .filter { it.key != id }
-                    .filter{!it.value.mFilterListInt.any()
-                            ||it.value.mFilterListInt.contains(filterHasCode)}
-                    .forEach{ it.value.dispatchMessage(message) }
+                    .filter{!it.value.mFilterListInt.any() ||it.value.mFilterListInt.contains(filterHasCode)}
+                    .forEach{
+                        it.value.dispatchMessage(message)
+                    }
             }
             catch (ex: Exception)
             {
-                Log.e("SYR", "SYR -> Unable to send message ${ex.message}")
+                Log.e("MessageQueueManager", "SYR -> Instance $instanceId, unable to send message ${ex.message}")
                 ex.printStackTrace()
             }
         }
