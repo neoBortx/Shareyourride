@@ -182,7 +182,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
                     locationResult ?: return
                     for (location in locationResult.locations) {
 
-                        val (distance , terrainInclination) = calculateTerrainInclination(location.longitude, location.latitude, location.altitude)
+                        val (distance , terrainInclination) = calculateTerrainInclination(newlong =  location.longitude, newLat = location.latitude, newAlt = location.altitude)
 
                         accumulatedDistance += distance
 
@@ -235,22 +235,25 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
 
         try
         {
-            if (newlong == 0.0 || newLat == 0.0 || newAlt == 0.0)
+            if (newlong == 0.0 || newLat == 0.0)
             {
                 Log.e("LocationProvider", "SYR -> Skipping terrain inclination calculation because new data is incomplete, long = $newlong, lat = $newLat, alt = $newAlt")
                 return Pair(distance, percentage)
             }
-            else if (lastLongitude != 0.0 && lastLatitude != 0.0 && lastAltitude != 0.0)
+
+            if (lastLongitude != 0.0 && lastLatitude != 0.0)
             {
+
                 val oldLocation = Location("oldLocation")
                 oldLocation.latitude = lastLatitude
                 oldLocation.longitude = lastLongitude
                 oldLocation.altitude = lastAltitude
 
                 val newLocation = Location("newLocation")
-                oldLocation.latitude = newLat
-                oldLocation.longitude = newlong
-                oldLocation.altitude = newAlt
+                newLocation.latitude = newLat
+                newLocation.longitude = newlong
+                newLocation.altitude = newAlt
+
 
                 //Get the distance of two points in meters in the X and Y axis
                 val distanceX: Double = oldLocation.distanceTo(newLocation).toDouble()
@@ -265,7 +268,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
             else
             {
                 Log.d("LocationProvider", "SYR -> Skipping terrain inclination calculation because we don't have all values to calculate it,"
-                        + " long = $lastLongitude, lat = $lastAltitude, alt = $lastLatitude")
+                        + " long = $lastLongitude, lat = $lastLatitude, alt = $lastAltitude")
             }
 
             lastLongitude = newlong

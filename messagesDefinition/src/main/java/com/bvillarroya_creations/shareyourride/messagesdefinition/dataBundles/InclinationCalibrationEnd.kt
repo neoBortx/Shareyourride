@@ -23,5 +23,12 @@ class InclinationCalibrationData(
     /**
      * Angle of rotation about the -z axis.
      */
-    val azimuth: Int
+    val azimuth: Int,
+
+    /**
+     * the acceleration of the mobile phone in three axis
+     */
+    val linealAcceleration: FloatArray
+
+
 )

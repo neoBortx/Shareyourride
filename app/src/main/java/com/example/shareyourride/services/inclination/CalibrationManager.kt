@@ -7,6 +7,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 
 /**
@@ -20,17 +22,17 @@ class CalibrationManager
         /**
          * Delay of the procedure in milliseconds
          */
-        private const val CALIBRATION_DELAY: Long = 5000
+        private const val CALIBRATION_DELAY: Long = 6000
 
         /**
          * Timer in milliseconds
          */
-        private const val CALIBRATION_TIMER: Long = 5000
+        private const val CALIBRATION_TIMER: Long = 6000
 
         /**
          * Maximum number of retries to calibrate sensors
          */
-        private const val MAX_ATTEMPTS = 4
+        private const val MAX_ATTEMPTS = 10
 
         /**
          * Maximum number of values inserted in the set of values for the calibration
@@ -63,6 +65,16 @@ class CalibrationManager
     private var azimuthArray = mutableListOf<Int>()
 
     /**
+     * Stores all lineal acceleration values
+     */
+    private var linealAcceleration : MutableList<FloatArray> = ArrayList()
+
+    /**
+     * Stores all gravity values
+     */
+    private var gravity : MutableList<FloatArray> = ArrayList()
+
+    /**
      * The timer to rule the period to obtain data in order to calibrate the sensor
      */
     private var calibrationTimer = Timer()
@@ -71,6 +83,8 @@ class CalibrationManager
      * All attempt to calibrate the sensors
      */
     private var calibrationAttempt = 0
+
+
 
     /**
      * Number of values in the sample
@@ -102,6 +116,15 @@ class CalibrationManager
      */
     var referenceAzimuth = 0
 
+    /**
+     * The acceleration in three axis
+     */
+    var referenceAcceleration = FloatArray(3)
+
+    /**
+     *
+     */
+    var referenceGravity = FloatArray(3)
     /**
      * Lock to avoid concurrent accesses to the data
      */
@@ -183,6 +206,8 @@ class CalibrationManager
                 rollArray.clear()
                 pitchArray.clear()
                 azimuthArray.clear()
+                linealAcceleration.clear()
+                gravity.clear()
             }
             catch (ex: Exception) {
                 Log.i("CalibrationManager", "SYR -> Unable to clear values because: ${ex.message}")
@@ -198,6 +223,9 @@ class CalibrationManager
         referenceRoll = 0
         referencePitch = 0
         referenceAzimuth = 0
+        referenceAcceleration = FloatArray(3)
+        referenceGravity = FloatArray(3)
+
         calibrationAttempt = 0
 
         stopTimer()
@@ -207,9 +235,21 @@ class CalibrationManager
     {
         lock.write {
             try {
-                referenceRoll = rollArray.sum() / rollArray.count()
-                referencePitch = pitchArray.sum() / pitchArray.count()
-                referenceAzimuth = azimuthArray.sum() / azimuthArray.count()
+                referenceRoll = rollArray.average().roundToInt()
+                referencePitch = pitchArray.average().roundToInt()
+                referenceAzimuth = azimuthArray.average().roundToInt()
+
+                referenceAcceleration[0] = linealAcceleration.map { it[0].absoluteValue }.max() ?: 0.0F
+                referenceAcceleration[1] = linealAcceleration.map { it[1].absoluteValue }.max() ?: 0.0F
+                referenceAcceleration[2] = linealAcceleration.map { it[2].absoluteValue }.max() ?: 0.0F
+
+                referenceAcceleration[0] += (referenceAcceleration[0] * 0.8).toFloat()
+                referenceAcceleration[1] += (referenceAcceleration[1] * 0.8).toFloat()
+                referenceAcceleration[2] += (referenceAcceleration[0] * 0.8).toFloat()
+
+                referenceGravity[0] = gravity.map { it[0].absoluteValue }.max() ?: 0.0F
+                referenceGravity[0] = gravity.map { it[0].absoluteValue }.max() ?: 0.0F
+                referenceGravity[0] = gravity.map { it[0].absoluteValue }.max() ?: 0.0F
             }
             catch (ex: Exception) {
                 Log.i("CalibrationManager", "SYR -> Unable to clear values because: ${ex.message}")
@@ -236,8 +276,9 @@ class CalibrationManager
      * @param roll: In degrees
      * @param pitch: In degrees
      * @param azimuth: In degrees
+     * @param acceleration: In meters per second 2
      */
-    fun insertValues(roll: Int, pitch: Int, azimuth: Int)
+    fun insertValues(roll: Int, pitch: Int, azimuth: Int, acceleration: FloatArray, gravity: FloatArray)
     {
         if (isInEditMode && numOfGatheredValues < MAX_VALUES)
         {
@@ -248,6 +289,8 @@ class CalibrationManager
                     rollArray.add(roll)
                     pitchArray.add(pitch)
                     azimuthArray.add(azimuth)
+                    linealAcceleration.add(acceleration)
+                    this.gravity.add(gravity)
                 }
                 catch (ex: Exception)
                 {

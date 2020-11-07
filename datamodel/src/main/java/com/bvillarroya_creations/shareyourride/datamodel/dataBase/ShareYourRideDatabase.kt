@@ -18,7 +18,7 @@ import com.bvillarroya_creations.shareyourride.datamodel.data.*
     Location::class,
     Environment::class,
     Body::class,
-    Inclination::class], version = 14)
+    Inclination::class], version = 15)
 @TypeConverters(FloatArrayToStringConverter::class,IntArrayToStringConverter::class)
 abstract class ShareYourRideDatabase : RoomDatabase()
 {

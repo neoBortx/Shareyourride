@@ -1,5 +1,6 @@
 package com.example.shareyourride.userplayground.session
 
+import android.R.attr.*
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Bundle
@@ -23,6 +24,7 @@ import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
 import com.example.shareyourride.wifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_session.*
+
 
 class SessionFragment : Fragment() {
 
@@ -85,46 +87,9 @@ class SessionFragment : Fragment() {
             // in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
 
-            addItemDecoration(object : DividerItemDecoration(context,  DividerItemDecoration.HORIZONTAL) {
-                override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                    val position = parent.getChildLayoutPosition(view)
-                    val space = 2
-                    /// Only for GridLayoutManager
-
-                    /// Only for GridLayoutManager
-                    val manager = parent.layoutManager as GridLayoutManager?
-
-                    if (parent.getChildLayoutPosition(view) < manager!!.spanCount) outRect.top = space
-
-                    if (position % 2 !== 0) {
-                        outRect.right = space
-                    }
-
-                    outRect.left = space
-                    outRect.bottom = space
-                }
-            })
-
-            addItemDecoration(object : DividerItemDecoration(context,  DividerItemDecoration.VERTICAL) {
-                override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                    val position = parent.getChildLayoutPosition(view)
-                    val space = 2
-                    /// Only for GridLayoutManager
-
-                    /// Only for GridLayoutManager
-                    val manager = parent.layoutManager as GridLayoutManager?
-
-                    if (parent.getChildLayoutPosition(view) < manager!!.spanCount) outRect.top = space
-
-                    if (position % 2 !== 0) {
-                        outRect.right = space
-                    }
-
-                    outRect.left = space
-                    outRect.bottom = space
-                }
-            })
-
+            //MiddleDivideritemDecoration.ALL means both vertical and horizontal dividers
+            //You can also use MiddleDividerItemDecoration.VERTICAL / MiddleDividerItemDecoration.HORIZONTAL if you just want horizontal / vertical dividers
+            addItemDecoration(MiddleDividerItemDecoration(requireContext(), MiddleDividerItemDecoration.ALL))
 
             // use a grid layout manager
             layoutManager = viewManager

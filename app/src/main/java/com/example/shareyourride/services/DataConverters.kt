@@ -1,7 +1,10 @@
 package com.example.shareyourride.services
 
 
-import com.bvillarroya_creations.shareyourride.datamodel.data.*
+import com.bvillarroya_creations.shareyourride.datamodel.data.Environment
+import com.bvillarroya_creations.shareyourride.datamodel.data.Inclination
+import com.bvillarroya_creations.shareyourride.datamodel.data.Location
+import com.bvillarroya_creations.shareyourride.datamodel.data.TelemetryId
 import com.bvillarroya_creations.shareyourride.telemetry.environment.EnvironmentData
 import com.bvillarroya_creations.shareyourride.telemetry.inclination.InclinationData
 import com.bvillarroya_creations.shareyourride.telemetry.location.LocationData
@@ -13,18 +16,25 @@ class DataConverters {
 
     companion object
     {
-        fun convertData(data: LocationData, sessionId: String, videoId: Long): Location
+        fun convertData(data: LocationData, sessionId: String, timestamp: Long): Location
         {
 
             return Location(
-                    TelemetryId(sessionId, videoId), data.latitude, data.longitude, data.altitude, data.speed, data.bearing, data.terrainInclination)
+                    TelemetryId(sessionId, timestamp),
+                    data.latitude,
+                    data.longitude,
+                    data.altitude,
+                    data.speed,
+                    data.bearing,
+                    data.terrainInclination,
+                    data.distance)
         }
 
-        fun convertData(data: InclinationData, sessionId: String, videoId: Long): Inclination
+        fun convertData(data: InclinationData, sessionId: String, timestamp: Long): Inclination
         {
 
             return Inclination(
-                TelemetryId(sessionId,videoId),
+                TelemetryId(sessionId,timestamp),
                 data.acceleration,
                 data.gravity,
                 data.azimuth,
@@ -32,11 +42,11 @@ class DataConverters {
                 data.roll)
         }
 
-        fun convertData(data: EnvironmentData, sessionId: String, videoId: Long): Environment
+        fun convertData(data: EnvironmentData, sessionId: String, timestamp: Long): Environment
         {
 
             return Environment(
-                TelemetryId(sessionId,videoId),
+                TelemetryId(sessionId,timestamp),
                 data.temperature,
                 data.windDirection,
                 data.windSpeed,

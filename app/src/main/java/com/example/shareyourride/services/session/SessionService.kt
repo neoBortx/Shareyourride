@@ -162,7 +162,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                 sendSaveTelemetry()
             }
 
-            updateTelemetryTimer = Observable.interval(1000, 1000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateTelemetryTimer = Observable.interval(1000, 100, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 sendUpdateTelemetry()
             }
         }
@@ -281,9 +281,9 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
 
                 sendSessionState()
 
-                //runBlocking {
-                //    ShareYourRideRepository.deleteSession(mSession)
-                //}
+                runBlocking {
+                    ShareYourRideRepository.deleteSession(mSession)
+                }
             }
             else
             {
@@ -339,6 +339,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                     mSession.referenceAzimuth = calibration.azimuth
                     mSession.referencePitch = calibration.pitch
                     mSession.referenceRoll = calibration.roll
+                    mSession.referenceAcceleration = calibration.linealAcceleration
                 }
                 else
                 {
@@ -347,6 +348,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                     mSession.referenceAzimuth = 0
                     mSession.referencePitch = 0
                     mSession.referenceRoll = 0
+                    mSession.referenceAcceleration = FloatArray(3)
                 }
 
                 sessionState   = SessionState.SensorsCalibrated

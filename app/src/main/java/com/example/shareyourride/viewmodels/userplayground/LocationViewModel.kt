@@ -12,9 +12,48 @@ import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 
 class LocationViewModel : ViewModel(), IMessageHandlerClient
 {
+    //region public properties
+    /**
+     * true: enabled
+     * false: disabled
+     */
+    val gpsState = MutableLiveData<Boolean>()
+
+    /**
+     * Speed in kilometers per hour
+     */
+    val speed = MutableLiveData<Int>()
+
+    /**
+     * Altitude in meters
+     */
+    val altitude = MutableLiveData<Int>()
+
+    /**
+     * Terrain inclination in percentage
+     */
+    val terrainInclination = MutableLiveData<Int>()
+
+    /**
+     * Terrain inclination in percentage
+     */
+    val distance = MutableLiveData<Long>()
+    //endregion
+
+    //region constants
+    companion object
+    {
+        private const val KILOMETERS_PER_HOUR_CONVERTER = 3.6
+    }
+    //endregion
     //region message handlers
     init {
         this.createMessageHandler( "LocationViewModel", listOf<String>(MessageTopics.GPS_DATA))
+
+        distance.postValue(0)
+        terrainInclination.postValue(0)
+        altitude.postValue(0)
+        speed.postValue(0)
     }
 
     override lateinit var messageHandler: MessageHandler
@@ -90,9 +129,13 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
             {
                 val location = msg.messageData.data as Location
 
-                speed.postValue(location.speed.toInt())
+
+                //Log.e("LocationViewModel", "SYR -> AAAAAAAAAAAAAAAAAAAAAAAAA ${location.distance}")
+
+                speed.postValue((location.speed * KILOMETERS_PER_HOUR_CONVERTER).toInt())
                 altitude.postValue(location.altitude.toInt())
                 terrainInclination.postValue(location.terrainInclination)
+                distance.postValue(location.distance)
             }
         }
         catch (ex: Exception)
@@ -101,34 +144,6 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
             ex.printStackTrace()
         }
     }
-    //endregion
-
-    //region public properties
-    /**
-     * true: enabled
-     * false: disabled
-     */
-    val gpsState = MutableLiveData<Boolean>()
-
-    /**
-     * Speed in kilometers per hour
-     */
-    val speed = MutableLiveData<Int>()
-
-    /**
-     * Altitude in meters
-     */
-    val altitude = MutableLiveData<Int>()
-
-    /**
-     * Terrain inclination in percentage
-     */
-    val terrainInclination = MutableLiveData<Int>()
-
-    /**
-     * Terrain inclination in percentage
-     */
-    val distance = MutableLiveData<Int>()
     //endregion
 
     //region public functions

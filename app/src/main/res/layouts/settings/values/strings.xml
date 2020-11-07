@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="creating_video_notification">Creating video of the activity</string>
+    <string name="meters_unit"> m</string>
+    <string name="kilometers_unit"> km</string>
+    <string name="percentage">%</string>
+    <string name="kilometers_hour_unit"> km/h</string>
+    <string name="meters_per_seconds_unit"> m/s^2</string>
+    <string name="degrees">°</string>
 </resources>

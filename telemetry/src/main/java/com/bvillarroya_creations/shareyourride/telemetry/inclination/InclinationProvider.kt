@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.IDataProvider
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
+import io.reactivex.rxjava3.disposables.Disposable
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
@@ -48,32 +49,42 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
      */
     private var mProviderState: IDataProvider.ProviderState = IDataProvider.ProviderState.STOPPED
 
+    private var mTimer : Disposable? = null
     //endregion
 
+
+    //region buffers
+    private val lock = Any()
+
     /**
-     * The gravity that is affected to the device
+     * The rotation angles of the device
+     * The last ten positions
      */
-    private var mGravity = FloatArray(3) { 0f }
+    private var mRollBuffer = mutableListOf<Int>()
+
+    /**
+     * The rotation angles of the device
+     * The last ten positions
+     */
+    private var mPitchBuffer = mutableListOf<Int>()
+
+    /**
+     * The rotation angles of the device
+     * The last ten positions
+     */
+    private var mAzimuthBuffer =  mutableListOf<Int>()
 
     /**
      * The linear acceleration of the device
+     * The linear acceleration of the device buffer
      */
-    private var mLinearAcceleration = FloatArray(3) { 0f }
+    private var mLinearAccelerationBuffer : MutableList<FloatArray> = ArrayList()
 
     /**
-     * The rotation angles of the device
+     * The gravity that is affected to the device
+     * The linear acceleration of the device buffer
      */
-    private var mAzimuth : Int = 0
-
-    /**
-     * The rotation angles of the device
-     */
-    private var mPitch: Int = 0
-
-    /**
-     * The rotation angles of the device
-     */
-    private var mRoll: Int = 0
+    private var mGravityBuffer  : MutableList<FloatArray> = ArrayList()
     //endregion
     /**
      * Initialize sensors:
@@ -108,7 +119,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 sensorManager.registerListener(
                     this,
                     mSensorManagerGravity,
-                    SensorManager.SENSOR_DELAY_NORMAL
+                    SensorManager.SENSOR_DELAY_FASTEST
                 )
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
@@ -119,7 +130,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 sensorManager.registerListener(
                     this,
                     mSensorManagerRotationVector,
-                    SensorManager.SENSOR_DELAY_NORMAL
+                    SensorManager.SENSOR_DELAY_FASTEST
                 )
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
@@ -130,7 +141,7 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
                 sensorManager.registerListener(
                     this,
                     mSensorManagerLinearAcceleration,
-                    SensorManager.SENSOR_DELAY_NORMAL
+                    SensorManager.SENSOR_DELAY_FASTEST
                 )
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
@@ -139,13 +150,13 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
             {
                 Log.d("InclinationProvider", "SYR-> Subscribing to mSensorManagerMagnetometer provider")
                 sensorManager.registerListener(
-                        this, mSensorManagerMagnetometer, SensorManager.SENSOR_DELAY_NORMAL)
+                        this, mSensorManagerMagnetometer, SensorManager.SENSOR_DELAY_FASTEST)
                 mProviderState = IDataProvider.ProviderState.SUBSCRIBED
             }
 
-            io.reactivex.rxjava3.core.Observable.interval(100L, TimeUnit.MILLISECONDS)
-                .timeInterval()
-                .subscribe { notifyValues(callback) }
+            if (mTimer == null) {
+                mTimer = io.reactivex.rxjava3.core.Observable.interval(100L, TimeUnit.MILLISECONDS).timeInterval().subscribe { notifyValues(callback) }
+            }
         }
         catch (ex: Exception)
         {
@@ -159,8 +170,53 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
      */
     private fun notifyValues(callback: (ITelemetryData) -> Unit)
     {
-        val inclination = InclinationData(mGravity, mLinearAcceleration, mAzimuth, mPitch, mRoll, System.currentTimeMillis() )
-        callback(inclination)
+        try {
+
+            var azimuth = 0
+            var pitch = 0
+            var roll = 0
+
+            val linearAcceleration = FloatArray(3)
+            val gravity = FloatArray(3)
+
+            synchronized(lock) {
+
+                linearAcceleration[0] = mLinearAccelerationBuffer.map { it[0] }.average().toFloat()
+                linearAcceleration[1] = mLinearAccelerationBuffer.map { it[1] }.average().toFloat()
+                linearAcceleration[2] = mLinearAccelerationBuffer.map { it[2] }.average().toFloat()
+
+                gravity[0] = mGravityBuffer.map { it[0] }.average().toFloat()
+                gravity[1] = mGravityBuffer.map { it[1] }.average().toFloat()
+                gravity[2] = mGravityBuffer.map { it[2] }.average().toFloat()
+
+                if (mAzimuthBuffer.any()) {
+                    azimuth = mAzimuthBuffer.toIntArray().average().roundToInt()
+                }
+
+                if (mPitchBuffer.any()) {
+                    pitch = mPitchBuffer.toIntArray().average().roundToInt()
+                }
+
+                if (mRollBuffer.any()) {
+                    roll = mRollBuffer.toIntArray().average().roundToInt()
+                }
+
+                mLinearAccelerationBuffer.clear()
+                mGravityBuffer.clear()
+                mAzimuthBuffer.clear()
+                mPitchBuffer.clear()
+                mRollBuffer.clear()
+            }
+
+            val inclination = InclinationData(
+                    gravity, linearAcceleration, azimuth, pitch, roll, System.currentTimeMillis())
+            callback(inclination)
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e("SYR", "SYR -> Unable to send inclination data because: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 
     /**
@@ -170,6 +226,11 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
     {
         sensorManager.unregisterListener(this)
         mProviderState = IDataProvider.ProviderState.STOPPED
+        if (mTimer != null && !mTimer!!.isDisposed)
+        {
+            mTimer?.dispose()
+            mTimer = null
+        }
     }
 
     /**
@@ -194,7 +255,6 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
 
         when (event!!.sensor.type) {
             Sensor.TYPE_GRAVITY -> processGravity(event)
-            //Sensor.TYPE_GYROSCOPE -> processGyroscope(event)
             Sensor.TYPE_LINEAR_ACCELERATION -> processAccelerometer(event)
             Sensor.TYPE_ROTATION_VECTOR -> processRotationVector(event)
         }
@@ -211,20 +271,21 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
 
         try {
 
+            val linearAcceleration = FloatArray(3)
             if (event != null) {
-                // Isolate the force of gravity with the low-pass filter.
-                // Remove the gravity contribution with the high-pass filter.
-                mLinearAcceleration[0] =
+                linearAcceleration[0] =
                     BigDecimal(event.values[0].toDouble()).setScale(2, RoundingMode.HALF_EVEN)
                         .toFloat()
-                mLinearAcceleration[1] =
+                linearAcceleration[1] =
                     BigDecimal(event.values[1].toDouble()).setScale(2, RoundingMode.HALF_EVEN)
                         .toFloat()
-                mLinearAcceleration[2] =
+                linearAcceleration[2] =
                     BigDecimal(event.values[2].toDouble()).setScale(2, RoundingMode.HALF_EVEN)
                         .toFloat()
 
-                //Log.d("SYR", "SYR -> Processing acceleration ${mLinearAcceleration[0]} ${mLinearAcceleration[1]} ${mLinearAcceleration[2]}")
+                synchronized(lock) {
+                    mLinearAccelerationBuffer.add(linearAcceleration)
+                }
             }
         }
         catch (ex: Exception)
@@ -263,10 +324,11 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
              */
             SensorManager.getOrientation(mRotationMatrix, mOrientationRadians)
 
-            //get degrees values and order them in x,y,z
-            mAzimuth = Math.toDegrees(mOrientationRadians[0].toDouble()).roundToInt()
-            mPitch = Math.toDegrees(mOrientationRadians[1].toDouble()).roundToInt()
-            mRoll = Math.toDegrees(mOrientationRadians[2].toDouble()).roundToInt()
+            synchronized(lock) {
+                mAzimuthBuffer.add(Math.toDegrees(mOrientationRadians[0].toDouble()).roundToInt())
+                mPitchBuffer.add(Math.toDegrees(mOrientationRadians[1].toDouble()).roundToInt())
+                mRollBuffer.add(Math.toDegrees(mOrientationRadians[2].toDouble()).roundToInt())
+            }
 
             //Log.d("SYR", "SYR -> Processing rotation vector Azimuth ${mOrientation[0]} Pitch ${mOrientation[1]} Roll ${mOrientation[2]}")
         }
@@ -287,13 +349,18 @@ class InclinationProvider(private val context: Context): IDataProvider, SensorEv
 
             val alpha = 0.8f
 
+            val gravity = FloatArray(3)
             // Isolate the force of gravity with the low-pass filter.
-            mGravity[0] = alpha * mGravity[0] + (1 - alpha) *
+            gravity[0] = alpha * gravity[0] + (1 - alpha) *
                     BigDecimal(event.values[0].toDouble()).setScale(2, RoundingMode.HALF_EVEN).toFloat()
-            mGravity[1] = alpha * mGravity[1] + (1 - alpha) *
+            gravity[1] = alpha * gravity[1] + (1 - alpha) *
                     BigDecimal(event.values[1].toDouble()).setScale(2, RoundingMode.HALF_EVEN).toFloat()
-            mGravity[2] = alpha * mGravity[2] + (1 - alpha) *
+            gravity[2] = alpha * gravity[2] + (1 - alpha) *
                     BigDecimal(event.values[2].toDouble()).setScale(2, RoundingMode.HALF_EVEN).toFloat()
+
+            synchronized(lock) {
+                mGravityBuffer.add((gravity))
+            }
 
             //Log.d("SYR", "SYR -> Processing gravity ${mGravity[0]} ${mGravity[1]} ${mGravity[2]}")
         }

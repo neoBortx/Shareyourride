@@ -76,7 +76,15 @@ data class Session(
     /**
      * Roll, angle of rotation about the y axis
      */
-    var referenceRoll: Int = 0
+    var referenceRoll: Int = 0,
+
+    /**
+     * acceleration applied to the device in m/s2
+     * [0]: x-axis
+     * [1]: y-axis
+     * [2]: z-axis
+     */
+    var referenceAcceleration: FloatArray = FloatArray(3)
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -96,6 +104,7 @@ data class Session(
         if (referenceAzimuth != other.referenceAzimuth) return false
         if (referencePitch != other.referencePitch) return false
         if (referenceRoll != other.referenceRoll) return false
+        if (referenceAcceleration.contentEquals(other.referenceAcceleration)) return false
 
         return true
     }
@@ -113,6 +122,7 @@ data class Session(
         result = 31 * result + referenceAzimuth.hashCode()
         result = 31 * result + referencePitch.hashCode()
         result = 31 * result + referenceRoll.hashCode()
+        result = 31 * result + referenceAcceleration.contentHashCode()
         return result
     }
 }

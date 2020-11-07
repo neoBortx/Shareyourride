@@ -7,18 +7,25 @@
 
     <ImageView
         android:id="@+id/telemetry_icon"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:contentDescription="@string/wifi_state"
-        android:layout_marginStart="20dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="25dp"
         android:layout_marginVertical="10dp" />
 
     <TextView
         android:id="@+id/telemetry_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10pt"
-        android:layout_marginVertical="20dp"
+        android:textSize="14sp"
+        android:layout_marginVertical="18dp"
         android:layout_marginStart="10dp"/>
+
+    <ImageView
+        android:id="@+id/direction_icon"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginVertical="22dp"
+        android:visibility="gone"/>
 
 </LinearLayout>
