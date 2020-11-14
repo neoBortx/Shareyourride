@@ -48,12 +48,6 @@ enum class SettingPreferencesIds{
     TemperatureUnit,
     WindSpeedUnit,
 
-    /**
-     * User params
-     */
-    ProfileImage,
-    ProfileName,
-
     Custom,
 }
 
@@ -94,9 +88,6 @@ class SettingPreferencesGetter(context: Context) {
             idToString[SettingPreferencesIds.SpeedUnit] = context.getString(R.string.speed_unit)
             idToString[SettingPreferencesIds.TemperatureUnit] = context.getString(R.string.temperature_unit)
             idToString[SettingPreferencesIds.WindSpeedUnit] = context.getString(R.string.wind_speed_unit)
-
-            idToString[SettingPreferencesIds.ProfileImage] = context.getString(R.string.profile_image)
-            idToString[SettingPreferencesIds.ProfileName] = context.getString(R.string.profile_name)
 
             idToString[SettingPreferencesIds.Custom] = context.getString(R.string.custom)
         }

@@ -3,12 +3,13 @@ package com.example.shareyourride.userplayground.session
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.services.session.TelemetryType
+import java.util.*
 
 /**
  * Gets the icon associate to a telemetry value
  */
 class TelemetryIconConverter() {
-    private var telemetryToIcon: HashMap<TelemetryType, Int> = HashMap()
+    private var telemetryToIcon: EnumMap<TelemetryType, Int> = EnumMap(TelemetryType::class.java)
 
     init {
         try {

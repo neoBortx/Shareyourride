@@ -31,13 +31,6 @@ abstract class ClientManager(protected val context: Context): BroadcastReceiver(
     override val telemetryChanged: MutableLiveData<TelemetryEvent> = MutableLiveData()
     //endregion
 
-    //region client state
-    /**
-     * Flag that points if the provider is ready
-     */
-    override var providerReady: MutableLiveData<Boolean>? = MutableLiveData()
-    //endregion
-
     //region telemetry data handler
     /**
      * Process the telemetry that the client is managing and send it to upper layers using
@@ -75,13 +68,6 @@ abstract class ClientManager(protected val context: Context): BroadcastReceiver(
     }
 
     /**
-     * Returns the state of the data provider
-     */
-    override fun getManagerState(): IDataProvider.ProviderState {
-        return mDataProvider?.getProviderState() ?:  IDataProvider.ProviderState.STOPPED
-    }
-
-    /**
      * Start the provider of the data provider
      */
     override fun startAcquiringData()
@@ -94,7 +80,7 @@ abstract class ClientManager(protected val context: Context): BroadcastReceiver(
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("AAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
     }
     //endregion
 }

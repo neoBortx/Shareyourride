@@ -1,6 +1,8 @@
 package com.example.shareyourride.userplayground.session
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +13,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.bvillarroya_creations.shareyourride.R
+import com.example.shareyourride.common.CommonConstants
 import com.example.shareyourride.services.session.TelemetryType
+import com.example.shareyourride.userplayground.common.TelemetryDirectionIconConverter
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import java.text.DecimalFormat
+import kotlin.math.roundToInt
 
 class TelemetryRecyclerViewAdapter(private val dataList: Array<TelemetryType>,
                                    private val locationViewModel: LocationViewModel,
@@ -40,77 +45,87 @@ class TelemetryRecyclerViewAdapter(private val dataList: Array<TelemetryType>,
 
     inner class CustomViewHolder(view: View, private val locationViewModel: LocationViewModel, private val inclinationViewModel: InclinationViewModel) : RecyclerView.ViewHolder(view) {
 
+        @SuppressLint("SetTextI18n")
         fun bind(telemetry: TelemetryType) {
             itemView.findViewById<ImageView>(R.id.telemetry_icon).setImageResource(TelemetryIconConverter().getIcon(telemetry))
             ImageViewCompat.setImageTintList(itemView.findViewById(R.id.telemetry_icon), itemView.context?.getColor(R.color.colorPrimary)?.let { ColorStateList.valueOf(it) })
 
+            val telemetryValue = itemView.findViewById<TextView>(R.id.telemetry_value)
+            val directionIcon = itemView.findViewById<ImageView>(R.id.direction_icon)
 
             when (telemetry)
             {
                 TelemetryType.Altitude -> {
-                    itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.altitude.value.toString().format() + itemView.context.getString(R.string.meters_unit)
+                    telemetryValue.text = (locationViewModel.altitude.value?.times(CommonConstants.getShortDistanceConverter(itemView.context)))?.roundToInt().toString() + CommonConstants.getShortDistanceText(itemView.context)
                     locationViewModel.altitude.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.altitude.value.toString() + itemView.context.getString(R.string.meters_unit)
+                        telemetryValue.text = (locationViewModel.altitude.value?.times(CommonConstants.getShortDistanceConverter(itemView.context)))?.roundToInt().toString() + CommonConstants.getShortDistanceText(itemView.context)
                     })
                 }
                 TelemetryType.Distance -> {
-                    if(locationViewModel.distance.value!! < 1000)
+
+                    if(locationViewModel.distance.value!! < CommonConstants.getLongDistanceConverter(itemView.context))
                     {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.distance.value.toString() + itemView.context.getString(R.string.meters_unit)
+                        val distance = locationViewModel.distance.value?.times(CommonConstants.getShortDistanceConverter(itemView.context))?: 0.0
+                        telemetryValue.text = distance.roundToInt().toString() + CommonConstants.getShortDistanceText(itemView.context)
                     }
                     else
                     {
-                        val distance = locationViewModel.distance.value!!.toDouble()/1000
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = distance.toString() + itemView.context.getString(R.string.kilometers_unit)
+                        val distance = locationViewModel.distance.value!!.toDouble()/CommonConstants.getLongDistanceConverter(itemView.context)
+                        telemetryValue.text = DecimalFormat("####.###").format(distance).toString() + CommonConstants.getLongDistanceText(itemView.context)
                     }
                     locationViewModel.distance.observe(itemView.context as LifecycleOwner, Observer {
-                        if(locationViewModel.distance.value!! < 1000)
+
+
+                        if(locationViewModel.distance.value!! < CommonConstants.getLongDistanceConverter(itemView.context))
                         {
-                            itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.distance.value.toString() + itemView.context.getString(R.string.meters_unit)
+                            val distance = locationViewModel.distance.value?.times(CommonConstants.getShortDistanceConverter(itemView.context))?: 0.0
+                            telemetryValue.text = distance.roundToInt().toString() + CommonConstants.getShortDistanceText(itemView.context)
                         }
                         else
                         {
-                            val distance = locationViewModel.distance.value!!.toDouble()/1000
-                            itemView.findViewById<TextView>(R.id.telemetry_value).text = distance.toString() + itemView.context.getString(R.string.kilometers_unit)
+                            val distance = locationViewModel.distance.value!!.toDouble()/CommonConstants.getLongDistanceConverter(itemView.context)
+                            telemetryValue.text = DecimalFormat("####.###").format(distance).toString() + CommonConstants.getLongDistanceText(itemView.context)
                         }
                     })
                 }
+
                 TelemetryType.TerrainInclination -> {
-                    itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.terrainInclination.value.toString()  + itemView.context.getString(R.string.percentage)
+                    telemetryValue.text = locationViewModel.terrainInclination.value.toString()  + itemView.context.getString(R.string.percentage)
                     locationViewModel.terrainInclination.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.terrainInclination.value.toString() + itemView.context.getString(R.string.percentage)
+                        telemetryValue.text = locationViewModel.terrainInclination.value.toString() + itemView.context.getString(R.string.percentage)
                     })
                 }
+
                 TelemetryType.Speed -> {
-                    itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.speed.value.toString() + itemView.context.getString(R.string.kilometers_hour_unit)
+                    telemetryValue.text = locationViewModel.speed.value?.times(CommonConstants.getSpeedConverter(itemView.context))?.roundToInt().toString() + CommonConstants.getSpeedText(itemView.context)
                     locationViewModel.speed.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = locationViewModel.speed.value.toString() + itemView.context.getString(R.string.kilometers_hour_unit)
+                        telemetryValue.text = locationViewModel.speed.value?.times(CommonConstants.getSpeedConverter(itemView.context))?.roundToInt().toString() + CommonConstants.getSpeedText(itemView.context)
                     })
                 }
                 TelemetryType.Acceleration -> {
-                    itemView.findViewById<TextView>(R.id.telemetry_value).text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value).toString() + itemView.context.getString(R.string.meters_per_seconds_unit)
+                    telemetryValue.text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value?.times(CommonConstants.getAccelerationConverter(itemView.context))).toString() + CommonConstants.getAccelerationText(itemView.context)
                     inclinationViewModel.acceleration.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value).toString() + itemView.context.getString(R.string.meters_per_seconds_unit)
+                        telemetryValue.text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value?.times(CommonConstants.getAccelerationConverter(itemView.context))).toString() + CommonConstants.getAccelerationText(itemView.context)
                     })
 
-                    itemView.findViewById<ImageView>(R.id.direction_icon).visibility = View.VISIBLE
-                    itemView.findViewById<ImageView>(R.id.direction_icon).setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.accelerationDirection.value))
+                    directionIcon.visibility = View.VISIBLE
+                    directionIcon.setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.accelerationDirection.value))
                     inclinationViewModel.accelerationDirection.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<ImageView>(R.id.direction_icon).setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.accelerationDirection.value))
-                        ImageViewCompat.setImageTintList(itemView.findViewById(R.id.direction_icon), itemView.context?.getColor(R.color.colorPrimary)?.let { ColorStateList.valueOf(it) })
+                        directionIcon.setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.accelerationDirection.value))
+                        ImageViewCompat.setImageTintList(directionIcon, itemView.context?.getColor(R.color.colorPrimary)?.let { ColorStateList.valueOf(it) })
                     })
                 }
                 TelemetryType.LeanAngle -> {
-                    itemView.findViewById<TextView>(R.id.telemetry_value).text = inclinationViewModel.leanAngle.value.toString() + itemView.context.getString(R.string.degrees)
+                    telemetryValue.text = inclinationViewModel.leanAngle.value.toString() + itemView.context.getString(R.string.degrees)
                     inclinationViewModel.leanAngle.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<TextView>(R.id.telemetry_value).text = inclinationViewModel.leanAngle.value.toString() + itemView.context.getString(R.string.degrees)
+                        telemetryValue.text = inclinationViewModel.leanAngle.value.toString() + itemView.context.getString(R.string.degrees)
                     })
 
-                    itemView.findViewById<ImageView>(R.id.direction_icon).visibility = View.VISIBLE
-                    itemView.findViewById<ImageView>(R.id.direction_icon).setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.leanDirection.value))
+                    directionIcon.visibility = View.VISIBLE
+                    directionIcon.setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.leanDirection.value))
                     inclinationViewModel.leanDirection.observe(itemView.context as LifecycleOwner, Observer {
-                        itemView.findViewById<ImageView>(R.id.direction_icon).setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.leanDirection.value))
-                        ImageViewCompat.setImageTintList(itemView.findViewById(R.id.direction_icon), itemView.context?.getColor(R.color.colorPrimary)?.let { ColorStateList.valueOf(it) })
+                        directionIcon.setImageResource(TelemetryDirectionIconConverter().getDirectionIcon(inclinationViewModel.leanDirection.value))
+                        ImageViewCompat.setImageTintList(directionIcon, itemView.context?.getColor(R.color.colorPrimary)?.let { ColorStateList.valueOf(it) })
                     })
                 }
             }

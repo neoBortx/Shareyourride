@@ -30,9 +30,6 @@
     <string name="wind_speed_unit">wind_speed_unit</string>
 
 
-    <!-- User perferences-->
-    <string name="profile_image">profile_image</string>
-    <string name="profile_name">profile_name</string>
 
     <string name="custom">custom</string>
 

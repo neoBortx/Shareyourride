@@ -9,6 +9,7 @@ import androidx.preference.PreferenceManager
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.configuration.SettingPreferencesIds
+import com.example.shareyourride.services.session.SummaryTelemetryType
 import com.example.shareyourride.services.session.TelemetryType
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -62,6 +63,11 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
      * List of configured activities
      */
     val telemetryList  = mutableListOf<TelemetryType>()
+
+    /**
+     * Summary telemetry list given at the end of the session
+     */
+    val summaryTelemetryList  = mutableListOf<SummaryTelemetryType>()
 
 
 
@@ -184,35 +190,49 @@ class SettingsViewModel(application: Application)  : AndroidViewModel(applicatio
     private fun composeTelemetryList()
     {
         telemetryList.clear()
+        summaryTelemetryList.clear()
+
+        summaryTelemetryList.add(SummaryTelemetryType.Duration)
+
+        if (distanceMetric)
+        {
+            telemetryList.add(TelemetryType.Distance)
+            summaryTelemetryList.add(SummaryTelemetryType.Distance)
+        }
 
         if (speedMetric)
         {
             telemetryList.add(TelemetryType.Speed)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxSpeed)
+            summaryTelemetryList.add(SummaryTelemetryType.AverageMaxSpeed)
         }
 
         if (gforceMetric)
         {
             telemetryList.add(TelemetryType.Acceleration)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxAcceleration)
         }
 
         if (leanAngleMetric)
         {
             telemetryList.add(TelemetryType.LeanAngle)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxLeftLeanAngle)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxRightLeanAngle)
         }
 
         if (inclinationMetric)
         {
             telemetryList.add(TelemetryType.TerrainInclination)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxDownhillTerrainInclination)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxUphillTerrainInclination)
+            summaryTelemetryList.add(SummaryTelemetryType.AverageTerrainInclination)
         }
 
         if (altitudeMetric)
         {
             telemetryList.add(TelemetryType.Altitude)
-        }
-
-        if (distanceMetric)
-        {
-            telemetryList.add(TelemetryType.Distance)
+            summaryTelemetryList.add(SummaryTelemetryType.MaxAltitude)
+            summaryTelemetryList.add(SummaryTelemetryType.MinAltitude)
         }
 
         /**

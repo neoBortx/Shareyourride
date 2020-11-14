@@ -16,7 +16,7 @@ enum class TelemetryType {
     Distance,
 
     /**
-     * Teh acceleration of the mobile phone
+     * The acceleration of the mobile phone
      */
     Acceleration,
 

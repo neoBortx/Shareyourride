@@ -78,6 +78,25 @@ class MessageTypes {
          * service -> view model
          */
         const val SESSION_STATE_EVENT = "sessionStateEvent"
+
+        /**
+         * Request for the data of an ended session
+         *
+         * Belongs to topic SESSION_COMMANDS
+         *
+         * session view model -> session service
+         */
+        const val SESSION_SUMMARY_REQUEST = "sessionSummaryRequest"
+
+        /**
+         * Sends the information of an ended session
+         *
+         * Belongs to topic SESSION_COMMANDS
+         *
+         * @remarks this message contains an object of time SessionSummaryData
+         * session service -> session view model
+         */
+        const val SESSION_SUMMARY_RESPONSE = "sessionSummaryResponse"
         //endregion
 
         //region SESSION_CONTROL
@@ -159,6 +178,16 @@ class MessageTypes {
          * Service -> View
          */
         const val GPS_DATA_EVENT = "gpsDataEvent"
+
+        /**
+         * Command to the service to start acquiring data
+         *
+         * Belongs to topic GPS_DATA
+         * @remarks this message contains a Location object
+         *
+         * view model -> Service
+         */
+        const val GPS_START_ACQUIRING_ACCURACY = "gpsStartAcquiringAccuracy"
         //endregion
 
         //region VIDEO_DATA
@@ -183,14 +212,36 @@ class MessageTypes {
         const val VIDEO_STATE_EVENT = "videoStateEvent"
 
         /**
-         * Notifies the state of the video, if it is a stream available or not
+         * Command to the video service that the video of the session must be removed because the user has discarded the session
          *
          * Belongs to topic VIDEO_DATA
-         * @remarks this message contains a boolean true if the video stream is available or false if not
+         * @remarks this message contains the identifier of the session
          *
-         * Session service to video service
+         * Session service -> Video service
          */
         const val VIDEO_DISCARD_COMMAND = "videoDiscardCommand"
+        //endregion
+
+        //region VIDEO_CREATION_DATA
+        /**
+         * Command to the video creating to start creating the video with the telemetry
+         *
+         * Belongs to topic VIDEO_CREATION_DATA
+         * @remarks this message contains the identifier of the session
+         *
+         * Session service -> Video creation service
+         */
+        const val VIDEO_CREATION_COMMAND = "videoCreationCommand"
+
+        /**
+         * Notifies the stare of the video creation
+         *
+         * Belongs to topic VIDEO_CREATION_DATA
+         * @remarks this message contains the object VideoCreationStateEvent
+         *
+         * Video creation service -> Session service && video creation view model
+         */
+        const val VIDEO_CREATION_STATE_EVENT = "videoCreationStateEvent"
         //endregion
 
         //region INCLINATION_DATA
@@ -202,11 +253,13 @@ class MessageTypes {
          * inclination service -> view
          */
         const val INCLINATION_DATA_EVENT = "inclinationDataEvent"
+        //endregion
 
+        //region INCLINATION_CONTROL
         /**
          * Command to the inclination service to start the sensor calibration
          *
-         * belongs to topic INCLINATION_DATA
+         * belongs to topic INCLINATION_CONTROL
          *
          * view -> Inclination service
          */
@@ -215,7 +268,7 @@ class MessageTypes {
         /**
          * Notifies that the synchronization service has finished
          *
-         * belongs to topic INCLINATION_DATA
+         * belongs to topic INCLINATION_CONTROL
          *
          * Inclination service -> service session
          *

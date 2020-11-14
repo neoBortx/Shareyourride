@@ -2,6 +2,7 @@ package com.example.shareyourride.userplayground
 
 import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -216,6 +217,9 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
     {
         permissions.addFunctionality(Manifest.permission.ACCESS_FINE_LOCATION)
         permissions.addFunctionality(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.addFunctionality(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
         permissions.addFunctionality(Manifest.permission.CHANGE_WIFI_STATE)
         permissions.addFunctionality(Manifest.permission.ACCESS_WIFI_STATE)
         permissions.addFunctionality(Manifest.permission.CHANGE_NETWORK_STATE)

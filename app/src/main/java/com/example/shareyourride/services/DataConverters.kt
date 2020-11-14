@@ -30,7 +30,7 @@ class DataConverters {
                     data.distance)
         }
 
-        fun convertData(data: InclinationData, sessionId: String, timestamp: Long): Inclination
+        fun convertData(data: InclinationData, sessionId: String, timestamp: Long, accelerationScalar: Float, accelerationDirection: Int): Inclination
         {
 
             return Inclination(
@@ -39,7 +39,9 @@ class DataConverters {
                 data.gravity,
                 data.azimuth,
                 data.pitch,
-                data.roll)
+                data.roll,
+                accelerationScalar,
+                accelerationDirection)
         }
 
         fun convertData(data: EnvironmentData, sessionId: String, timestamp: Long): Environment

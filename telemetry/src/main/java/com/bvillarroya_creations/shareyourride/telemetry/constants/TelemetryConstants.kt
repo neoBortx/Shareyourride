@@ -12,7 +12,6 @@ class TelemetryConstants {
             Location,
             Environment,
             Inclination,
-            Body,
             Video
         }
 

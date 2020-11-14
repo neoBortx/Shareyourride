@@ -10,28 +10,4 @@
         app:entries="@array/unit_system_entries"
         app:entryValues="@array/unit_system_values" />
 
-    <SwitchPreference
-        app:key="@string/speed_unit"
-        app:title="@string/speed"
-        app:useSimpleSummaryProvider="true"
-        app:summaryOff="@string/kmh"
-        app:summaryOn="@string/mph"
-        app:enabled="false" />
-
-    <SwitchPreference
-        app:key="@string/temperature_unit"
-        app:title="@string/temperature"
-        app:useSimpleSummaryProvider="true"
-        app:summaryOff="@string/celsius"
-        app:summaryOn="@string/fahrenheit"
-        app:enabled="false"/>
-
-    <SwitchPreference
-        app:key="@string/wind_speed_unit"
-        app:title="@string/wind_speed"
-        app:useSimpleSummaryProvider="true"
-        app:summaryOff="@string/mps"
-        app:summaryOn="@string/mph"
-        app:enabled="false"/>
-
 </PreferenceScreen>

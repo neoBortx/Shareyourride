@@ -6,6 +6,7 @@ import com.bvillarroya_creations.shareyourride.datamodel.dataBase.ShareYourRideR
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.InclinationCalibrationData
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.SessionSummaryData
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
@@ -16,7 +17,7 @@ import com.example.shareyourride.services.base.ServiceBase
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -162,7 +163,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                 sendSaveTelemetry()
             }
 
-            updateTelemetryTimer = Observable.interval(1000, 100, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateTelemetryTimer = Observable.interval(1000, 300, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 sendUpdateTelemetry()
             }
         }
@@ -248,6 +249,8 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
             mSession.endTimeStamp = System.currentTimeMillis()
 
             stopSession()
+
+            Log.e("SessionService","SYR -> stopping session ${mSession.id}")
 
             runBlocking {
                 ShareYourRideRepository.updateSession(mSession)
@@ -373,11 +376,49 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    private fun processSessionSummaryRequest()
+    {
+        try
+        {
+            // Job and Dispatcher are combined into a CoroutineContext which
+            // will be discussed shortly
+            val scope = CoroutineScope(Job() + Dispatchers.IO)
+
+            val sessionSummary = SessionSummaryData()
+
+            scope.launch {
+                sessionSummary.duration = mSession.endTimeStamp - mSession.initTimeStamp
+                sessionSummary.maxSpeed = ShareYourRideRepository.getMaxSpeed(mSession.id)
+                sessionSummary.averageSpeed = ShareYourRideRepository.getAverageMaxSpeed(mSession.id)
+                sessionSummary.distance = ShareYourRideRepository.getDistance(mSession.id)
+                sessionSummary.maxAcceleration = ShareYourRideRepository.getMaxAcceleration(mSession.id)
+                sessionSummary.maxLeftLeanAngle = ShareYourRideRepository.getMaxLeftLeanAngle(mSession.id)
+                sessionSummary.maxRightLeanAngle = ShareYourRideRepository.getMaxRightLeanAngle(mSession.id)
+                sessionSummary.maxAltitude = ShareYourRideRepository.getMaxAltitude(mSession.id)
+                sessionSummary.minAltitude = ShareYourRideRepository.getMinAltitude(mSession.id)
+                sessionSummary.maxUphillTerrainInclination = ShareYourRideRepository.getMaxUphillTerrainInclination(mSession.id)
+                sessionSummary.maxDownhillTerrainInclination = ShareYourRideRepository.getMaxDownhillTerrainInclination(mSession.id)
+                sessionSummary.averageTerrainInclination = ShareYourRideRepository.getAverageTerrainInclination(mSession.id)
+
+                withContext(Dispatchers.Main) {
+                    Log.d("SessionService", "SYR -> Sending  SESSION_SUMMARY_RESPONSE session message ${mSession.id}")
+                    val message = MessageBundle( MessageTypes.SESSION_SUMMARY_RESPONSE, sessionSummary, MessageTopics.SESSION_COMMANDS)
+                    sendMessage(message)
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to process session summary request because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
     //endregion
 
     //region IMessageHandlerClient implementation
     init {
-        this.createMessageHandler( "SessionService", listOf<String>(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_DATA))
+        this.createMessageHandler( "SessionService", listOf(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_CONTROL))
     }
 
     override lateinit var messageHandler: MessageHandler
@@ -394,53 +435,58 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
             {
                 MessageTypes.START_SESSION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received START_SESSION updating event")
+                    Log.d("SessionService", "SYR -> received START_SESSION updating event")
                     processStartSessionCommand()
                 }
                 MessageTypes.END_SESSION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received END_SESSION updating event")
+                    Log.d("SessionService", "SYR -> received END_SESSION updating event")
                     processStopSession()
                 }
                 MessageTypes.CONTINUE_SESSION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received CONTINUE_SESSION updating event")
+                    Log.d("SessionService", "SYR -> received CONTINUE_SESSION updating event")
                     processContinueSession()
                 }
                 MessageTypes.RETRY_CALIBRATION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received RETRY_CALIBRATION updating event")
+                    Log.d("SessionService", "SYR -> received RETRY_CALIBRATION updating event")
                     processRetryCalibration()
                 }
                 MessageTypes.SESSION_STATE_REQUEST ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received SESSION_STATE_REQUEST updating event")
+                    Log.d("SessionService", "SYR -> received SESSION_STATE_REQUEST updating event")
                     sendSessionState()
                 }
                 MessageTypes.DISCARD_SESSION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received DISCARD_SESSION updating event")
+                    Log.d("SessionService", "SYR -> received DISCARD_SESSION updating event")
                     processDiscardSession()
                 }
                 MessageTypes.CANCEL_SESSION ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received CANCEL_SESSION updating event")
+                    Log.d("SessionService", "SYR -> received CANCEL_SESSION updating event")
                     processCancelSession()
                 }
                 MessageTypes.INCLINATION_CALIBRATION_END ->
                 {
-                    Log.d("SessionViewModel", "SYR -> received INCLINATION_CALIBRATION_END updating event")
+                    Log.d("SessionService", "SYR -> received INCLINATION_CALIBRATION_END updating event")
                     processInclinationCalibrationEnd(msg.messageData)
+                }
+                MessageTypes.SESSION_SUMMARY_REQUEST ->
+                {
+                    Log.d("SessionService", "SYR -> received SESSION_SUMMARY_REQUEST updating event")
+                    processSessionSummaryRequest()
                 }
                 else ->
                 {
-                    Log.e("SessionViewModel", "SYR -> message ${msg.messageKey} no supported")
+                    Log.e("SessionService", "SYR -> message ${msg.messageKey} no supported")
                 }
             }
         }
         catch (ex: Exception)
         {
-            Log.e("SessionViewModel", "SYR -> Unable to process message ${ex.message}")
+            Log.e("SessionService", "SYR -> Unable to process message ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -552,7 +598,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
         try
         {
             Log.d("SessionService", "SYR -> Sending  session state")
-            val message = MessageBundle( MessageTypes.INCLINATION_CALIBRATION_START, mSession.id, MessageTopics.INCLINATION_DATA)
+            val message = MessageBundle( MessageTypes.INCLINATION_CALIBRATION_START, mSession.id, MessageTopics.INCLINATION_CONTROL)
             sendMessage(message)
         }
         catch (ex: Exception)

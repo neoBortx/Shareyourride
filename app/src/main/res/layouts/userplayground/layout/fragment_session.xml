@@ -15,13 +15,14 @@
             android:layout_width="146dp"
             android:layout_height="25dp"
             android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="30dp"
             android:text="@string/activity_kind_label"
             android:textAlignment="center"
             android:textSize="16sp"
-            android:layout_marginTop="30dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/gps_state_img_session"
@@ -50,49 +51,57 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="29dp"
             android:textAlignment="center"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"
-            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_session"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_session" />
 
         <TextureView
             android:id="@+id/video_placeholder_home_session"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="29dp"
             app:flow_horizontalAlign="center"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value_session" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_session"
-            android:layout_marginHorizontal="30dp"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="29dp"
+            android:maxHeight="250dp"
+            app:flow_verticalAlign="bottom"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:layout_constraintBottom_toTopOf="@+id/stop_activity_button"
-            app:layout_constraintTop_toBottomOf="@+id/video_placeholder_home_session"
-            app:flow_verticalAlign="center"
-            />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/video_placeholder_home_session" />
 
         <Button
             android:id="@+id/stop_activity_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="30dp"
             android:background="@drawable/button_style"
             android:clickable="true"
             android:focusable="true"
             android:paddingHorizontal="20dp"
             android:text="@string/stop_activity"
             android:textColor="@color/whiteColor"
+            app:flow_verticalAlign="bottom"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recycler_view_session" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

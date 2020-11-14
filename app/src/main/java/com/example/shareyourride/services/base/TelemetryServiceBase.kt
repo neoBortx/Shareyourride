@@ -62,11 +62,9 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
                 }
                 MessageTypes.SAVE_TELEMETRY -> {
                     val timeStamp = msg.messageData.data as Long
-                    Log.d(mClassName, "SYR -> received  save telemetry, timestamp $timeStamp")
                     saveTelemetry(timeStamp)
                 }
                 MessageTypes.UPDATE_TELEMETRY -> {
-                    Log.d(mClassName, "SYR -> received  update telemetry")
                     updateTelemetry()
                 }
                 else -> {
@@ -86,7 +84,7 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
     /**
      * Flag that points if the provider is ready
      */
-    override var providerReady : MutableLiveData<Boolean>? = null
+    override var providerReady = false
 
     /**
      * Start acquiring telemetry data initialization the data observer and commanding

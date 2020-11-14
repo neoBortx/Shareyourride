@@ -9,6 +9,8 @@ import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
+import com.example.shareyourride.common.CommonConstants
+import kotlin.math.roundToInt
 
 class LocationViewModel : ViewModel(), IMessageHandlerClient
 {
@@ -22,7 +24,7 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
     /**
      * Speed in kilometers per hour
      */
-    val speed = MutableLiveData<Int>()
+    val speed = MutableLiveData<Float>()
 
     /**
      * Altitude in meters
@@ -40,12 +42,6 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
     val distance = MutableLiveData<Long>()
     //endregion
 
-    //region constants
-    companion object
-    {
-        private const val KILOMETERS_PER_HOUR_CONVERTER = 3.6
-    }
-    //endregion
     //region message handlers
     init {
         this.createMessageHandler( "LocationViewModel", listOf<String>(MessageTopics.GPS_DATA))
@@ -53,7 +49,7 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
         distance.postValue(0)
         terrainInclination.postValue(0)
         altitude.postValue(0)
-        speed.postValue(0)
+        speed.postValue(0F)
     }
 
     override lateinit var messageHandler: MessageHandler
@@ -71,7 +67,6 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
             {
                 MessageTypes.GPS_DATA_EVENT ->
                 {
-                    Log.d("LocationViewModel", "SYR -> received GPS_DATA_EVENT updating data")
                     processGpsData(msg)
                 }
                 MessageTypes.GPS_STATE_EVENT ->
@@ -129,11 +124,8 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
             {
                 val location = msg.messageData.data as Location
 
-
-                //Log.e("LocationViewModel", "SYR -> AAAAAAAAAAAAAAAAAAAAAAAAA ${location.distance}")
-
-                speed.postValue((location.speed * KILOMETERS_PER_HOUR_CONVERTER).toInt())
-                altitude.postValue(location.altitude.toInt())
+                speed.postValue((location.speed))
+                altitude.postValue(location.altitude.roundToInt())
                 terrainInclination.postValue(location.terrainInclination)
                 distance.postValue(location.distance)
             }
@@ -151,7 +143,10 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
     {
         try
         {
-            Log.e("LocationViewModel", "SYR -> Send GPS_STATE_REQUEST")
+            Log.i("LocationViewModel", "SYR -> Send GPS_START_ACQUIRING_ACCURACY")
+            val messageAccuracy = MessageBundle(MessageTypes.GPS_START_ACQUIRING_ACCURACY,"", MessageTopics.GPS_DATA)
+            sendMessage(messageAccuracy)
+            Log.i("LocationViewModel", "SYR -> Send GPS_STATE_REQUEST")
             val message = MessageBundle(MessageTypes.GPS_STATE_REQUEST,"", MessageTopics.GPS_DATA)
             sendMessage(message)
         }

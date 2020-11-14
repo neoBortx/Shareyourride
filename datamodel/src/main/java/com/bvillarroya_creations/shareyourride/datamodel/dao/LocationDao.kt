@@ -41,6 +41,57 @@ interface LocationDao {
      *
      * @return: The list of Location
      */
-    @Query("SELECT * FROM Location Where sessionId like :session and timeStamp like :timeStamp")
-    fun getLocationList(session: Int, timeStamp: Int): List<Location>
+    @Query("SELECT * FROM Location Where sessionId like :sessionId and timeStamp like :timeStamp")
+    fun getLocationList(sessionId: String, timeStamp: Int): List<Location>
+
+    //region session summary
+    /**
+     * Get the maximum speed of the mobile phone during the session
+     */
+    @Query("SELECT MAX(speed) FROM Location Where sessionId like :sessionId")
+    fun getMaxSpeed(sessionId: String): Float
+
+
+    /**
+     * Get the average speed of the mobile phone during the session
+     */
+    @Query("SELECT AVG(speed) FROM Location Where sessionId like :sessionId")
+    fun getAverageMaxSpeed(sessionId: String): Float
+
+    /**
+     * Get the total distance of the session
+     */
+    @Query("SELECT MAX(distance) FROM Location Where sessionId like :sessionId")
+    fun getDistance(sessionId: String): Long
+
+    /**
+     * Get the maximum altitude detected during the session
+     */
+    @Query("SELECT MAX(altitude) FROM Location Where sessionId like :sessionId")
+    fun getMaxAltitude(sessionId: String): Double
+
+    /**
+     * Get the minimum altitude detected during the session
+     */
+    @Query("SELECT MIN(altitude) FROM Location Where sessionId like :sessionId")
+    fun getMinAltitude(sessionId: String): Double
+
+    /**
+     * Get the maximum terrain inclination in Uphill
+     */
+    @Query("SELECT MAX(terrainInclination) FROM Location Where sessionId like :sessionId")
+    fun getMaxUphillTerrainInclination(sessionId: String): Int
+    /**
+     * Get the maximum terrain inclination in Downhill
+     */
+    @Query("SELECT MIN(terrainInclination) FROM Location Where sessionId like :sessionId")
+    fun getMaxDownhillTerrainInclination(sessionId: String): Int
+
+    /**
+     * Get the average terrain inclination
+     */
+    @Query("SELECT AVG(terrainInclination) FROM Location Where sessionId like :sessionId")
+    fun getAverageTerrainInclination(sessionId: String): Int
+    //endregion
+
 }

@@ -1,7 +1,12 @@
 package com.example.shareyourride.services.location
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.GnssStatus
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
+import androidx.core.app.ActivityCompat
 import com.bvillarroya_creations.shareyourride.datamodel.data.Location
 import com.bvillarroya_creations.shareyourride.datamodel.dataBase.ShareYourRideRepository
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
@@ -25,36 +30,27 @@ class LocationService() : TelemetryServiceBase()
 {
     override var mClassName: String = LocationService::class.java.simpleName
 
-    /**
-     * The latitude position of the device, in degrees
-     */
-    val latitude = MutableLiveData<Double>()
 
-    /**
-     * The longitude position in degrees of the device
-     */
-    val longitude = MutableLiveData<Double>()
-
-    /**
-     * The current altitude of the device, in meters
-     */
-    val altitude = MutableLiveData<Double>()
-
-    /**
-     * The speed of the device, in meters per second
-     */
-    val speed = MutableLiveData<Float>()
-
-    /**
-     * The inclination of the terrain
-     */
-    val terrainInclination = MutableLiveData<Int>()
-
-    /**
+     /**
      * Timer to send the update GPS events
      */
     private var updateGpsStateTimer: Disposable? = null
 
+    private var accuracyModeEnabled = false
+
+    private var accuracyAdmissible = false
+
+    /**
+     *
+     */
+    var gpsEnabled = false
+
+    private var mLocationManager : android.location.LocationManager? = null
+
+    /**
+     * Function that handles changes the GPS state
+     */
+    private lateinit var mGnssStatusCallback: GnssStatus.Callback
     //region message handlers
     init {
         this.createMessageHandler( "LocationService", listOf<String>(MessageTopics.SESSION_CONTROL, MessageTopics.GPS_DATA))
@@ -74,8 +70,20 @@ class LocationService() : TelemetryServiceBase()
                 MessageTypes.GPS_STATE_REQUEST ->
                 {
                     Log.d(mClassName, "SYR -> received  GPS_STATE_REQUEST, responding with " +
-                            "GPS_STATE_EVNT ${providerReady?.value}")
+                            "GPS_STATE_EVENT ${providerReady}")
                     notifyGpState()
+                }
+                MessageTypes.GPS_START_ACQUIRING_ACCURACY ->
+                {
+                    Log.d(mClassName, "SYR -> received  GPS_START_ACQUIRING_ACCURACY, starting the accuracyMode")
+                    setAccuracyCalculationMode()
+                }
+                MessageTypes.START_ACQUIRING_DATA ->
+                {
+                    if (accuracyModeEnabled) {
+                        accuracyModeEnabled = false
+                    }
+                    super.processMessage(msg)
                 }
                 else ->
                 {
@@ -94,7 +102,6 @@ class LocationService() : TelemetryServiceBase()
     //region override TelemetryServiceBase
     override fun initializeManager() {
         mTelemetryManager = LocationManager(applicationContext)
-        providerReady = mTelemetryManager?.providerReady
         mTelemetryManager?.configure()
     }
 
@@ -106,15 +113,25 @@ class LocationService() : TelemetryServiceBase()
     override fun processTelemetry(data: ITelemetryData) {
         try
         {
-            val location = DataConverters.convertData(data as LocationData, mSessionId, 0)
+            val locationData = data as LocationData
+            val location = DataConverters.convertData(locationData, mSessionId, 0)
 
-            telemetryData = location
-
-            latitude.postValue(location.latitude)
-            longitude.postValue(location.longitude)
-            altitude.postValue(location.altitude)
-            speed.postValue(location.speed)
-            terrainInclination.postValue(location.terrainInclination)
+            if (accuracyModeEnabled) {
+                if (locationData.accuracy > 1) {
+                    Log.d(mClassName, "SYR -> The received accuracy is good enough ${locationData.accuracy}")
+                    accuracyAdmissible = true
+                    notifyGpState()
+                }
+                else {
+                    Log.d(mClassName, "SYR -> The received accuracy is to low ${locationData.accuracy}")
+                    accuracyAdmissible = false
+                    telemetryData = location
+                }
+            }
+            else
+            {
+                telemetryData = location
+            }
         }
         catch(ex: Exception)
         {
@@ -133,6 +150,7 @@ class LocationService() : TelemetryServiceBase()
         try
         {
             if (telemetryData != null) {
+                telemetryData!!.id.sessionId = mSessionId
                 telemetryData!!.id.timeStamp = timeStamp
 
                 runBlocking {
@@ -179,11 +197,26 @@ class LocationService() : TelemetryServiceBase()
     }
 
     //region private functions
+    private fun setAccuracyCalculationMode()
+    {
+        try
+        {
+            accuracyModeEnabled = true
+            initializeTelemetry()
+
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to set accuracy mode because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
     private fun notifyGpState()
     {
         try
         {
-            val message = MessageBundle(MessageTypes.GPS_STATE_EVENT, providerReady?.value, MessageTopics.GPS_DATA)
+            val message = MessageBundle(MessageTypes.GPS_STATE_EVENT, gpsEnabled && accuracyAdmissible, MessageTopics.GPS_DATA)
             sendMessage(message)
         }
         catch (ex: java.lang.Exception)
@@ -209,6 +242,56 @@ class LocationService() : TelemetryServiceBase()
             Log.e(mClassName,"SYR -> Unable to configure a periodic timer to send telemetry messages because ${ex.message}")
             ex.printStackTrace()
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+
+        mLocationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as  android.location.LocationManager?
+        if (mLocationManager != null)
+        {
+            gpsEnabled = mLocationManager!!.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER )
+        }
+
+        Log.i("LocationManager", "SYR -> Creating  mGnssStatusCallback")
+        mGnssStatusCallback = object : GnssStatus.Callback()
+        {
+            override fun onFirstFix(ttffMillis: Int) {
+                Log.i("LocationManager", "SYR -> GPS onFirstFix")
+                super.onFirstFix(ttffMillis)
+            }
+
+            override fun onStarted()
+            {
+                Log.i("LocationManager", "SYR -> GPS started")
+                gpsEnabled = true
+            }
+
+            override fun onStopped()
+            {
+                Log.d("LocationManager", "SYR ->  GPS stopped")
+                gpsEnabled = false
+            }
+
+            override fun onSatelliteStatusChanged(status: GnssStatus)
+            {
+                Log.d("LocationProvider", "SYR ->  GPS started count : ${status.satelliteCount}")
+            }
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        {
+            Log.i("LocationManager", "SYR -> GPS permissions granted attaching mGnssStatusCallback")
+            mLocationManager?.registerGnssStatusCallback(mGnssStatusCallback)
+        }
+        else
+        {
+            Log.d("LocationManager", "SYR -> GPS permissions denied unable to attach mGnssStatusCallback")
+        }
+
+        setAccuracyCalculationMode()
+
+        return super.onStartCommand(intent, flags, startId)
     }
     //endregion
 }

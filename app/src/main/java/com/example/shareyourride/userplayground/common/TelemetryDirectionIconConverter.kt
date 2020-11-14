@@ -1,15 +1,16 @@
-package com.example.shareyourride.userplayground.session
+package com.example.shareyourride.userplayground.common
 
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
+import java.util.*
 
 /**
  * Gets the icon associate to a direction
  */
 class TelemetryDirectionIconConverter() {
-    private var telemetryToLeanIcon: HashMap<InclinationViewModel.LeanDirection, Int> = HashMap()
-    private var telemetryToAccelerationIcon: HashMap<InclinationViewModel.AccelerationDirection, Int> = HashMap()
+    private var telemetryToLeanIcon: EnumMap<InclinationViewModel.LeanDirection, Int> = EnumMap(InclinationViewModel.LeanDirection::class.java)
+    private var telemetryToAccelerationIcon: EnumMap<InclinationViewModel.AccelerationDirection, Int> = EnumMap(InclinationViewModel.AccelerationDirection::class.java)
 
     init {
         try {

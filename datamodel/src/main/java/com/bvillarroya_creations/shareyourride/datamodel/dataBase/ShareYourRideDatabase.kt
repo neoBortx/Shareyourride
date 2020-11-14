@@ -17,8 +17,7 @@ import com.bvillarroya_creations.shareyourride.datamodel.data.*
     Video::class,
     Location::class,
     Environment::class,
-    Body::class,
-    Inclination::class], version = 15)
+    Inclination::class], version = 16)
 @TypeConverters(FloatArrayToStringConverter::class,IntArrayToStringConverter::class)
 abstract class ShareYourRideDatabase : RoomDatabase()
 {
@@ -31,7 +30,6 @@ abstract class ShareYourRideDatabase : RoomDatabase()
     abstract fun videoDao(): VideoDao
     abstract fun locationDao(): LocationDao
     abstract fun environmentDao(): EnvironmentDao
-    abstract fun bodyDao(): BodyDao
     abstract fun inclinationDao(): InclinationDao
 
 }

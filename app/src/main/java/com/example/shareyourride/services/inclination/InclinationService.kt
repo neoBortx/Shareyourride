@@ -8,14 +8,16 @@ import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.InclinationCalibrationData
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
-import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
 import com.bvillarroya_creations.shareyourride.telemetry.inclination.InclinationData
 import com.bvillarroya_creations.shareyourride.telemetry.inclination.InclinationManager
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.example.shareyourride.services.DataConverters
 import com.example.shareyourride.services.base.TelemetryServiceBase
+import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import kotlinx.coroutines.runBlocking
 import kotlin.math.absoluteValue
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Service for tilt data
@@ -36,7 +38,7 @@ class InclinationService(): TelemetryServiceBase()
 
     //region message handlers
     init {
-        this.createMessageHandler( "InclinationService", listOf<String>(MessageTopics.SESSION_CONTROL, MessageTopics.INCLINATION_DATA))
+        this.createMessageHandler( "InclinationService", listOf<String>(MessageTopics.SESSION_CONTROL, MessageTopics.INCLINATION_CONTROL))
     }
 
     /**
@@ -83,7 +85,7 @@ class InclinationService(): TelemetryServiceBase()
                                                   calibrationManager.referenceAcceleration)
 
             Log.d("InclinationService", "Sending the result of the calibration process INCLINATION_CALIBRATION_END -> $result")
-            val message = MessageBundle(MessageTypes.INCLINATION_CALIBRATION_END, data, MessageTopics.INCLINATION_DATA)
+            val message = MessageBundle(MessageTypes.INCLINATION_CALIBRATION_END, data, MessageTopics.INCLINATION_CONTROL)
             sendMessage(message)
             Log.e("InclinationService", "SYR -> Calculated reference rotation " +
                     "roll ${ calibrationManager.referenceRoll} " +
@@ -115,22 +117,32 @@ class InclinationService(): TelemetryServiceBase()
     override fun processTelemetry(data: ITelemetryData) {
         try
         {
-            val inclination = DataConverters.convertData(data as InclinationData, mSessionId, 0)
 
+            //get raw data
+            val inclinationData = data as InclinationData
+
+            if(calibrationManager.isInEditMode)
+            {
+                calibrationManager.insertValues(inclinationData.roll, inclinationData.pitch, inclinationData.azimuth, inclinationData.acceleration, inclinationData.gravity)
+            }
+
+            val acceleration = processAcceleration(inclinationData.acceleration)
+            val accelerationScalar = getAccelerationScalar(acceleration,inclinationData.pitch)
+            val accelerationDirection = getAccelerationDirection(determineLongitudinalValue(acceleration[0],acceleration[2],inclinationData.pitch),acceleration[1]).ordinal
+
+            val inclination = DataConverters.convertData(inclinationData, mSessionId, 0, accelerationScalar, accelerationDirection)
+
+            //process teh data applying offsets and high pass filters
             val processedInclination = Inclination(
                     azimuth      = processAzimuth(inclination.azimuth),
                     pitch        = processPitch(inclination.pitch),
                     roll         =   processRoll(inclination.roll),
-                    acceleration = processAcceleration(inclination.acceleration),
-                    gravity      =   inclination.gravity
+                    acceleration = acceleration,
+                    gravity      =   inclination.gravity,
+                    accelerationScalar = inclination.accelerationScalar,
+                    accelerationDirection = inclination.accelerationDirection
             )
-
             telemetryData = processedInclination
-
-            if(calibrationManager.isInEditMode)
-            {
-                calibrationManager.insertValues(inclination.roll, inclination.pitch, inclination.azimuth, inclination.acceleration, inclination.gravity)
-            }
         }
         catch(ex: Exception)
         {
@@ -147,6 +159,7 @@ class InclinationService(): TelemetryServiceBase()
      */
     override fun saveTelemetry(timeStamp: Long) {
         try {
+            telemetryData!!.id.sessionId = mSessionId
             telemetryData!!.id.timeStamp = timeStamp
 
             runBlocking {
@@ -296,5 +309,77 @@ class InclinationService(): TelemetryServiceBase()
         }
     }
 
+    /**
+     * Calculate the acceleration direction and magnitude
+     *
+     * @param accelerationVector: the acceleration in x,y and z axis
+     * @param pitch: the rotation in the x axis
+     */
+    private fun getAccelerationScalar(accelerationVector: FloatArray, pitch: Int): Float
+    {
+        try
+        {
+            if (accelerationVector.count() >= 3)
+            {
+                //apply high pass filter
+                val x  = accelerationVector[0]
+                val y  = accelerationVector[1]
+                val z= accelerationVector[2]
+
+                val longitudinalValue = determineLongitudinalValue(x,y,pitch)
+
+                getAccelerationDirection(longitudinalValue, y)
+
+                return sqrt(longitudinalValue.pow(2.0F) + y.pow(2.0F) + z.pow(2.0F))
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("LocationViewModel", "SYR -> Unable to process acceleration because: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        return 0F
+    }
+
+    /**
+     * Calculate the direction of the acceleration getting the higher absolute value
+     */
+    private fun getAccelerationDirection(longitudinalValue: Float, y :Float): InclinationViewModel.AccelerationDirection
+    {
+        //To simplify the interface, only show the dominant direction of the vector
+        return if(longitudinalValue.absoluteValue >= y.absoluteValue)
+        {
+            if (longitudinalValue < 0) InclinationViewModel.AccelerationDirection.Left else InclinationViewModel.AccelerationDirection.Right
+        }
+        else
+        {
+            if (y < 0) InclinationViewModel.AccelerationDirection.Back else InclinationViewModel.AccelerationDirection.Front
+        }
+
+    }
+
+    /**
+     * Determine the higher force
+     * @param xAxis: Force in x axis
+     * @param zAxis: Force in z axis
+     * @param pitch: Rotating in x axis
+     *
+     * @return the dominant force
+     */
+    private fun determineLongitudinalValue(xAxis: Float, zAxis: Float, pitch: Int): Float
+    {
+        return when {
+            pitch.absoluteValue > 45 -> {
+                zAxis
+            }
+            pitch.absoluteValue == 45 -> {
+                if (zAxis.absoluteValue > xAxis.absoluteValue) zAxis else xAxis
+            }
+            else -> {
+                xAxis
+            }
+        }
+    }
     //endregion
 }

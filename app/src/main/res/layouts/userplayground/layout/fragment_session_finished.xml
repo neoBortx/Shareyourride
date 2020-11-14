@@ -10,17 +10,73 @@
         android:layout_height="match_parent"
         tools:context="com.example.shareyourride.userplayground.session.SessionFragment">
 
-        <TextureView
-            android:id="@+id/realtime_tv"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
+        <TextView
+            android:id="@+id/text_activity_kind_label_end"
+            android:layout_width="146dp"
+            android:layout_height="25dp"
+            android:layout_marginHorizontal="30dp"
+            android:text="@string/activity_kind_label"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            app:flow_verticalAlign="top"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.200" />
+            app:layout_constraintVertical_bias="0.04000002"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
+
+        <TextView
+            android:id="@+id/text_activity_kind_value_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="10dp"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_end"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/creating_video_please_wait"
+            android:layout_marginTop="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value_end"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar_end"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="73dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="30dp"
+            android:progressTint="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="250dp"
+            android:layout_marginHorizontal="30dp"
+            app:flow_verticalAlign="bottom"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/progressBar_end"
+            app:layout_constraintVertical_bias="0.87"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

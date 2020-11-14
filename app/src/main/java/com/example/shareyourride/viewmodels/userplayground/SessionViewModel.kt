@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.SessionSummaryData
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
@@ -26,6 +27,8 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
      * The current state of the session
      */
     val sessionData = MutableLiveData<SessionData>()
+
+    val sessionSummaryData = MutableLiveData<SessionSummaryData>()
 
     /**
      * Command to start session
@@ -79,7 +82,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
     /**
      *
      */
-    fun sendDiscardSessionMessage()
+    private fun sendDiscardSessionMessage()
     {
         try
         {
@@ -145,6 +148,11 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
                     Log.d("SessionViewModel", "SYR -> received SESSION_STATE_EVENT updating event")
                     processSessionState(msg.messageData)
                 }
+                MessageTypes.SESSION_SUMMARY_RESPONSE ->
+                {
+                    Log.d("SessionViewModel", "SYR -> received SESSION_SUMMARY_RESPONSE updating data")
+                    processSessionSummaryResponse(msg.messageData)
+                }
                 else ->
                 {
                     Log.e("SessionViewModel", "SYR -> message ${msg.messageKey} no supported")
@@ -187,6 +195,28 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    private fun processSessionSummaryResponse(msg: MessageBundleData)
+    {
+        try
+        {
+            if (msg.type == SessionSummaryData::class)
+            {
+                val sessionSummary = msg.data as SessionSummaryData
+                Log.e("SessionViewModel", "SYR -> Processing summary data")
+                sessionSummaryData.postValue(sessionSummary)
+            }
+            else
+            {
+                Log.e("SessionViewModel", "SYR -> Unable to process session state event because ${msg.type} is not supported")
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionViewModel", "SYR -> Unable to process session state event because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
     /**
      * Shows a dialog to finish the activity saving or discarding the data
      */
@@ -203,5 +233,20 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
                 sendDiscardSessionMessage()
             }
             .show()
+    }
+
+    fun requestSummaryData()
+    {
+        try
+        {
+            Log.i("SessionViewModel", "SYR -> Sending SESSION_SUMMARY_REQUEST message")
+            val message = MessageBundle(MessageTypes.SESSION_SUMMARY_REQUEST,"",MessageTopics.SESSION_COMMANDS)
+            sendMessage(message)
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionViewModel", "SYR -> Unable to send summary request message because: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
 }

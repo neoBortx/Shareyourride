@@ -18,7 +18,6 @@ class DataBaseManager {
         private var sessionDao: SessionDao? = null
         private var sessionTelemetryDao: SessionTelemetryDao? = null
         private var videoDao: VideoDao? = null
-        private var bodyDao: BodyDao? = null
         private var environmentDao: EnvironmentDao? = null
         private var inclinationDao: InclinationDao? = null
         private var locationDao: LocationDao? = null
@@ -42,7 +41,6 @@ class DataBaseManager {
                 sessionDao = m_instance!!.sessionDao()
                 sessionTelemetryDao = m_instance!!.sessionTelemetryDao()
                 videoDao = m_instance!!.videoDao()
-                bodyDao = m_instance!!.bodyDao()
                 environmentDao = m_instance!!.environmentDao()
                 inclinationDao = m_instance!!.inclinationDao()
                 locationDao = m_instance!!.locationDao()
@@ -137,23 +135,6 @@ class DataBaseManager {
             else
             {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to insert location")
-            }
-        }
-
-        /**
-         * Insert the given body in the data base
-         * @param body: The body to insert
-         */
-        fun insertBody(body: Body)
-        {
-            if (bodyDao != null)
-            {
-                Log.d("SYR", "SYR -> Inserting body data in session: ${body.id.sessionId}, ${body.id.timeStamp}")
-                bodyDao!!.addBody(body)
-            }
-            else
-            {
-                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to insert body")
             }
         }
 
@@ -259,31 +240,15 @@ class DataBaseManager {
             }
         }
 
-
-        /**
-         * Get the list of bodies related to the given session and frame ide
-         * @param session: the identifier of the session
-         * @param videoFrame: The identifier of the frame
-         */
-        fun getBodies(session: Int, videoFrame: Int): List<Body>
-        {
-            return if (bodyDao != null) {
-                bodyDao!!.getBodyList(session,videoFrame)
-            } else {
-                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the list of bodies")
-                listOf()
-            }
-        }
-
         /**
          * Get the list of environments related to the given session and frame ide
-         * @param session: the identifier of the session
+         * @param sessionId: the identifier of the session
          * @param videoFrame: The identifier of the frame
          */
-        fun getEnvironments(session: Int, videoFrame: Int): List<Environment>
+        fun getEnvironments(sessionId: String, videoFrame: Int): List<Environment>
         {
             return if (environmentDao != null) {
-                environmentDao!!.getEnvironmentList(session,videoFrame)
+                environmentDao!!.getEnvironmentList(sessionId,videoFrame)
             } else {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the list of environments")
                 listOf()
@@ -292,13 +257,13 @@ class DataBaseManager {
 
         /**
          * Get the list of inclinations related to the given session and frame ide
-         * @param session: the identifier of the session
+         * @param sessionId: the identifier of the session
          * @param videoFrame: The identifier of the frame
          */
-        fun getInclinations(session: Int, videoFrame: Int): List<Inclination>
+        fun getInclinations(sessionId: String, videoFrame: Int): List<Inclination>
         {
             return if (inclinationDao != null) {
-                inclinationDao!!.getInclinationList(session,videoFrame)
+                inclinationDao!!.getInclinationList(sessionId,videoFrame)
             } else {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the list of inclinations")
                 listOf()
@@ -307,13 +272,13 @@ class DataBaseManager {
 
         /**
          * Get the list of locations related to the given session and frame ide
-         * @param session: the identifier of the session
+         * @param sessionId: the identifier of the session
          * @param videoFrame: The identifier of the frame
          */
-        fun getLocations(session: Int, videoFrame: Int): List<Location>
+        fun getLocations(sessionId: String, videoFrame: Int): List<Location>
         {
             return if (locationDao != null) {
-                locationDao!!.getLocationList(session,videoFrame)
+                locationDao!!.getLocationList(sessionId,videoFrame)
             } else {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the list of locations")
                 listOf()
@@ -322,16 +287,163 @@ class DataBaseManager {
 
         /**
          * Get the list of locations related to the given session and frame ide
-         * @param session: the identifier of the session
+         * @param sessionId: the identifier of the session
          * @param timeStamp: The identifier of the frame
          */
-        fun getVideo(session: Int, timeStamp: Long): Video?
+        fun getVideo(sessionId: String, timeStamp: Long): Video?
         {
             return if (videoDao != null) {
-                videoDao!!.getVideoFrame(session,timeStamp)
+                videoDao!!.getVideoFrame(sessionId,timeStamp)
             } else {
                 Log.e("SYR", "SYR -> Data base is not initialized yet, unable to retrieve the video frame")
                 null
+            }
+        }
+        //endregion
+
+        //region session summary
+        /**
+         * Get the maximum speed of the mobile phone during the session
+         */
+        fun getMaxSpeed(sessionId: String): Float{
+            return if (locationDao != null) {
+                locationDao!!.getMaxSpeed(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max speed")
+                0F
+            }
+        }
+
+        /**
+         * Get the average speed of the mobile phone during the session
+         */
+        fun getAverageMaxSpeed(sessionId: String): Float{
+            return if (locationDao != null) {
+                locationDao!!.getAverageMaxSpeed(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the average speed")
+                0F
+            }
+        }
+
+        /**
+         * Get the total distance of the session
+         */
+        fun getDistance(sessionId: String): Long{
+            return if (locationDao != null) {
+                locationDao!!.getDistance(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the distance")
+                0
+            }
+        }
+
+        /**
+         * Get the maximum acceleration detected during the session
+         */
+        fun getMaxAcceleration(sessionId: String): Float{
+            return if (inclinationDao != null) {
+                inclinationDao!!.getMaxAcceleration(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max acceleration")
+                0F
+            }
+        }
+
+        /**
+         * Get the maximum acceleration direction detected during the session
+         */
+        fun getMaxAccelerationDirection(sessionId: String): Int{
+            return if (inclinationDao != null) {
+                inclinationDao!!.getMaxAccelerationDirection(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max acceleration direction")
+                0
+            }
+        }
+
+
+        /**
+         * Get the maximum lean angle in the left side detected during session
+         */
+        fun getMaxLeftLeanAngle(sessionId: String): Int{
+            return if (inclinationDao != null) {
+                inclinationDao!!.getMaxLeftLeanAngle(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max left angle")
+                0
+            }
+        }
+
+        /**
+         * The maximum lean angle in the right side detected during session
+         */
+        fun getMaxRightLeanAngle(sessionId: String): Int{
+            return if (inclinationDao != null) {
+                inclinationDao!!.getMaxRightLeanAngle(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max right angle")
+                0
+            }
+        }
+
+        /**
+         * Get the maximum altitude detected during the session
+         */
+        fun getMaxAltitude(sessionId: String): Double{
+            return if (locationDao != null) {
+                locationDao!!.getMaxAltitude(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the max altitude")
+                0.0
+            }
+        }
+
+        /**
+         * Get the minimum altitude detected during the session
+         */
+        fun getMinAltitude(sessionId: String): Double{
+            return if (locationDao != null) {
+                locationDao!!.getMinAltitude(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the minimum altitude")
+                0.0
+            }
+        }
+
+        /**
+         * Get the maximum terrain inclination in Uphill
+         */
+        fun getMaxUphillTerrainInclination(sessionId: String): Int{
+            return if (locationDao != null) {
+                locationDao!!.getMaxUphillTerrainInclination(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the maximum uphill terrain inclination")
+                0
+            }
+        }
+
+        /**
+         * Get the maximum terrain inclination in Downhill
+         */
+        fun getMaxDownhillTerrainInclination(sessionId: String): Int{
+            return if (locationDao != null) {
+                locationDao!!.getMaxDownhillTerrainInclination(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the maximum downhill terrain inclination")
+                0
+            }
+        }
+
+        /**
+         * Get the average terrain inclination
+         */
+        fun getAverageTerrainInclination(sessionId: String): Int{
+            return if (locationDao != null) {
+                locationDao!!.getAverageTerrainInclination(sessionId)
+            } else {
+                Log.e("SYR", "SYR -> Data base is not initialized yet, unable to the average terrain inclination")
+                0
             }
         }
         //endregion

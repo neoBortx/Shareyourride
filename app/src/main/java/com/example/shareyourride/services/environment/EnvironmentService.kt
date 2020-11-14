@@ -78,6 +78,7 @@ class EnvironmentService(): TelemetryServiceBase()
     override fun saveTelemetry(timeStamp: Long) {
         try {
             if (telemetryData != null) {
+                telemetryData!!.id.sessionId = mSessionId
                 telemetryData!!.id.timeStamp = timeStamp
 
                 runBlocking {

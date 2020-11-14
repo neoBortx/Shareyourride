@@ -1,9 +1,11 @@
 package com.example.shareyourride.viewmodels.userplayground
 
 import android.app.Application
+import android.util.Log
 import android.view.TextureView
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.configuration.SettingPreferencesIds
 import com.example.shareyourride.video.IRemoteVideoClient
@@ -66,14 +68,14 @@ class VideoViewModel(application: Application) : AndroidViewModel(application) {
         val protocol = setting.getStringOption(SettingPreferencesIds.CameraProtocol)
         val videoFactory = VideoRemoteClientFactory()
 
-        //if (protocol == context.getString(R.string.rtsp_protocol))
-        //{
+        if (protocol == context.getString(R.string.rtsp_protocol))
+        {
             videoClient = videoFactory.createVideoClient(VideoRemoteClientFactory.RemoteClientType.RtspClient, getApplication())
-        //}
-        /*else
+        }
+        else
         {
             Log.e("VideoService", "SYR -> NO supported video protocol $protocol")
-        }*/
+        }
     }
 
     /**
@@ -88,12 +90,12 @@ class VideoViewModel(application: Application) : AndroidViewModel(application) {
         val path = setting.getStringOption(SettingPreferencesIds.CameraPath)
         val port: String = setting.getStringOption(SettingPreferencesIds.CameraPort)
 
-        if (!port.isNullOrEmpty() && !path.isNullOrEmpty()) {
+        if (!port.isEmpty() && !path.isEmpty()) {
             val videoStream = if (port != "0") {
-                "rtsp" + "://" + ip + ":" + port.toString() + "/" + path
+                protocol + "://" + ip + ":" + port.toString() + "/" + path
             }
             else {
-                "rtsp" + "://" + ip + "/" + path
+                protocol + "://" + ip + "/" + path
             }
 
             videoClient.configureClient(RemoteVideoConfiguration(textureView, videoStream))

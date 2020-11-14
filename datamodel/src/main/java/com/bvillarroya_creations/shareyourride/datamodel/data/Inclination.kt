@@ -50,7 +50,18 @@ data class Inclination(
     /**
      * Roll, angle of rotation about the y axis
      */
-    val roll: Int
+    val roll: Int,
+
+    /**
+     * The acceleration in scalar
+     */
+    val accelerationScalar: Float,
+
+    /**
+     * The direction of the acceleration
+     */
+    val accelerationDirection: Int
+
 ): IDataBaseTelemetry
 {
     override fun equals(other: Any?): Boolean {
@@ -65,6 +76,8 @@ data class Inclination(
         if (pitch != other.pitch) return false
         if (roll != other.roll) return false
         if (!gravity.contentEquals(other.gravity)) return false
+        if (accelerationScalar != other.accelerationScalar) return false
+        if (accelerationDirection != other.accelerationDirection) return false
 
         return true
     }
@@ -76,6 +89,8 @@ data class Inclination(
         result = 31 * result + pitch.hashCode()
         result = 31 * result + roll.hashCode()
         result = 31 * result + gravity.contentHashCode()
+        result = 31 * result + accelerationScalar.hashCode()
+        result = 31 * result + accelerationDirection.hashCode()
         return result
     }
 }

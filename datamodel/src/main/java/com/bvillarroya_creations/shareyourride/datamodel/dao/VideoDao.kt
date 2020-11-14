@@ -41,14 +41,14 @@ interface VideoDao {
      *
      * @return: The list of Video
      */
-    @Query("SELECT * FROM Video Where sessionId like :session")
-    fun getVideoList(session: Int): List<Video>
+    @Query("SELECT * FROM Video Where sessionId like :sessionId")
+    fun getVideoList(sessionId: String): List<Video>
 
     /**
      * Get the vide frame information that belongs to the given session and time stamp
      *
      * @return: The list of Video
      */
-    @Query("SELECT * FROM Video Where sessionId like :session and timeStamp like :timeStamp")
-    fun getVideoFrame(session: Int, timeStamp: Long): Video
+    @Query("SELECT * FROM Video Where sessionId like :sessionId and timeStamp like :timeStamp")
+    fun getVideoFrame(sessionId: String, timeStamp: Long): Video
 }

@@ -29,7 +29,7 @@
 
     <fragment
         android:id="@+id/nav_activity_finished"
-        android:name="com.example.shareyourride.userplayground.session.SessionFinishedFragment"
+        android:name="com.example.shareyourride.userplayground.endSession.SessionFinishedFragment"
         android:label="Share your ride"
         tools:layout="@layout/fragment_session" />
 

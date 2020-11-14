@@ -1,4 +1,4 @@
-package com.example.shareyourride.userplayground.session
+package com.example.shareyourride.userplayground.videoSync
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

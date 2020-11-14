@@ -11,7 +11,6 @@ import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.IDataProvider
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTopics
-import com.bvillarroya_creations.shareyourride.telemetry.messages.TelemetryMessageTypes
 import com.google.android.gms.location.*
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -60,6 +59,11 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
     private var lastAltitude: Double = 0.0
 
     /**
+     *The time of the last known location
+     */
+    private var lastLocationTime: Long = 0
+
+    /**
      * The distance of the activity in meters
      */
     private var accumulatedDistance: Long = 0
@@ -79,7 +83,7 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
             mLocationRequest = LocationRequest.create()?.apply {
                 interval = 100
                 fastestInterval = 100
-                priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             }
 
             if (mLocationRequest != null) {
@@ -179,32 +183,37 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
             mLocationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?)
                 {
-                    locationResult ?: return
-                    for (location in locationResult.locations) {
+                    if (locationResult == null)
+                    {
+                        Log.d("LocationProvider", "SYR -> location result is null")
+                        return
+                    }
 
-                        val (distance , terrainInclination) = calculateTerrainInclination(newlong =  location.longitude, newLat = location.latitude, newAlt = location.altitude)
+                    for (location in locationResult.locations)
+                    {
+                        if (location.accuracy >= 1 && location.time > lastLocationTime)
+                        {
+                            val (distance, terrainInclination) = calculateTerrainInclination(newlong = location.longitude, newLat = location.latitude, newAlt = location.altitude)
 
-                        accumulatedDistance += distance
+                            accumulatedDistance += distance
 
-                        val locationData = LocationData(
-                                location.latitude,
-                                location.longitude,
-                                location.altitude,
-                                location.speed,
-                                location.bearing,
-                                terrainInclination,
-                                accumulatedDistance,
-                                location.time
-                        )
+                            val locationData = LocationData(location.latitude,
+                                                            location.longitude,
+                                                            location.altitude,
+                                                            location.speed,
+                                                            location.bearing,
+                                                            terrainInclination,
+                                                            accumulatedDistance,
+                                                            location.accuracy,
+                                                            location.time)
 
-                        //Log.d("SYR","SYR -> Location obtained lat: ${location.latitude} lon: ${location.longitude} " +
-                        //        "altitude: ${location.altitude} speed: ${location.speed} bearing ${location.bearing}")
-
-                        callback(locationData)
-
-                        val message = MessageBundle(TelemetryMessageTypes.LOCATION_DATA, locationData,TelemetryMessageTopics.TELEMETRY_DATA)
-
-                        sendMessage(message)
+                            lastLocationTime = location.time
+                            callback(locationData)
+                        }
+                        else
+                        {
+                            Log.d("LocationProvider", "SYR -> location accuracy is to low ${location.accuracy} or too old given time ${location.time} last known $lastLocationTime")
+                        }
                     }
                 }
             }
@@ -214,7 +223,6 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
             Log.e("LocationProvider", "SYR -> Unable to create location callback: ${ex.message}")
             ex.printStackTrace()
         }
-
     }
 
     /**

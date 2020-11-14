@@ -33,15 +33,4 @@ interface ITelemetryManager {
      * Stop monitoring sensors
      */
     fun stopAcquiringData()
-
-    /**
-     * To known the current state of the manager
-     * @return the current state of the manager
-     */
-    fun getManagerState(): IDataProvider.ProviderState
-
-    /**
-     * Flag that points if the provider is ready
-     */
-    var providerReady: MutableLiveData<Boolean>?
 }

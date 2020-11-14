@@ -40,13 +40,21 @@ class MessageTopics {
         const val GPS_DATA = "gpsData"
 
         /**
-         * Messages related to the inclination system
+         * Messages related to the inclination data
          *
          * - INCLINATION_DATA_EVENT
          * - INCLINATION_CALIBRATION_START
          * - INCLINATION_CALIBRATION_END
          */
         const val INCLINATION_DATA = "inclinationData"
+
+        /**
+         * Messages related to the inclination control
+         *
+         * - INCLINATION_CALIBRATION_START
+         * - INCLINATION_CALIBRATION_END
+         */
+        const val INCLINATION_CONTROL = "inclinationControl"
 
         /**
          * Messages related to the video flow

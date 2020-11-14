@@ -1,6 +1,7 @@
 package com.bvillarroya_creations.shareyourride.datamodel.dao
 
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.bvillarroya_creations.shareyourride.datamodel.data.Inclination
 
@@ -41,6 +42,28 @@ interface InclinationDao {
      *
      * @return: The list of Inclination
      */
-    @Query("SELECT * FROM Inclination Where sessionId like :session and timeStamp like :timeStamp")
-    fun getInclinationList(session: Int, timeStamp: Int): List<Inclination>
+    @Query("SELECT * FROM Inclination WHERE sessionId like :sessionId and timeStamp like :timeStamp")
+    fun getInclinationList(sessionId: String, timeStamp: Int): List<Inclination>
+
+    /**
+     * Get the maximum lean angle in the left side detected during session
+     */
+    @Query("SELECT MIN(roll) FROM Inclination WHERE sessionId like :sessionId")
+    fun getMaxLeftLeanAngle(sessionId: String): Int
+
+    /**
+     * The maximum lean angle in the right side detected during session
+     */
+    //@Query("SELECT max(roll) FROM Inclination WHERE sessionId like :sessionId LIMIT 1")
+    @Query("SELECT MAX(roll) FROM Inclination WHERE sessionId like :sessionId")
+    fun getMaxRightLeanAngle(sessionId: String): Int
+
+    /**
+     * The maximum lean angle in the right side detected during session
+     */
+    @Query("SELECT MAX(accelerationScalar) FROM Inclination WHERE sessionId like :sessionId LIMIT 1")
+    fun getMaxAcceleration(sessionId: String): Float
+
+    @Query("SELECT accelerationDirection FROM Inclination WHERE sessionId like :sessionId AND accelerationScalar like (SELECT  MAX(accelerationScalar) FROM Inclination AS maxAcceleration)")
+    fun getMaxAccelerationDirection(sessionId: String): Int
 }

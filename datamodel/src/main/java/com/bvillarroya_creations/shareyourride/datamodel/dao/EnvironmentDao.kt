@@ -41,6 +41,6 @@ interface EnvironmentDao {
      *
      * @return: The list of Environment
      */
-    @Query("SELECT * FROM Environment Where sessionId like :session and timeStamp like :timeStamp")
-    fun getEnvironmentList(session: Int, timeStamp: Int): List<Environment>
+    @Query("SELECT * FROM Environment Where sessionId like :sessionId and timeStamp like :timeStamp")
+    fun getEnvironmentList(sessionId: String, timeStamp: Int): List<Environment>
 }

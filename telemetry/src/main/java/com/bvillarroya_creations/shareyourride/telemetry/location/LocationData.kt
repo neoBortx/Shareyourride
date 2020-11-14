@@ -55,6 +55,11 @@ data class LocationData(
      * The accumulated distance of the session
      */
     val distance: Long,
+
+    /**
+     *
+     */
+    val accuracy: Float,
     /**
      * The timeStamp when the frame is captured
      */
@@ -67,6 +72,7 @@ data class LocationData(
         parcel.readFloat(),
         parcel.readInt(),
         parcel.readLong(),
+        parcel.readFloat(),
         parcel.readLong()
     ) {
     }
@@ -79,6 +85,7 @@ data class LocationData(
         parcel.writeFloat(bearing)
         parcel.writeInt(terrainInclination)
         parcel.writeLong(distance)
+        parcel.writeFloat(accuracy)
         parcel.writeLong(timeStamp)
     }
 
