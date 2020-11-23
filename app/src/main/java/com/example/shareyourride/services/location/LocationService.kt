@@ -80,6 +80,7 @@ class LocationService() : TelemetryServiceBase()
                 }
                 MessageTypes.START_ACQUIRING_DATA ->
                 {
+                    Log.d(mClassName, "SYR -> received  START_ACQUIRING_DATA message")
                     if (accuracyModeEnabled) {
                         accuracyModeEnabled = false
                     }

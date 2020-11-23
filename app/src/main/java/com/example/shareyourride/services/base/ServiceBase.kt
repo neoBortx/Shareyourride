@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LifecycleService
 import com.example.shareyourride.services.common.ServiceNotificationBuilder
 import com.example.shareyourride.userplayground.MainActivity
@@ -115,6 +114,8 @@ abstract class ServiceBase():  LifecycleService() {
                         acquire()
                     }
                 }
+
+            startServiceActivity()
         }
         catch(ex: Exception)
         {
@@ -126,7 +127,7 @@ abstract class ServiceBase():  LifecycleService() {
     /**
      * Stop the service activity
      */
-    private  fun stopService()
+    private fun stopService()
     {
         try
         {
@@ -139,6 +140,8 @@ abstract class ServiceBase():  LifecycleService() {
             stopForeground(true)
             stopSelf()
             isServiceStarted = false
+
+            stopServiceActivity()
         }
         catch(ex: Exception)
         {

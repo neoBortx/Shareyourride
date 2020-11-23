@@ -23,7 +23,7 @@ data class CameraConnectionData(
     val connectionData: WifiConnectionData,
 
     /**
-     * The network protocol required to access to the video stream of the camara
+     * The network protocol required to access to the video stream of the camera
      */
     val networkProtocol: String,
 
@@ -40,5 +40,5 @@ data class CameraConnectionData(
     /**
      * The path that is used by the network camera to serve the video
      */
-    val videoNAme: String
+    val videoName: String
 )

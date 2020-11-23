@@ -33,8 +33,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    //FFmpeg wrapper library from https://github.com/tanersener/mobile-ffmpeg/wiki/Android
-    //This library is under the LGPL library so it must removed if i want to publish this app
-    implementation 'com.arthenica:mobile-ffmpeg-full:4.4'
-
 }

@@ -53,4 +53,11 @@
         app:enabled="false"
         />
 
+    <EditTextPreference
+        app:key="@string/camera_protocol"
+        app:title="@string/protocol"
+        app:useSimpleSummaryProvider="true"
+        app:enabled="false"
+        />
+
 </PreferenceScreen>

@@ -1,22 +1,73 @@
 package com.bvillarroya_creations.shareyourride.datamodel.data
 
-import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
+import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 
-/*
-    Store the information of each frame of the video
-    Each frame belongs to a determined session
+/**
+ * Store the information of teh video related to the session
+ * Each frame belongs to a determined session
  */
-@Entity(tableName = "Video")
+@Entity(tableName = "Video",
+        foreignKeys = [
+            ForeignKey(entity = Session::class,
+                       parentColumns = ["id"],
+                       childColumns = ["sessionId"],
+                       onDelete = CASCADE)],
+        indices = [ Index(value = ["sessionId"])]
+)
 data class Video (
 
-    /*
-        Row unique identifier
-        Contains the session id and the frame id
+    /**
+     * The session that owns this video
      */
     @PrimaryKey
-    @Embedded val id: VideoId = VideoId("",0)
+    var sessionId: String,
 
+    /**
+     * The time stamp of the creating video
+     */
+    var startTimeStamp: Long,
+
+    /**
+     * The height of the received video
+     */
+    val height: Int,
+
+    /**
+     * The width of the received video
+     */
+    val width: Int,
+
+    /**
+     * The format of the received video
+     */
+    val format: String,
+
+    /**
+     * The codec used in the received video
+     */
+    val codec: Int,
+
+    /**
+     * The frame rate of the received video
+     */
+    val frameRate: Double,
+
+    /**
+     * The video bitrate
+     */
+    val bitRate: Int,
+
+    /**
+     * The absolute path of the video without any process
+     */
+    val rawVideoFilePath: String,
+
+    /**
+     * The absoulte path of the video with the telemetry
+     */
+    val generatedVideoPath: String
 )

@@ -161,6 +161,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             val cameraIp: EditTextPreference? = findPreference(getString(R.string.camera_ip)) as EditTextPreference?
             val cameraPort: EditTextPreference? = findPreference(getString(R.string.camera_port)) as EditTextPreference?
             val cameraPath: EditTextPreference? = findPreference(getString(R.string.camera_path)) as EditTextPreference?
+            val cameraProtocol: EditTextPreference? = findPreference(getString(R.string.camera_protocol)) as EditTextPreference?
 
             cameraName?.isEnabled = true
             cameraSsid?.isEnabled = true
@@ -169,6 +170,8 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraIp?.isEnabled = true
             cameraPort?.isEnabled = true
             cameraPath?.isEnabled = true
+            //only rtsp supported a this moment
+            cameraProtocol?.isEnabled = false
         }
         catch (ex: Exception)
         {
@@ -191,6 +194,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             val cameraIp: EditTextPreference? = findPreference(getString(R.string.camera_ip)) as EditTextPreference?
             val cameraPort: EditTextPreference? = findPreference(getString(R.string.camera_port)) as EditTextPreference?
             val cameraPath: EditTextPreference? = findPreference(getString(R.string.camera_path)) as EditTextPreference?
+            val cameraProtocol: EditTextPreference? = findPreference(getString(R.string.camera_protocol)) as EditTextPreference?
 
             cameraName?.isEnabled = false
             cameraSsid?.isEnabled = false
@@ -199,6 +203,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraIp?.isEnabled = false
             cameraPort?.isEnabled = false
             cameraPath?.isEnabled = false
+            cameraProtocol?.isEnabled = false
         }
         catch (ex: Exception)
         {
@@ -225,6 +230,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             val cameraIp: EditTextPreference? = findPreference(getString(R.string.camera_ip)) as EditTextPreference?
             val cameraPort: EditTextPreference? = findPreference(getString(R.string.camera_port)) as EditTextPreference?
             val cameraPath: EditTextPreference? = findPreference(getString(R.string.camera_path)) as EditTextPreference?
+            val cameraProtocol: EditTextPreference? = findPreference(getString(R.string.camera_protocol)) as EditTextPreference?
 
             val cameraInfo = supportedCameras.supportedCamerasList.first { it.cameraId == cameraId}
 
@@ -234,7 +240,8 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraPassword?.text = cameraInfo.connectionData.password
             cameraIp?.text = cameraInfo.videoServerIp
             cameraPort?.text = cameraInfo.videoServerPort
-            cameraPath?.text = cameraInfo.videoNAme
+            cameraPath?.text = cameraInfo.videoName
+            cameraProtocol?.text = cameraInfo.networkProtocol
         }
         catch (ex: Exception)
         {

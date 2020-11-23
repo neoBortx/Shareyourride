@@ -9,17 +9,16 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.core.widget.ImageViewCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.R.color
 import com.bvillarroya_creations.shareyourride.R.layout
-import com.bvillarroya_creations.shareyourride.databinding.FragmentHomeBinding
 import com.example.shareyourride.viewmodels.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
+import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
 import com.example.shareyourride.wifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 
@@ -48,7 +47,10 @@ class HomeFragment : Fragment()  {
      */
     private val sessionViewModel: SessionViewModel by viewModels({ requireParentFragment() })
 
-
+    /**
+     * View model that holds the current location and the state of the GPS state
+     */
+    private val videoViewModel: VideoViewModel by viewModels({ requireParentFragment() })
     //endregion
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -61,7 +63,7 @@ class HomeFragment : Fragment()  {
         {
             configureLocationChanges()
             configureSettingObservers()
-            configureWifiChanges()
+            configureVideoStateChanges()
         }
         else
         {
@@ -70,19 +72,21 @@ class HomeFragment : Fragment()  {
 
         wifiViewModel.connectToWifi(requireActivity())
         locationViewModel.getGpsState()
+        videoViewModel.changeVideoServer()
+        videoViewModel.getVideoState()
 
         return view
     }
 
     //region configure observers
-    private fun configureWifiChanges()
+    /*private fun configureWifiChanges()
     {
         try {
 
             wifiViewModel.wifiConnected.observe(viewLifecycleOwner, Observer {state ->
                 Log.d("HomeFragment", "SYR -> processing changes in wifi wifiConnectionObserver, new state = $state")
                 val colorId = if (state) color.colorProviderOk else color.colorProviderError
-                ImageViewCompat.setImageTintList(wifi_state_img, context?.getColor(colorId)?.let { ColorStateList.valueOf(it) })
+                ImageViewCompat.setImageTintList(video_state_img, context?.getColor(colorId)?.let { ColorStateList.valueOf(it) })
             })
         }
         catch(ex: Exception)
@@ -90,7 +94,7 @@ class HomeFragment : Fragment()  {
             Log.e("HomeFragment", "SYR -> Unable to create Wifi observers because: ${ex.message}")
             ex.printStackTrace()
         }
-    }
+    }*/
 
     /**
      * Create an observer to manage changes in the GPS state
@@ -112,6 +116,27 @@ class HomeFragment : Fragment()  {
         }
     }
 
+    /**
+     * Create an observer to manage changes in the GPS state
+     * Just change the color of the icon and enable or disable the start activity button
+     */
+    private fun configureVideoStateChanges()
+    {
+        try
+        {
+            videoViewModel.videoState.observe(viewLifecycleOwner, Observer {state ->
+                Log.d("HomeFragment", "SYR -> Handling change in the video state")
+                val colorId = if (state) color.colorProviderOk else color.colorProviderError
+                ImageViewCompat.setImageTintList(video_state_img, context?.getColor(colorId)?.let { ColorStateList.valueOf(it) })
+            })
+        }
+        catch(ex: Exception)
+        {
+            Log.e("HomeFragment", "SYR -> Unable to create video state observer because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
 
     /**
      * Create and configure observers related to the settings system
@@ -126,6 +151,7 @@ class HomeFragment : Fragment()  {
             settingsViewModel.cameraConfigChangedFlag.observe(viewLifecycleOwner, Observer {
                 Log.i("HomeFragment","SYR -> Processing changes in the camera configuration")
                 wifiViewModel.changeWifiNetwork()
+                videoViewModel.changeVideoServer()
             })
 
             /**

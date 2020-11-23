@@ -2,16 +2,17 @@ package com.example.shareyourride.viewmodels.userplayground
 
 import android.app.Application
 import android.util.Log
-import android.view.TextureView
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.bvillarroya_creations.shareyourride.R
+import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
+import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
+import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
+import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
+import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
+import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.configuration.SettingPreferencesIds
-import com.example.shareyourride.video.IRemoteVideoClient
-import com.example.shareyourride.video.RemoteVideoConfiguration
-import com.example.shareyourride.video.VideoRemoteClientFactory
-import com.example.shareyourride.video.statemcahine.VideoClientState
+import com.example.shareyourride.services.video.VideoConnectionData
 
 /**
  * view model that holds the data related to the video management
@@ -20,126 +21,139 @@ import com.example.shareyourride.video.statemcahine.VideoClientState
  *
  * In general it is just a facade of a IRemoteVideoClient instance
  */
-class VideoViewModel(application: Application) : AndroidViewModel(application) {
+class VideoViewModel(application: Application) : AndroidViewModel(application), IMessageHandlerClient {
 
-    init {
-        createClient()
-    }
-
-    /**
-     * The client that handles de video
-     */
-    private lateinit var videoClient: IRemoteVideoClient
+    //region private properties
 
     /**
      * APP context
      */
     private val context = getApplication<Application>().applicationContext
+    //endregion
 
+
+    //region public properties
     /**
-     * facade of the delay of the video
+     * true: The connection with the video is established
+     * false: The connection with the video server is not established
      */
-    //var videoDelay =  videoClient.delayInMilliseconds
+    val videoState = MutableLiveData<Boolean>()
+    //endregion
 
-    /**
-     * Facade of teh state of the video client
-     */
-    var clientState = videoClient.clientState
-
-    /**
-     * flag to point if the video window has to be shown or hidden
-     */
-    var showVideo = MutableLiveData<Boolean>()
-
+    //region init
     init {
-        showVideo.value = false
-        clientState.observeForever {
+
+        this.createMessageHandler( "VideoViewModel", listOf(MessageTopics.VIDEO_DATA))
+        sendClientConfiguration()
+        videoState.value = false
+        /*clientState.observeForever {
             showVideo.value = (it != VideoClientState.None && it != VideoClientState.Disconnected)
+        }*/
+    }
+    //endregion
+
+    //region message handling
+    override lateinit var messageHandler: MessageHandler
+
+    /**
+     * Listen to session messages related to the session management
+     *
+     * @param msg: received message from the android internal queue
+     */
+    override fun processMessage(msg: MessageBundle)
+    {
+        try {
+
+            when (msg.messageKey)
+            {
+                MessageTypes.VIDEO_STATE_EVENT ->
+                {
+                    Log.d("VideoViewModel", "SYR -> received VIDEO_STATE_EVENT updating state")
+                    processVideoState(msg.messageData)
+                }
+                else ->
+                {
+                    Log.e("VideoViewModel", "SYR -> message ${msg.messageKey} no supported")
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("VideoViewModel", "SYR -> Unable to process message ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
-    //region video management fun
+    /**
+     * Update  the flag that points if the video connection is established or not
+     */
+    private fun processVideoState(messageBundleData: MessageBundleData)
+    {
+        try {
+            if (messageBundleData.data is Boolean)
+            {
+                videoState.postValue(messageBundleData.data as Boolean)
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("VideoViewModel", "SYR -> Unable to process video state because : ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
     /**
      * Creates the client depending on the configuration of the camera
      */
-    fun createClient()
+    private fun sendClientConfiguration()
     {
-        val setting = SettingPreferencesGetter(getApplication())
-        val protocol = setting.getStringOption(SettingPreferencesIds.CameraProtocol)
-        val videoFactory = VideoRemoteClientFactory()
-
-        if (protocol == context.getString(R.string.rtsp_protocol))
-        {
-            videoClient = videoFactory.createVideoClient(VideoRemoteClientFactory.RemoteClientType.RtspClient, getApplication())
-        }
-        else
-        {
-            Log.e("VideoService", "SYR -> NO supported video protocol $protocol")
-        }
-    }
-
-    /**
-     *
-     */
-    fun configureClient(textureView: TextureView)
-    {
-
+        Log.i("SessionViewModel", "SYR -> Sending VIDEO_CONNECTION_DATA message")
         val setting = SettingPreferencesGetter(getApplication())
         val protocol = setting.getStringOption(SettingPreferencesIds.CameraProtocol)
         val ip = setting.getStringOption(SettingPreferencesIds.CameraIp)
         val path = setting.getStringOption(SettingPreferencesIds.CameraPath)
         val port: String = setting.getStringOption(SettingPreferencesIds.CameraPort)
+        val data = VideoConnectionData(protocol,"", "",ip, port,path)
 
-        if (!port.isEmpty() && !path.isEmpty()) {
-            val videoStream = if (port != "0") {
-                protocol + "://" + ip + ":" + port.toString() + "/" + path
-            }
-            else {
-                protocol + "://" + ip + "/" + path
-            }
+        val message = MessageBundle(MessageTypes.VIDEO_CONNECTION_DATA,data, MessageTopics.VIDEO_DATA)
+        sendMessage(message)
+    }
 
-            videoClient.configureClient(RemoteVideoConfiguration(textureView, videoStream))
+    //endregion
+
+    //region public functions
+    /**
+     * Sends the VIDEO_STATE_REQUEST message to upper layers to ask for the video connection state
+     */
+    fun getVideoState()
+    {
+        try
+        {
+            Log.i("VideoViewModel", "SYR -> Send VIDEO_STATE_REQUEST")
+            val messageAccuracy = MessageBundle(MessageTypes.VIDEO_STATE_REQUEST,"", MessageTopics.VIDEO_DATA)
+            sendMessage(messageAccuracy)
+        }
+        catch (ex: Exception)
+        {
+            Log.e("LocationViewModel", "SYR -> Unable to ask for GPS state:  ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
     /**
      *
      */
-    fun connect()
+    fun changeVideoServer()
     {
-        videoClient.connect()
-    }
-
-    /**
-     * Get the delay of the video sent by the camera
-     */
-    fun getTheVideoDelay()
-    {
-        videoClient.startSync(this::handleDelay)
-    }
-
-    /**
-     * Start processing the video stream
-     */
-    fun startConsuming()
-    {
-        videoClient.startConsuming()
-    }
-
-    /**
-     * Finish the connection
-     */
-    fun disconnect()
-    {
-        videoClient.disconnect()
-    }
-
-    //endregion
-
-    //region private functions
-    private fun handleDelay(delay: Long)
-    {
-        //ideoDelay.value = videoClient.delayInMilliseconds
+        try {
+            Log.i("LocationViewModel", "SYR -> changing the video server parameters")
+            sendClientConfiguration()
+        }
+        catch(ex: java.lang.Exception)
+        {
+            Log.e("WifiViewModel", "SYR -> Unable to change wifi network because: ${ex.message}")
+            ex.printStackTrace()
+        }
     }
     //endregion
 

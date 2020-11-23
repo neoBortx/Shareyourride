@@ -52,12 +52,12 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
             {
                 MessageTypes.START_ACQUIRING_DATA -> {
                     val id = msg.messageData.data as String
-                    Log.d(mClassName, "SYR -> received  start session message id $id")
+                    Log.d(mClassName, "SYR -> received  START_ACQUIRING_DATA message id $id")
                     mSessionId = id
                     initializeTelemetry()
                 }
                 MessageTypes.STOP_ACQUIRING_DATA -> {
-                    Log.d(mClassName, "SYR -> received  start session messaged ${msg.messageData.data as String}")
+                    Log.d(mClassName, "SYR -> received  STOP_ACQUIRING_DATA messaged ${msg.messageData.data as String}")
                     stopTelemetry()
                 }
                 MessageTypes.SAVE_TELEMETRY -> {
@@ -135,11 +135,11 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
 
     //region ServiceBase
     override fun startServiceActivity() {
-        initializeTelemetry()
+        Log.i(mClassName , "Starting $mClassName")
     }
 
     override fun stopServiceActivity() {
-        stopTelemetry()
+        Log.i(mClassName , "Stopping $mClassName")
     }
     //endregion
 

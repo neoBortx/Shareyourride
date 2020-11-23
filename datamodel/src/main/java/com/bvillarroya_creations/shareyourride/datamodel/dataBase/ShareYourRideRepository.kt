@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.datamodel.data.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 class ShareYourRideRepository {
@@ -32,15 +30,6 @@ class ShareYourRideRepository {
         /**
          * Get teh list of bodies of the given session and the video frame
         */
-        suspend fun getEnvironments(sessionId: String, videoId: Int): List<Environment> {
-            return withContext(Dispatchers.IO) {
-                DataBaseManager.getEnvironments(sessionId, videoId)
-            }
-        }
-
-        /**
-         * Get teh list of bodies of the given session and the video frame
-        */
         suspend fun getLocations(sessionId: String, videoId: Int): List<Location> {
             return withContext(Dispatchers.IO) {
                 DataBaseManager.getLocations(sessionId, videoId)
@@ -48,7 +37,7 @@ class ShareYourRideRepository {
         }
 
         /**
-         *  Get teh list of bodies of the given session and the video frame
+         *  Get the list of inclinations related to the given session
         */
         suspend fun getInclinations(sessionId: String, videoId: Int): List<Inclination> {
             return withContext(Dispatchers.IO) {
@@ -57,13 +46,23 @@ class ShareYourRideRepository {
         }
 
         /**
-         * Get teh list of bodies of the given session and the video frame
+         * Get the video information related to the given session ID
         */
-        suspend fun getVideo(sessionId: String, videoId: Long): Video? {
+        suspend fun getVideo(sessionId: String): Video? {
             return withContext(Dispatchers.IO) {
-                DataBaseManager.getVideo(sessionId, videoId)
+                DataBaseManager.getVideo(sessionId)
             }
         }
+
+        /**
+         * Get the all video frames information related to the given session ID
+         */
+        suspend fun getVideoFrameList(sessionId: String): List<VideoFrame> {
+            return withContext(Dispatchers.IO) {
+                DataBaseManager.getVideoFrameList(sessionId)
+            }
+        }
+
 
         /**
          * Get the maximum speed of the mobile phone during the session
@@ -234,20 +233,31 @@ class ShareYourRideRepository {
         //endregion
 
         /**
-         * Insert a given video frame in the data base
+         * Insert a given video in the data base
         */
         suspend fun insertVideo(video: Video) {
-            return GlobalScope.async {
+            return withContext(Dispatchers.IO) {
                 DataBaseManager.insertVideo(video)
-            }.await()
+            }
         }
 
         /**
-         * Insert a given session in the data base
+         * Update an existing video with new data
+         *
+         * @param video: Video data to update
          */
-        suspend fun insertEnvironment(environment: Environment) {
+        suspend fun updateVideo(video: Video) {
             return withContext(Dispatchers.IO) {
-                DataBaseManager.insertEnvironment(environment)
+                DataBaseManager.updateVideo(video)
+            }
+        }
+
+        /**
+         * Insert a given video frame in the data base
+         */
+        suspend fun insertVideoFrame(videoFrame: VideoFrame) {
+            return withContext(Dispatchers.IO)  {
+                DataBaseManager.insertVideoFrame(videoFrame)
             }
         }
 

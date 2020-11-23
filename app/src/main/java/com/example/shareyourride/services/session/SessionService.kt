@@ -163,7 +163,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                 sendSaveTelemetry()
             }
 
-            updateTelemetryTimer = Observable.interval(1000, 300, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateTelemetryTimer = Observable.interval(1000, 200, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 sendUpdateTelemetry()
             }
         }
@@ -632,11 +632,11 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
     override var mClassName: String = "SessionService"
 
     override fun startServiceActivity() {
-        TODO("Not yet implemented")
+        Log.i("SessionService" , "Starting Session service")
     }
 
     override fun stopServiceActivity() {
-        TODO("Not yet implemented")
+        Log.i("SessionService" , "Stopping Session service")
     }
     //endregion
     //endregion

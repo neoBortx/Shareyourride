@@ -14,41 +14,35 @@ interface VideoDao {
      * Insert a new Video into the collection
      * If the Video already existing, rollback and return an error
      *
-     * @param Video: the new Video to add
+     * @param video: the new Video to add
      * @return The Video identifier
      */
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun addVideo(Video: Video): Long
+    fun addVideo(video: Video): Long
 
     /**
      * Update an existing Video with the given one
      *
-     * @param Video: the new Video to update
+     * @param video: the new Video to update
      */
     @Update
-    fun updateVideo(Video: Video)
+    fun updateVideo(video: Video)
 
     /**
      * Delete the given Video from the database
      *
-     * @param Video: the new Video to delete
+     * @param video: the new Video to delete
      */
     @Delete
-    fun deleteVideo(Video: Video)
+    fun deleteVideo(video: Video)
 
     /**
-     * Get the whole Video collection from the database
+     * Get the video information related to the session
+     *
+     * @param sessionId: The id of the session that owns all frames to retrieve
      *
      * @return: The list of Video
      */
     @Query("SELECT * FROM Video Where sessionId like :sessionId")
-    fun getVideoList(sessionId: String): List<Video>
-
-    /**
-     * Get the vide frame information that belongs to the given session and time stamp
-     *
-     * @return: The list of Video
-     */
-    @Query("SELECT * FROM Video Where sessionId like :sessionId and timeStamp like :timeStamp")
-    fun getVideoFrame(sessionId: String, timeStamp: Long): Video
+    fun getVideo(sessionId: String): Video?
 }

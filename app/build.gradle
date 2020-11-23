@@ -17,6 +17,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    repositories {
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    }
+
     dataBinding {
         enabled = true
     }
@@ -44,11 +49,20 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+
     }
 
-    //Custom collection of images to the image detection functionality
-    aaptOptions {
-        noCompress "tflite"  // Your model's file extension: "tflite", "lite", etc.
+    //to avoid More than one file was found with OS independent path
+    packagingOptions {
+        pickFirst 'META-INF/native-image/android-arm/jnijavacpp/jni-config.json'
+        pickFirst 'META-INF/native-image/android-arm64/jnijavacpp/jni-config.json'
+        pickFirst 'META-INF/native-image/android-x86_64/jnijavacpp/jni-config.json'
+        pickFirst 'META-INF/native-image/android-x86/jnijavacpp/jni-config.json'
+
+        pickFirst 'META-INF/native-image/android-arm/jnijavacpp/reflect-config.json'
+        pickFirst 'META-INF/native-image/android-arm64/jnijavacpp/reflect-config.json'
+        pickFirst 'META-INF/native-image/android-x86/jnijavacpp/reflect-config.json'
+        pickFirst 'META-INF/native-image/android-x86_64/jnijavacpp/reflect-config.json'
     }
 }
 
@@ -58,7 +72,6 @@ dependencies {
 
     implementation 'androidx.preference:preference:1.1.1'
     implementation project(path: ':wifi')
-    implementation project(path: ':videoUtils')
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
@@ -73,8 +86,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
 
     //region navigation
-    //implementation 'androidx.navigation:navigation-fragment:2.3.1'
-    //implementation 'androidx.navigation:navigation-ui:2.3.1'
     implementation "androidx.navigation:navigation-fragment-ktx:2.3.1"
     implementation "androidx.navigation:navigation-ui-ktx:2.3.1"
     implementation project(path: ':telemetry')
@@ -105,7 +116,6 @@ dependencies {
     //region Firebase authentication integration
     implementation 'com.google.firebase:firebase-auth:19.4.0'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
-    implementation 'com.facebook.android:facebook-android-sdk:5.0.0'
     //endregion
 
     //region rx libraries, mostly to throttling operations
@@ -116,6 +126,24 @@ dependencies {
 
     //Gives us text recognition https://developers.google.com/ml-kit/vision/text-recognition/android
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.1'
+
+    //Gives us access to the video processing library JavaCv, with ffmpeg and openCV functionalities
+    implementation 'org.bytedeco:javacv:1.5.4'
+    implementation group: 'org.bytedeco', name: 'javacpp', version: '1.5.4'
+    implementation group: 'org.bytedeco', name: 'javacpp', version: '1.5.4', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'javacpp', version: '1.5.4', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'javacpp', version: '1.5.4', classifier: 'android-x86_64'
+    implementation group: 'org.bytedeco', name: 'javacpp', version: '1.5.4', classifier: 'android-x86'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.1-1.5.4'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.1-1.5.4', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.1-1.5.4', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.1-1.5.4', classifier: 'android-x86_64'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.1-1.5.4', classifier: 'android-x86'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.4.0-1.5.4'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.4.0-1.5.4', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.4.0-1.5.4', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.4.0-1.5.4', classifier: 'android-x86_64'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.4.0-1.5.4', classifier: 'android-x86'
 }
 
 // Add the following line to the bottom of the file:

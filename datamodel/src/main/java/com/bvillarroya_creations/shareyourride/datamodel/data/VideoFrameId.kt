@@ -5,26 +5,26 @@ import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.Index
 
-/*
-    Store the information of the wearable connected to the user
-    Each row with the user telemetry belongs to a session and a determined
-    frame
+/**
+ *  Key of all video frames
  */
 @Entity(
     foreignKeys = [
-        ForeignKey(entity = Session::class,
+        ForeignKey(entity = Video::class,
             parentColumns = ["id"],
             childColumns = ["sessionId"],
             onDelete = CASCADE)],
-    indices = [ Index(value = ["sessionId", "timeStamp"])]
+    indices = [ Index(value = ["sessionId", "frameTimeStamp"])]
 )
-data class VideoId(
+data class VideoFrameId (
+
     /**
      * The session that owns this video frame
-    */
-    var sessionId: String,
-    /**
-     * The time stamp of the video frame
      */
-    var timeStamp: Long
+    var sessionId: String,
+
+    /**
+     * The time stamp when the video is received
+    */
+    var frameTimeStamp: Long
 )

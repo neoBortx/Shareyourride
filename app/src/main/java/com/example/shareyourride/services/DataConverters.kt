@@ -1,7 +1,6 @@
 package com.example.shareyourride.services
 
 
-import com.bvillarroya_creations.shareyourride.datamodel.data.Environment
 import com.bvillarroya_creations.shareyourride.datamodel.data.Inclination
 import com.bvillarroya_creations.shareyourride.datamodel.data.Location
 import com.bvillarroya_creations.shareyourride.datamodel.data.TelemetryId
@@ -42,18 +41,6 @@ class DataConverters {
                 data.roll,
                 accelerationScalar,
                 accelerationDirection)
-        }
-
-        fun convertData(data: EnvironmentData, sessionId: String, timestamp: Long): Environment
-        {
-
-            return Environment(
-                TelemetryId(sessionId,timestamp),
-                data.temperature,
-                data.windDirection,
-                data.windSpeed,
-                data.humidity,
-                data.pressure)
         }
     }
 }

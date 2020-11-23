@@ -192,6 +192,16 @@ class MessageTypes {
 
         //region VIDEO_DATA
         /**
+         * Gives to the video service the data required to access the video
+         *
+         * Belongs to topic VIDEO_DATA
+         * @remarks this message contains the object video connection data
+         *
+         * session service -> video service
+         */
+        const val VIDEO_CONNECTION_DATA = "videoConnectionData"
+
+        /**
          * Notifies the state of the GPS, if it is running or not
          *
          * Belongs to topic VIDEO_DATA

@@ -1,9 +1,6 @@
-include ':video'
-include ':videoUtils'
 include ':wifi'
-include ':bluetooth'
 include ':messagesDefinition'
 include ':messagesDefinition'
 include ':Messenger'
-include ':services'
 include ':app', ':datamodel', ':telemetry'
+

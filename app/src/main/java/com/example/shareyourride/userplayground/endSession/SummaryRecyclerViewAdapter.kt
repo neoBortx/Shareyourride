@@ -77,7 +77,7 @@ class SummaryRecyclerViewAdapter(private val dataList: Array<SummaryTelemetryTyp
 
                     if(sessionSummary.distance< CommonConstants.getLongDistanceConverter(itemView.context))
                     {
-                        val distance = sessionSummary.distance.times(CommonConstants.getShortDistanceConverter(itemView.context))?: 0.0
+                        val distance = sessionSummary.distance.times(CommonConstants.getShortDistanceConverter(itemView.context))
                         itemView.findViewById<TextView>(R.id.telemetry_value_summary).text = distance.roundToInt().toString() + CommonConstants.getShortDistanceText(itemView.context)
                     }
                     else

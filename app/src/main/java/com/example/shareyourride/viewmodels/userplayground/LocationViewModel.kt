@@ -16,8 +16,8 @@ class LocationViewModel : ViewModel(), IMessageHandlerClient
 {
     //region public properties
     /**
-     * true: enabled
-     * false: disabled
+     * true: enabled and received at least a gps position with an acceptable accuracy
+     * false: disabled or no received a GOS position with a valid accuracy
      */
     val gpsState = MutableLiveData<Boolean>()
 

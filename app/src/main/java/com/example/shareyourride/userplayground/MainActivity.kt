@@ -30,6 +30,7 @@ import com.example.shareyourride.viewmodels.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
+import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
 import com.example.shareyourride.wifi.WifiViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.content_main.*
@@ -66,6 +67,12 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
      * to manage the user session
      */
     private val sessionViewModel: SessionViewModel by viewModels()
+
+    /**
+     * View model that gets the information about the state of the video and acts as facade to control
+     * the video service
+     */
+    private val viewModel: VideoViewModel by viewModels()
     //endregion
 
     //region navigation controls
@@ -89,6 +96,8 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
         navController = navHostFragment.navController
 
         configureLocationChanges()
+
+        //OpenCvInitializer(applicationContext).initialize()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -203,9 +212,11 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
     private fun processGalleryButton()
     {
         Log.i("MainActivity","SYR -> User has press the show gallery button")
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        navController.navigate(R.id.nav_gallery_fragment)
+        val intent: Intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        intent.type = "video/*"
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
     }
     //endregion
 
@@ -238,11 +249,11 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
     {
         try {
             Log.i("MainActivity", "SYR -> Starting services")
-            val li = Intent(this, LocationService::class.java)
-            startService(li)
-
             val si = Intent(this, SessionService::class.java)
             startService(si)
+
+            val li = Intent(this, LocationService::class.java)
+            startService(li)
 
             val ii = Intent(this, InclinationService::class.java)
             startService(ii)
@@ -255,7 +266,6 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
             Log.e("MainActivity", "SYR -> Unable to initialize services because: ${ex.message}")
             ex.printStackTrace()
         }
-
     }
 
     /**

@@ -41,7 +41,7 @@ class SupportedCameras(context: Context)
                                 ""),
                         context.getString(R.string.rtsp_protocol),
                         "",
-                        "0",
+                        "",
                         ""
                 )
         )
@@ -54,9 +54,9 @@ class SupportedCameras(context: Context)
                                 "MiCam_",
                                 ConnectionType.WPA2,
                                 ""),
-                        "rtsp",
+                        context.getString(R.string.rtsp_protocol),
                         "192.168.42.1",
-                        "0",
+                        "",
                         "live"
                 )
         )
