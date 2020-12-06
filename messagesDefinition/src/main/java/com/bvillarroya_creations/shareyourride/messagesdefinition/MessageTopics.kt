@@ -64,5 +64,13 @@ class MessageTopics {
          * - VIDEO_DISCARD_COMMAND
          */
         const val VIDEO_DATA = "videoData"
+
+        /**
+         * Messages related to the video creation flow
+         *
+         * - VIDEO_CREATION_COMMAND
+         * - VIDEO_CREATION_DATA
+         */
+        const val VIDEO_CREATION_DATA = "videoCreationData"
     }
 }

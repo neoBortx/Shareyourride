@@ -15,11 +15,11 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bvillarroya_creations.shareyourride.R
-import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.settings.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
-import com.example.shareyourride.wifi.WifiViewModel
+import com.example.shareyourride.viewmodels.cameraWifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_session.*
 
 
@@ -29,28 +29,28 @@ class SessionFragment : Fragment() {
     /**
      * View model that manage setting changes
      */
-    private val settingsViewModel: SettingsViewModel by viewModels({ requireParentFragment() })
+    private val settingsViewModel: SettingsViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current state of the wifi and can be used to command the WIFI system
      */
-    private val wifiViewModel: WifiViewModel by viewModels({ requireParentFragment() })
+    private val wifiViewModel: WifiViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val locationViewModel: LocationViewModel by viewModels({ requireParentFragment() })
+    private val locationViewModel: LocationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val inclinationViewModel: InclinationViewModel by viewModels({ requireParentFragment() })
+    private val inclinationViewModel: InclinationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that manages session changes, holds the current state of the session and all commands
      * to manage the user session
      */
-    private val sessionViewModel: SessionViewModel by viewModels({ requireParentFragment() })
+    private val sessionViewModel: SessionViewModel by viewModels({ requireActivity() })
     //endregion
 
     //region recycler view
@@ -141,7 +141,7 @@ class SessionFragment : Fragment() {
     //endregion
 
     /**
-     * Manages clicks in the start activity button
+     * Manages clicks in the stop activity button
      */
     private val stopActivityButton = View.OnClickListener {
 

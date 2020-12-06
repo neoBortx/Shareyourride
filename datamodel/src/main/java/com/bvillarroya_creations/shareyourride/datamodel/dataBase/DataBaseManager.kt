@@ -8,7 +8,7 @@ import com.bvillarroya_creations.shareyourride.datamodel.dao.*
 import com.bvillarroya_creations.shareyourride.datamodel.data.*
 import java.lang.Exception
 
-class DataBaseManager {
+internal class DataBaseManager {
     companion object {
 
         /**
@@ -31,7 +31,8 @@ class DataBaseManager {
          */
         fun buildDataBase(context: Context): ShareYourRideDatabase?
         {
-            try {
+            try
+            {
                 if (m_instance == null)
                 {
                     Log.i("DataBaseManager", "Building the data base")
@@ -43,6 +44,7 @@ class DataBaseManager {
                     sessionDao = m_instance!!.sessionDao()
                     sessionTelemetryDao = m_instance!!.sessionTelemetryDao()
                     videoDao = m_instance!!.videoDao()
+                    videoFrameDao = m_instance!!.videoFrameDao()
                     inclinationDao = m_instance!!.inclinationDao()
                     locationDao = m_instance!!.locationDao()
                 }
@@ -125,7 +127,6 @@ class DataBaseManager {
                 if (sessionTelemetryDao != null)
                 {
                     sessionTelemetryDao!!.addSessionTelemetry(sessionTelemetry)
-                    Log.d("DataBaseManager", "SYR -> Inserted session telemetry $sessionTelemetry")
                 }
                 else
                 {
@@ -148,7 +149,6 @@ class DataBaseManager {
             {
                 if (videoDao != null)
                 {
-                    Log.d("DataBaseManager", "Inserting video frame row: ${video.sessionId}")
                     videoDao!!.addVideo(video)
                 }
                 else
@@ -172,12 +172,11 @@ class DataBaseManager {
             {
                 if (videoFrameDao != null)
                 {
-                    Log.d("DataBaseManager", "Inserting video frame row: ${videoFrame.id.sessionId}")
                     videoFrameDao!!.addVideoFrame(videoFrame)
                 }
                 else
                 {
-                    Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to insert video")
+                    Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to insert video frame")
                 }
             }
             catch (ex: Exception)
@@ -288,15 +287,15 @@ class DataBaseManager {
         /**
          * Get the list of signs of the given date stored in the data base
          */
-        fun getSessions(): List<Session>
+        fun getSession(sessionId: String): Session?
         {
             try
             {
                 return if (sessionDao != null) {
-                    sessionDao!!.getSessionList()
+                    sessionDao!!.getSession(sessionId)
                 } else {
-                    Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to retrieve the list of sessions")
-                    listOf()
+                    Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to retrieve the session data")
+                    null
                 }
             }
             catch (ex: Exception)
@@ -304,7 +303,7 @@ class DataBaseManager {
                 ex.printStackTrace()
             }
 
-            return listOf()
+            return null
         }
 
         /**
@@ -335,17 +334,17 @@ class DataBaseManager {
         /**
          * Get the list of inclinations related to the given session and frame ide
          * @param sessionId: the identifier of the session
-         * @param videoFrame: The identifier of the frame
+         * @param timestamp: sync timecode
          */
-        fun getInclinations(sessionId: String, videoFrame: Int): List<Inclination>
+        fun getInclination(sessionId: String, timestamp: Long): Inclination?
         {
             try
             {
                 return if (inclinationDao != null) {
-                    inclinationDao!!.getInclinationList(sessionId,videoFrame)
+                    inclinationDao!!.getInclinationList(sessionId,timestamp)
                 } else {
                     Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to retrieve the list of inclinations")
-                    listOf()
+                    null
                 }
             }
             catch (ex: Exception)
@@ -353,23 +352,23 @@ class DataBaseManager {
                 ex.printStackTrace()
             }
 
-            return listOf()
+            return null
         }
 
         /**
-         * Get the list of locations related to the given session and frame ide
+         * Get the location of the given session and time code
          * @param sessionId: the identifier of the session
-         * @param videoFrame: The identifier of the frame
+         * @param timeStamp: The timecode of the location
          */
-        fun getLocations(sessionId: String, videoFrame: Int): List<Location>
+        fun getLocation(sessionId: String, timeStamp: Long): Location?
         {
             try
             {
                 return if (locationDao != null) {
-                    locationDao!!.getLocationList(sessionId,videoFrame)
+                    locationDao!!.getLocation(sessionId,timeStamp)
                 } else {
                     Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to retrieve the list of locations")
-                    listOf()
+                    null
                 }
             }
             catch (ex: Exception)
@@ -377,7 +376,7 @@ class DataBaseManager {
                 ex.printStackTrace()
             }
 
-            return listOf()
+            return null
         }
 
         /**

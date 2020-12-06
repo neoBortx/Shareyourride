@@ -8,6 +8,7 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import com.example.shareyourride.services.common.ServiceNotificationBuilder
+import com.example.shareyourride.services.session.SessionState
 import com.example.shareyourride.userplayground.MainActivity
 
 /**
@@ -55,7 +56,7 @@ abstract class ServiceBase():  LifecycleService() {
                     PendingIntent.getActivity(this, 0, notificationIntent, 0)
                 }
 
-            val notification = ServiceNotificationBuilder.getNotification(this,pendingIntent)
+            val notification = ServiceNotificationBuilder.getNotification(this, pendingIntent, SessionState.Stopped)
 
             startForeground(ServiceNotificationBuilder.NOTIFICATION_ID,notification)
 

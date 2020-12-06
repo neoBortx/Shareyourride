@@ -2,6 +2,7 @@ package com.example.shareyourride.userplayground.endSession
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +14,15 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bvillarroya_creations.shareyourride.R
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.VideoState
 import com.example.shareyourride.userplayground.session.MiddleDividerItemDecoration
-import com.example.shareyourride.userplayground.session.TelemetryRecyclerViewAdapter
-import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.settings.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
-import com.example.shareyourride.wifi.WifiViewModel
+import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
+import com.example.shareyourride.viewmodels.cameraWifi.WifiViewModel
+import kotlinx.android.synthetic.main.fragment_session_finished.*
 
 class SessionFinishedFragment : Fragment() {
 
@@ -27,28 +30,33 @@ class SessionFinishedFragment : Fragment() {
     /**
      * View model that manage setting changes
      */
-    private val settingsViewModel: SettingsViewModel by viewModels({ requireParentFragment() })
+    private val settingsViewModel: SettingsViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current state of the wifi and can be used to command the WIFI system
      */
-    private val wifiViewModel: WifiViewModel by viewModels({ requireParentFragment() })
+    private val wifiViewModel: WifiViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val locationViewModel: LocationViewModel by viewModels({ requireParentFragment() })
+    private val locationViewModel: LocationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val inclinationViewModel: InclinationViewModel by viewModels({ requireParentFragment() })
+    private val inclinationViewModel: InclinationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that manages session changes, holds the current state of the session and all commands
      * to manage the user session
      */
-    private val sessionViewModel: SessionViewModel by viewModels({ requireParentFragment() })
+    private val sessionViewModel: SessionViewModel by viewModels({ requireActivity() })
+
+    /**
+     * View model that holds the current location and the state of the GPS state
+     */
+    private val videoViewModel: VideoViewModel by viewModels({ requireActivity() })
     //endregion
 
     //region recycler view
@@ -81,8 +89,47 @@ class SessionFinishedFragment : Fragment() {
             recyclerView.adapter!!.notifyDataSetChanged()
         })
 
+        videoViewModel.creationPercentage.observe(viewLifecycleOwner, Observer {
+            processVideoCreationProgress(it)
+        })
+
+        videoViewModel.creationState.observe(viewLifecycleOwner, Observer {
+            processVideoCreationState(it)
+        })
+
         sessionViewModel.requestSummaryData()
 
         return view
+    }
+
+    /**
+     * Updates the progress bar
+     */
+    private fun processVideoCreationProgress(progress: Int)
+    {
+        progressBar_end.progress = progress
+    }
+
+    private fun processVideoCreationState(state: VideoState)
+    {
+        when(state)
+        {
+            VideoState.Unknown ->
+            {
+                Log.e("SessionFinishedFragment", "SYR -> No supported video creation state")
+            }
+            VideoState.Composing ->
+            {
+                video_creation_state_text.text = context?.getText(R.string.creating_video_please_wait)
+            }
+            VideoState.Finished ->
+            {
+                video_creation_state_text.text = context?.getText(R.string.video_created)
+            }
+            VideoState.Failed ->
+            {
+                video_creation_state_text.text = context?.getText(R.string.video_failed)
+            }
+        }
     }
 }

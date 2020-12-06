@@ -18,7 +18,7 @@ interface InclinationDao {
      * @param inclination: the new Inclination to add
      * @return The Inclination identifier
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addInclination(inclination: Inclination): Long
 
     /**
@@ -43,7 +43,7 @@ interface InclinationDao {
      * @return: The list of Inclination
      */
     @Query("SELECT * FROM Inclination WHERE sessionId like :sessionId and timeStamp like :timeStamp")
-    fun getInclinationList(sessionId: String, timeStamp: Int): List<Inclination>
+    fun getInclinationList(sessionId: String, timeStamp: Long): Inclination
 
     /**
      * Get the maximum lean angle in the left side detected during session

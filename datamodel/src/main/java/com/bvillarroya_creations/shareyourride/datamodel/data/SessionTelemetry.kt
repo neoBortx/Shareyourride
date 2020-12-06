@@ -29,6 +29,11 @@ data class SessionTelemetry(
     val speed :Boolean = false,
 
     /**
+     * The distance of the session
+     */
+    val distance :Boolean = false,
+
+    /**
      * The acceleration of the phone
      */
     val acceleration: Boolean = false,

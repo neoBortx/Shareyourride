@@ -127,4 +127,35 @@
     <string name="stop_activity">Stop activity</string>
     <string name="discard">Discard</string>
     <string name="save">Save</string>
+
+
+    <string name="creating_video_notification">Creating video of the activity</string>
+    <string name="meters_unit">m</string>
+    <string name="feet_unit">ft</string>
+    <string name="kilometers_unit">km</string>
+    <string name="miles_unit">mi</string>
+    <string name="percentage">%</string>
+    <string name="kilometers_hour_unit"> km/h</string>
+    <string name="miles_hour_unit">mph</string>
+    <string name="meters_per_seconds_unit"> m/s\u00B2</string>
+    <string name="feet_per_seconds_unit"> ft/s\u00B2</string>
+    <string name="degrees">°</string>
+    <string name="creating_video_please_wait">Creating video, please wait</string>
+    <string name="video_created">Video created!!, Watch it in the gallery</string>
+    <string name="video_failed">Video creation failed</string>
+    <string name="average">Average</string>
+    <string name="maximum">Maximum</string>
+    <string name="maxLeft">Max. Left</string>
+    <string name="maxRight">Max. Right</string>
+    <string name="maxUphill">Max. Uphill</string>
+    <string name="maxDownhill">Max. Downhill</string>
+    <string name="minimum">Minimum</string>
+    <string name="total">Total</string>
+
+    <string name="session_unknown"> </string>
+    <string name="session_not_initiated">No activity initiated yet</string>
+    <string name="session_ongoing">Activity ongoing</string>
+    <string name="session_calibrating">Calibrating gyroscopes</string>
+    <string name="session_creating_video">Creating video</string>
+    <string name="session_video_finished">Activity video created</string>
 </resources>

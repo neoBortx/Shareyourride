@@ -35,7 +35,8 @@ android {
 
     sourceSets {
         main {
-            res.srcDirs = ['src/main/res/layouts/settings',
+            res.srcDirs = ['src/main/res/drawable/canvas',
+                           'src/main/res/layouts/settings',
                            'src/main/res/layouts/menu',
                            'src/main/res/layouts/userplayground',
                            'src/main/res/layouts/login',

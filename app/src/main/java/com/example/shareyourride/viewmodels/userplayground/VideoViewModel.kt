@@ -6,6 +6,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.VideoCreationStateEvent
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.VideoState
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
@@ -29,6 +31,11 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
      * APP context
      */
     private val context = getApplication<Application>().applicationContext
+
+    /**
+     * Unique UUID to identify each instance of this view model
+     */
+    private val guid: Int = java.util.UUID.randomUUID().toString().hashCode()
     //endregion
 
 
@@ -38,17 +45,26 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
      * false: The connection with the video server is not established
      */
     val videoState = MutableLiveData<Boolean>()
+
+    /**
+     * The percentage of the video creation
+     */
+    val creationPercentage = MutableLiveData<Int>()
+
+    /**
+     * THe video creation state
+     */
+    val creationState = MutableLiveData<VideoState>()
     //endregion
 
     //region init
-    init {
-
-        this.createMessageHandler( "VideoViewModel", listOf(MessageTopics.VIDEO_DATA))
-        sendClientConfiguration()
+    init
+    {
+        Log.i("VideoViewModel", "SYR -> $guid: Initiating VideoViewModel")
+        this.createMessageHandler( "VideoViewModel", listOf(MessageTopics.VIDEO_DATA, MessageTopics.VIDEO_CREATION_DATA))
+        //sendClientConfiguration()
         videoState.value = false
-        /*clientState.observeForever {
-            showVideo.value = (it != VideoClientState.None && it != VideoClientState.Disconnected)
-        }*/
+        creationPercentage.value = 0
     }
     //endregion
 
@@ -68,18 +84,23 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
             {
                 MessageTypes.VIDEO_STATE_EVENT ->
                 {
-                    Log.d("VideoViewModel", "SYR -> received VIDEO_STATE_EVENT updating state")
+                    Log.d("VideoViewModel", "SYR -> $guid: received VIDEO_STATE_EVENT updating state")
                     processVideoState(msg.messageData)
+                }
+                MessageTypes.VIDEO_CREATION_STATE_EVENT ->
+                {
+                    Log.d("VideoViewModel", "SYR -> $guid: received VIDEO_CREATION_STATE_EVENT updating state")
+                    processVideoCreationState(msg.messageData)
                 }
                 else ->
                 {
-                    Log.e("VideoViewModel", "SYR -> message ${msg.messageKey} no supported")
+                    Log.e("VideoViewModel", "SYR -> $guid: message ${msg.messageKey} no supported")
                 }
             }
         }
         catch (ex: Exception)
         {
-            Log.e("VideoViewModel", "SYR -> Unable to process message ${ex.message}")
+            Log.e("VideoViewModel", "SYR -> $guid: Unable to process message ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -89,7 +110,8 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
      */
     private fun processVideoState(messageBundleData: MessageBundleData)
     {
-        try {
+        try
+        {
             if (messageBundleData.data is Boolean)
             {
                 videoState.postValue(messageBundleData.data as Boolean)
@@ -97,7 +119,32 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
         }
         catch (ex: Exception)
         {
-            Log.e("VideoViewModel", "SYR -> Unable to process video state because : ${ex.message}")
+            Log.e("VideoViewModel", "SYR -> $guid: Unable to process video state because : ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    private fun processVideoCreationState(messageBundleData: MessageBundleData)
+    {
+        try
+        {
+            if (messageBundleData.type == VideoCreationStateEvent::class)
+            {
+                val state = messageBundleData.data as VideoCreationStateEvent
+                if (state.creationState != VideoState.Finished)
+                {
+                    creationPercentage.postValue(state.creationPercentage)
+                    creationState.postValue(state.creationState)
+                }
+            }
+            else
+            {
+                Log.e("VideoViewModel","SYR -> $guid: Unable to process video creation state because received data is not supported")
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("VideoViewModel","SYR -> $guid: Unable to process video creation state event because ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -107,7 +154,7 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
      */
     private fun sendClientConfiguration()
     {
-        Log.i("SessionViewModel", "SYR -> Sending VIDEO_CONNECTION_DATA message")
+        Log.i("SessionViewModel", "SYR -> $guid: Sending VIDEO_CONNECTION_DATA message")
         val setting = SettingPreferencesGetter(getApplication())
         val protocol = setting.getStringOption(SettingPreferencesIds.CameraProtocol)
         val ip = setting.getStringOption(SettingPreferencesIds.CameraIp)
@@ -129,13 +176,13 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
     {
         try
         {
-            Log.i("VideoViewModel", "SYR -> Send VIDEO_STATE_REQUEST")
+            Log.i("VideoViewModel", "SYR -> $guid: Send VIDEO_STATE_REQUEST")
             val messageAccuracy = MessageBundle(MessageTypes.VIDEO_STATE_REQUEST,"", MessageTopics.VIDEO_DATA)
             sendMessage(messageAccuracy)
         }
         catch (ex: Exception)
         {
-            Log.e("LocationViewModel", "SYR -> Unable to ask for GPS state:  ${ex.message}")
+            Log.e("VideoViewModel", "SYR -> $guid: Unable to ask for GPS state:  ${ex.message}")
             ex.printStackTrace()
         }
     }
@@ -146,15 +193,32 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
     fun changeVideoServer()
     {
         try {
-            Log.i("LocationViewModel", "SYR -> changing the video server parameters")
+            Log.i("VideoViewModel", "SYR -> $guid: changing the video server parameters")
             sendClientConfiguration()
         }
         catch(ex: java.lang.Exception)
         {
-            Log.e("WifiViewModel", "SYR -> Unable to change wifi network because: ${ex.message}")
+            Log.e("VideoViewModel", "SYR -> $guid: Unable to change wifi network because: ${ex.message}")
             ex.printStackTrace()
         }
     }
     //endregion
+
+    /**
+     * This method is called when the view model is destroyed
+     */
+    override fun onCleared()
+    {
+        try
+        {
+            Log.i("VideoViewModel", "SYR -> $guid: Clearing SessionViewModel")
+            this.removeHandler()
+        }
+        catch (ex: Exception)
+        {
+            Log.e("VideoViewModel", "SYR -> $guid: Unable to process message ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
 
 }

@@ -1,6 +1,9 @@
 package com.example.shareyourride.userplayground
 
 import android.Manifest
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -21,17 +24,19 @@ import androidx.navigation.ui.navigateUp
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.configuration.SettingsActivity
 import com.example.shareyourride.permissions.PermissionsManager
+import com.example.shareyourride.services.common.ServiceNotificationBuilder
 import com.example.shareyourride.services.inclination.InclinationService
 import com.example.shareyourride.services.location.LocationService
 import com.example.shareyourride.services.session.SessionService
 import com.example.shareyourride.services.session.SessionState
+import com.example.shareyourride.services.video.VideoComposerService
 import com.example.shareyourride.services.video.VideoService
-import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.cameraWifi.WifiViewModel
+import com.example.shareyourride.viewmodels.settings.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
 import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
-import com.example.shareyourride.wifi.WifiViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -95,9 +100,9 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        configureLocationChanges()
+        configureSessionStateChangesListener()
 
-        //OpenCvInitializer(applicationContext).initialize()
+        sessionViewModel.getSessionState()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -109,11 +114,12 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun configureLocationChanges()
+    private fun configureSessionStateChangesListener()
     {
         try
         {
             sessionViewModel.sessionData.observe(this, Observer {sessionData ->
+
                 when (sessionData.state)
                 {
                     SessionState.CalibratingSensors ->
@@ -151,7 +157,30 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
                         Log.e("MainActivity", "SYR -> Unable to process session state ${sessionData.state}, not supported")
                     }
                 }
+
+                notifySessionState(sessionData.state)
             })
+        }
+        catch(ex: Exception)
+        {
+            Log.e("HomeFragment", "SYR -> Unable to create location observers because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    private fun notifySessionState(sessionState: SessionState)
+    {
+        try
+        {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val pendingIntent: PendingIntent =
+                Intent(this, MainActivity::class.java).let { notificationIntent ->
+                    PendingIntent.getActivity(this, 0, notificationIntent, 0)
+                }
+
+            val notification = ServiceNotificationBuilder.getNotification(this, pendingIntent, sessionState)
+            notificationManager.notify(ServiceNotificationBuilder.NOTIFICATION_ID, notification)
         }
         catch(ex: Exception)
         {
@@ -250,16 +279,19 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
         try {
             Log.i("MainActivity", "SYR -> Starting services")
             val si = Intent(this, SessionService::class.java)
-            startService(si)
+            startForegroundService(si)
 
             val li = Intent(this, LocationService::class.java)
-            startService(li)
+            startForegroundService(li)
 
             val ii = Intent(this, InclinationService::class.java)
-            startService(ii)
+            startForegroundService(ii)
 
             val vi = Intent(this, VideoService::class.java)
-            startService(vi)
+            startForegroundService(vi)
+
+            val vci = Intent(this, VideoComposerService::class.java)
+            startForegroundService(vci)
         }
         catch(ex: Exception)
         {
@@ -331,6 +363,12 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
                     Log.i("MainActivity", "SYR -> User press the return button when the app is in Finished state, navigate to home fragment")
                 }
             }
+
+            if (sessionViewModel.sessionData.value != null)
+            {
+                notifySessionState(sessionViewModel.sessionData.value!!.state)
+            }
+
         }
         catch(ex: Exception)
         {

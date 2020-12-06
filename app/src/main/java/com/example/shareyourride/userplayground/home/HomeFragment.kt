@@ -15,11 +15,11 @@ import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.R.color
 import com.bvillarroya_creations.shareyourride.R.layout
-import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.settings.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
 import com.example.shareyourride.viewmodels.userplayground.VideoViewModel
-import com.example.shareyourride.wifi.WifiViewModel
+import com.example.shareyourride.viewmodels.cameraWifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
 
 
@@ -29,28 +29,28 @@ class HomeFragment : Fragment()  {
     /**
      * View model that manage setting changes
      */
-    private val settingsViewModel: SettingsViewModel by viewModels({ requireParentFragment() })
+    private val settingsViewModel: SettingsViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current state of the wifi and can be used to command the WIFI system
      */
-    private val wifiViewModel: WifiViewModel  by viewModels({ requireParentFragment() })
+    private val wifiViewModel: WifiViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val locationViewModel: LocationViewModel by viewModels({ requireParentFragment() })
+    private val locationViewModel: LocationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that manages session changes, holds the current state of the session and all commands
      * to manage the user session
      */
-    private val sessionViewModel: SessionViewModel by viewModels({ requireParentFragment() })
+    private val sessionViewModel: SessionViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val videoViewModel: VideoViewModel by viewModels({ requireParentFragment() })
+    private val videoViewModel: VideoViewModel by viewModels({ requireActivity() })
     //endregion
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -77,24 +77,6 @@ class HomeFragment : Fragment()  {
 
         return view
     }
-
-    //region configure observers
-    /*private fun configureWifiChanges()
-    {
-        try {
-
-            wifiViewModel.wifiConnected.observe(viewLifecycleOwner, Observer {state ->
-                Log.d("HomeFragment", "SYR -> processing changes in wifi wifiConnectionObserver, new state = $state")
-                val colorId = if (state) color.colorProviderOk else color.colorProviderError
-                ImageViewCompat.setImageTintList(video_state_img, context?.getColor(colorId)?.let { ColorStateList.valueOf(it) })
-            })
-        }
-        catch(ex: Exception)
-        {
-            Log.e("HomeFragment", "SYR -> Unable to create Wifi observers because: ${ex.message}")
-            ex.printStackTrace()
-        }
-    }*/
 
     /**
      * Create an observer to manage changes in the GPS state
@@ -150,7 +132,7 @@ class HomeFragment : Fragment()  {
              */
             settingsViewModel.cameraConfigChangedFlag.observe(viewLifecycleOwner, Observer {
                 Log.i("HomeFragment","SYR -> Processing changes in the camera configuration")
-                wifiViewModel.changeWifiNetwork()
+                wifiViewModel.changeWifiNetwork(requireActivity())
                 videoViewModel.changeVideoServer()
             })
 

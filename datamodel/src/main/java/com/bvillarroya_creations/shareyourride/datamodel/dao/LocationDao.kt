@@ -17,7 +17,7 @@ interface LocationDao {
      * @param location: the new Location to add
      * @return The Location identifier
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addLocation(location: Location): Long
 
     /**
@@ -42,7 +42,7 @@ interface LocationDao {
      * @return: The list of Location
      */
     @Query("SELECT * FROM Location Where sessionId like :sessionId and timeStamp like :timeStamp")
-    fun getLocationList(sessionId: String, timeStamp: Int): List<Location>
+    fun getLocation(sessionId: String, timeStamp: Long): Location?
 
     //region session summary
     /**

@@ -17,7 +17,7 @@ interface SessionDao {
      * @param session: the new session to add
      * @return The session identifier
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addSession(session: Session): Long
 
     /**
@@ -43,6 +43,15 @@ interface SessionDao {
      */
     @Query("SELECT * FROM session")
     fun getSessionList(): List<Session>
+
+    /**
+     * Get the session data related to the given identifier
+     *
+     * @param sessionId: the identifier of the session
+     * @return: The list of session
+     */
+    @Query("SELECT * FROM session WHERE id LIKE :sessionId")
+    fun getSession(sessionId: String): Session
 
     /**
      * Get the last session on the list (the one with the newest date)

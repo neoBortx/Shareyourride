@@ -1,17 +1,15 @@
-package com.example.shareyourride.wifi
+package com.example.shareyourride.camera
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
 import com.bvillarroya_creations.shareyourride.wifi.WifiClient
-import com.example.shareyourride.camera.CameraConnectionData
-import com.example.shareyourride.userplayground.home.HomeFragment
 
 /**
  * Client that commands the actions to connect to WIFI networks and handles
  * commands about the state of the connection
  *
+ * Used to not to couple wifi implementation with the video camera
+ *
  * @param context: To perform some operations
- * @param cycleOwner: To handle observable events
  */
 class CameraWifiClient(private val context: Context): WifiClient(context) {
 

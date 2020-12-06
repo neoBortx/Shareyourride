@@ -1,7 +1,6 @@
 package com.example.shareyourride.services.base
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes

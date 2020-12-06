@@ -17,10 +17,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.services.session.SessionState
-import com.example.shareyourride.viewmodels.SettingsViewModel
+import com.example.shareyourride.viewmodels.settings.SettingsViewModel
 import com.example.shareyourride.viewmodels.userplayground.LocationViewModel
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
-import com.example.shareyourride.wifi.WifiViewModel
+import com.example.shareyourride.viewmodels.cameraWifi.WifiViewModel
 import kotlinx.android.synthetic.main.fragment_gyroscope_calibration.*
 
 /**
@@ -32,23 +32,23 @@ class GyroscopeCalibrationFragment : Fragment()
     /**
      * View model that manage setting changes
      */
-    private val settingsViewModel: SettingsViewModel by viewModels({ requireParentFragment() })
+    private val settingsViewModel: SettingsViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current state of the wifi and can be used to command the WIFI system
      */
-    private val wifiViewModel: WifiViewModel  by viewModels({ requireParentFragment() })
+    private val wifiViewModel: WifiViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that holds the current location and the state of the GPS state
      */
-    private val locationViewModel: LocationViewModel by viewModels({ requireParentFragment() })
+    private val locationViewModel: LocationViewModel by viewModels({ requireActivity() })
 
     /**
      * View model that manages session changes, holds the current state of the session and all commands
      * to manage the user session
      */
-    private val sessionViewModel: SessionViewModel by viewModels({ requireParentFragment() })
+    private val sessionViewModel: SessionViewModel by viewModels({ requireActivity() })
     //endregion
 
     //region configure observers
@@ -143,14 +143,15 @@ class GyroscopeCalibrationFragment : Fragment()
         (view.findViewById(R.id.continue_activity_button) as Button).setOnClickListener(continueActivityButtonListener)
         (view.findViewById(R.id.retry_calibration_button) as Button).setOnClickListener(retryCalibrationButtonListener)
 
-        updateView(view)
-
         configureWifiChanges()
         configureLocationChanges()
         configureSessionChanges()
 
         setImageColor(locationViewModel.gpsState.value,view.findViewById(R.id. gps_state_img_gyroscopes) as ImageView)
         setImageColor(wifiViewModel.wifiConnected.value, view.findViewById(R.id. wifi_state_img_gyroscopes) as ImageView)
+
+        updateView(view)
+
         return view
     }
 

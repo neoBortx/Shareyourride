@@ -18,7 +18,7 @@ interface SessionTelemetryDao {
      * @param sessionTelemetry: the new telemetry configuration
      * @return The session telemetry identifier
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addSessionTelemetry(sessionTelemetry: SessionTelemetry): Long
 
     /**

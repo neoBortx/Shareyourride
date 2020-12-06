@@ -19,29 +19,38 @@ class ShareYourRideRepository {
 
         //region get data
         /**
-         * Get the full list of sessions
+         * Get the session data related to the given identifier
          */
-        suspend fun getSessions(): List<Session> {
+        suspend fun getSession(sessionId: String): Session? {
             return withContext(Dispatchers.IO) {
-                DataBaseManager.getSessions()
+                DataBaseManager.getSession(sessionId)
+            }
+        }
+
+        /**
+         * Get the session data related to the given identifier
+         */
+        suspend fun getSessionTelemetry(sessionId: String): SessionTelemetry? {
+            return withContext(Dispatchers.IO) {
+                DataBaseManager.getSessionTelemetry(sessionId)
             }
         }
 
         /**
          * Get teh list of bodies of the given session and the video frame
         */
-        suspend fun getLocations(sessionId: String, videoId: Int): List<Location> {
+        suspend fun getLocation(sessionId: String, timeStamp: Long): Location? {
             return withContext(Dispatchers.IO) {
-                DataBaseManager.getLocations(sessionId, videoId)
+                DataBaseManager.getLocation(sessionId, timeStamp)
             }
         }
 
         /**
          *  Get the list of inclinations related to the given session
         */
-        suspend fun getInclinations(sessionId: String, videoId: Int): List<Inclination> {
+        suspend fun getInclination(sessionId: String, timeStamp: Long): Inclination? {
             return withContext(Dispatchers.IO) {
-                DataBaseManager.getInclinations(sessionId, videoId)
+                DataBaseManager.getInclination(sessionId, timeStamp)
             }
         }
 
@@ -206,6 +215,18 @@ class ShareYourRideRepository {
         suspend fun insertSession(session: Session) {
             return withContext(Dispatchers.IO) {
                 DataBaseManager.insertSession(session)
+            }
+        }
+
+        /**
+         * Insert a new session telemetry in the data base
+         * If the session already exist, this operation will be discarded
+         *
+         * @param sessionTelemetry: The telemetry of the session
+         */
+        suspend fun insertSessionTelemetry(sessionTelemetry: SessionTelemetry) {
+            return withContext(Dispatchers.IO) {
+                DataBaseManager.insertSessionTelemetry(sessionTelemetry)
             }
         }
 

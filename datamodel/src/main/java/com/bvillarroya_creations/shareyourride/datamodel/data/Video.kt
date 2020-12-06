@@ -67,6 +67,12 @@ data class Video (
     val rawVideoFilePath: String,
 
     /**
+     * The count of all saved frames in the disk, used
+     * in the video composition procedure
+     */
+    val totalVideoFrames: Long,
+
+    /**
      * The absoulte path of the video with the telemetry
      */
     val generatedVideoPath: String

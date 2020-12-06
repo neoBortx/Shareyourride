@@ -4,7 +4,7 @@ import android.util.Log
 import com.bvillarroya_creations.shareyourride.datamodel.data.Video
 import com.bvillarroya_creations.shareyourride.datamodel.data.VideoFrame
 import com.bvillarroya_creations.shareyourride.datamodel.data.VideoFrameId
-import com.bvillarroya_creations.shareyourride.datamodel.dataBase.DataBaseManager
+import com.bvillarroya_creations.shareyourride.datamodel.dataBase.ShareYourRideRepository
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
@@ -21,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264
-import org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P
+import org.bytedeco.ffmpeg.global.avutil.*
 import org.bytedeco.javacv.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -126,6 +126,11 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var connectionEstablished = false
 
     /**
+     * Points if the grabber is trying to access to the stream, used to avoid parallel access to the same stream
+     */
+    private var tryingToConnect = false
+
+    /**
      * Class that manages the way of save files in the system
      */
     private var mediaStoreUtils: MediaStoreUtils? = null
@@ -147,9 +152,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private val lock = ReentrantReadWriteLock()
 
     /**
-     *
+     * Contains the relation of the timestamp of the frame and the synchronization timestamp sent in the SAVE_TELEMETRY message
      */
-    private val timestampRelationMap = mutableMapOf<Long,Long>()
+    private val timeStampRelationMap: MutableMap<Long,Long> = mutableMapOf()
+
+    /**
+     * Counts the total amount of frames saved in disk for a video
+     */
+    private var framesCounter: Long = 0
+
+    /**
+     * Stores the infromation related to the video
+     */
+    private var video : Video? = null
     //endregion
 
     //region message handlers
@@ -199,11 +214,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     processStopAcquiringData()
                 }
 
-                MessageTypes.VIDEO_CREATION_COMMAND ->
-                {
-                    Log.d(mClassName, "SYR -> received  VIDEO_CREATION_COMMAND")
-
-                }
                 MessageTypes.VIDEO_DISCARD_COMMAND ->
                 {
                     Log.d(mClassName, "SYR -> received  VIDEO_DISCARD_COMMAND")
@@ -232,7 +242,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      *
      * @return The full path address of the directory
      */
-    private fun getFileDir(): String {
+    private fun getRawFileDir(): String {
         return try {
             val dir = applicationContext.getExternalFilesDir("")
 
@@ -274,10 +284,13 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 Log.i(mClassName, "SYR -> Composed video URL $addressString for video connection")
             }
 
-            if (grabber != null) {
-                grabber!!.release()
+            if (grabber != null && !grabber!!.isCloseInputStream)
+            {
+                GlobalScope.async{
+                    grabber!!.stop()
+                }
             }
-        }
+         }
         catch (ex:Exception)
         {
             Log.e(mClassName, "SYR -> Unable to process video connection data due: ${ex.message}")
@@ -286,13 +299,13 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     }
 
     /**
-     * Send the video data into the database
+     * Save the video data into the database
      */
-    private fun saveVideoFileInDataBase()
+    private suspend fun saveVideoFileInDataBase()
     {
         try
         {
-            val video = Video(sessionId,
+            video = Video(sessionId,
                               System.currentTimeMillis(),
                               recorder!!.imageHeight,
                               recorder!!.imageWidth,
@@ -301,9 +314,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                               recorder!!.frameRate,
                               recorder!!.videoBitrate,
                               videoRawPath,
+                              0,
                               "")
 
-            DataBaseManager.insertVideo(video)
+            ShareYourRideRepository.insertVideo(video!!)
         }
         catch(ex: Exception)
         {
@@ -314,16 +328,53 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     }
 
     /**
-     * Save all frames of the session into the data base
+     * Send the video data into the database
      */
-    private fun saveFramesInDataBase()
+    private suspend fun updateVideoFileInDataBase()
     {
         try
         {
-            timestampRelationMap.forEach {
-                val videoFrame = VideoFrame(VideoFrameId(sessionId,it.key),it.value)
-                DataBaseManager.insertVideoFrame(videoFrame)
+            if (video != null) {
+                video = Video(
+                        video!!.sessionId,
+                        video!!.startTimeStamp,
+                        video!!.height,
+                        video!!.width,
+                        video!!.format,
+                        video!!.codec,
+                        video!!.frameRate,
+                        video!!.bitRate,
+                        videoRawPath,
+                        framesCounter,
+                        "")
+
+                ShareYourRideRepository.updateVideo(video!!)
+
             }
+        }
+        catch(ex: Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to save video data into data due: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+    }
+
+
+    /**
+     * Save all frames of the session into the data base
+     */
+    private suspend fun saveFramesInDataBase()
+    {
+        try
+        {
+            timeStampRelationMap.forEach {
+                Log.e(mClassName, "SYR ->Saving frame ${it.key}    ---------------  ${it.value}")
+                val videoFrame = VideoFrame(VideoFrameId(sessionId,it.key),it.value)
+                ShareYourRideRepository.insertVideoFrame(videoFrame)
+            }
+
+            timeStampRelationMap.clear()
         }
         catch(ex: Exception)
         {
@@ -340,6 +391,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         try
         {
             if (data.type == String::class) {
+
+                timeStampRelationMap.clear()
+                framesCounter = 0
+
                 sessionId = data.data as String
                 Log.e(mClassName, "SYR -> Start reading video frames in a new thread for session $sessionId ")
 
@@ -347,7 +402,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     mediaStoreUtils = MediaStoreUtils(applicationContext)
                 }
 
-                videoRawPath = getFileDir()
+                videoRawPath = getRawFileDir()
 
                 Log.e(mClassName, "SYR -> recording video $videoRawPath")
 
@@ -361,19 +416,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 recorder!!.videoBitrate = videoBitRate
                 recorder!!.timestamp = videoTimeStamp
 
-                recorder!!.start()
-
-                saveVideoFileInDataBase()
-
-                captureVideoFlag = true
-
                 GlobalScope.async(Dispatchers.IO) {
+                    recorder!!.start()
+                    saveVideoFileInDataBase()
+                    captureVideoFlag = true
+
                     Log.i(mClassName, "SYR -> Start reading video frames in a new thread")
                     // Blocking network request code
                     getVideoFrames()
                 }
-
-            }
+                            }
             else {
                 Log.e(mClassName, "SYR -> Unable to get video because session is is null or not valid")
             }
@@ -382,6 +434,11 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         {
             Log.e(mClassName, "SYR -> Unable to processStartAcquiringData due: ${ex.message}")
             ex.printStackTrace()
+
+            val observable = Observable.timer(5000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+                Log.e(mClassName, "SYR -> Retrying connect to video")
+                processStartAcquiringData(data)
+            }
         }
     }
 
@@ -414,7 +471,14 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             ex.printStackTrace()
         }
 
-        saveFramesInDataBase()
+        GlobalScope.async {
+            updateVideoFileInDataBase()
+            saveFramesInDataBase()
+        }.invokeOnCompletion {
+            val message = MessageBundle(MessageTypes.VIDEO_CREATION_COMMAND, sessionId, MessageTopics.VIDEO_CREATION_DATA)
+            sendMessage(message)
+        }
+
     }
 
     /**
@@ -428,7 +492,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             try
             {
                 val frame = grabber!!.grabFrame()
-
                 if (!captureVideoFlag)
                 {
                     break
@@ -436,6 +499,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 if (frame != null)
                 {
+                    Log.e(mClassName, "SYR ->Grabbed frame -------------------------- ${frame.timestamp}")
                     processVideoFrame(frame.clone())
                 }
                 else
@@ -463,7 +527,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             if (recorder != null)
             {
                 recorder!!.record(frame)
-                timestampRelationMap[frame.timestamp] = tokenTimestamp
+                framesCounter++
+                Log.e(mClassName, "SYR ->Saving in map frame -------------------------- ${frame.timestamp}")
+                //timeStampRelationMap.put(frame.timestamp,tokenTimestamp)
+                timeStampRelationMap.put(framesCounter,tokenTimestamp)
             }
         }
 
@@ -481,13 +548,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         {
             if (addressString.isNotEmpty())
             {
-                //open method already release an ongoing connection
-                Log.i(mClassName, "SYR -> Trying to connect to video service $addressString")
+                 Log.i(mClassName, "SYR -> Trying to connect to video service $addressString")
                 grabber = FFmpegFrameGrabber(addressString) // rtsp url
                 grabber!!.setOption("rtsp_transport", "tcp")
+                grabber!!.timeout = 5
                 grabber!!.imageMode = FrameGrabber.ImageMode.COLOR
 
                 //to speed up the video processing
+                grabber!!.setOption("stimeout", "5000000")
+                grabber!!.setOption("thread", "1")
+                grabber!!.setOption("threads", "1")
                 grabber!!.setOption("fflags", "nobuffer")
                 grabber!!.setOption("avioflags ", "direct")
                 grabber!!.setOption("sync", "ext")
@@ -497,7 +567,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 //start the grabber in another thread because this is a blocking operation
                 GlobalScope.async(Dispatchers.IO) {
-                    grabber!!.start()
+
+                    tryingToConnect = true
+                    grabber!!.start(false)
+                    tryingToConnect = false
 
                     if (grabber!= null)
                     {
@@ -523,6 +596,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             {
                 Log.i(mClassName, "SYR -> Skipping connection to video service because the address is empty")
             }
+        }
+        catch (e: FrameGrabber.Exception) {
+            grabber!!.stop()
+            grabber!!.close()
         }
         catch (ex:Exception)
         {

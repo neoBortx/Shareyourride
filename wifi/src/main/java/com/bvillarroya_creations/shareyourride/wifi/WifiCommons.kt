@@ -26,6 +26,7 @@ class WifiCommons(val context: Context) {
      * Enable ir or open the settings window depending on the
      * Android version
      */
+    @Suppress("DEPRECATION")
     fun enableWifi(activity: Activity)
     {
         try
@@ -53,7 +54,7 @@ class WifiCommons(val context: Context) {
     fun isWifiEnabled(): Boolean
     {
         try {
-            return wifiManager.isWifiEnabled;
+            return wifiManager.isWifiEnabled
         }
         catch (ex: Exception)
         {

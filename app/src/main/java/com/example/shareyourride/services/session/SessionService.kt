@@ -2,11 +2,14 @@ package com.example.shareyourride.services.session
 
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.datamodel.data.Session
+import com.bvillarroya_creations.shareyourride.datamodel.data.SessionTelemetry
 import com.bvillarroya_creations.shareyourride.datamodel.dataBase.ShareYourRideRepository
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTopics
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.InclinationCalibrationData
 import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.SessionSummaryData
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.VideoCreationStateEvent
+import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.VideoState
 import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
@@ -25,7 +28,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Stores and mange the current user session
  */
-class SessionService() : ServiceBase(), IMessageHandlerClient {
+internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
 
     //region private vars
@@ -61,6 +64,19 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
     }
 
     //region public functions
+    private fun generateSessionTelemetry(): SessionTelemetry
+    {
+        return SessionTelemetry(
+                mSession.id,
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.SpeedMetric),
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.DistanceMetric),
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.GforceMetric),
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.LeanAngleMetric),
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.AltitudeMetric),
+                SettingPreferencesGetter(applicationContext).getBooleanOption(SettingPreferencesIds.InclinationMetric))
+    }
+
+
     /**
      * Initialize the session with:
      * - A random unique identifier
@@ -87,6 +103,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
             runBlocking {
                 ShareYourRideRepository.buildDataBase(application)
                 ShareYourRideRepository.insertSession(mSession)
+                ShareYourRideRepository.insertSessionTelemetry(generateSessionTelemetry())
             }
 
             sendSessionState()
@@ -179,6 +196,17 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
     {
         try
         {
+            mSession.sensorsCalibrated = false
+            mSession.referenceAzimuth = 0
+            mSession.referencePitch = 0
+            mSession.referenceRoll = 0
+            mSession.referenceAcceleration = FloatArray(3)
+
+            //the current running thread will be blocked until this piece of code is executed
+            runBlocking {
+                ShareYourRideRepository.updateSession(mSession)
+            }
+
             sendStartCalibratingSensors()
         }
         catch (ex: java.lang.Exception)
@@ -414,6 +442,31 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    private fun processVideoCreationStateEvent(msgData: MessageBundleData)
+    {
+        try
+        {
+            if (msgData.type == VideoCreationStateEvent::class)
+            {
+                val state = msgData.data as VideoCreationStateEvent
+                if (state.creationState == VideoState.Finished || state.creationState == VideoState.Failed)
+                {
+                    sessionState   = SessionState.Finished
+                    mSession.state = SessionState.Finished.value
+                }
+            }
+            else
+            {
+                Log.e("SessionService","SYR -> Unable to process video creation state because received data is not supported")
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to process video creation state event because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
     //endregion
 
     //region IMessageHandlerClient implementation
@@ -448,7 +501,7 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                     Log.d("SessionService", "SYR -> received CONTINUE_SESSION updating event")
                     processContinueSession()
                 }
-                MessageTypes.RETRY_CALIBRATION ->
+                MessageTypes.CONTINUE_SESSION ->
                 {
                     Log.d("SessionService", "SYR -> received RETRY_CALIBRATION updating event")
                     processRetryCalibration()
@@ -477,6 +530,11 @@ class SessionService() : ServiceBase(), IMessageHandlerClient {
                 {
                     Log.d("SessionService", "SYR -> received SESSION_SUMMARY_REQUEST updating event")
                     processSessionSummaryRequest()
+                }
+                MessageTypes.VIDEO_CREATION_STATE_EVENT ->
+                {
+                    Log.d("SessionService", "SYR -> received VIDEO_CREATION_STATE_EVENT updating event")
+                    processVideoCreationStateEvent(msg.messageData)
                 }
                 else ->
                 {

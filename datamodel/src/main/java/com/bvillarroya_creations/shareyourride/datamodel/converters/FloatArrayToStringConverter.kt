@@ -11,7 +11,11 @@ class FloatArrayToStringConverter {
     {
         try
         {
-            val jsonArray = JSONArray(listOf(values))
+            val jsonArray = JSONArray()
+            values?.forEach {
+                jsonArray.put(it)
+            }
+
             return jsonArray.toString() ?: ""
         }
         catch (e: JSONException)

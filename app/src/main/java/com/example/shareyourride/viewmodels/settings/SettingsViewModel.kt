@@ -1,4 +1,4 @@
-package com.example.shareyourride.viewmodels
+package com.example.shareyourride.viewmodels.settings
 
 import android.app.Application
 import android.content.SharedPreferences

@@ -1,13 +1,19 @@
-package com.example.shareyourride.wifi
+package com.example.shareyourride.viewmodels.cameraWifi
 
 import android.app.Activity
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.camera.SupportedCameras
+import com.example.shareyourride.camera.CameraWifiClient
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 /**
  * Wifi to manage the WIFI connection
@@ -35,12 +41,37 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
      */
     private var context = application.applicationContext
 
+    private var lifecycleOwner: LifecycleOwner? = null
+
+    fun initialize(lifecycleOwner: LifecycleOwner, activity: Activity)
+    {
+        this.lifecycleOwner = lifecycleOwner
+        wifiClient.wifiEnabled.observe(lifecycleOwner, Observer {
+
+            if (wifiClient.wifiEnabled.value!!)
+            {
+                connectToWifi(activity)
+            }
+        })
+
+        wifiClient.wifiEnabled.observe(lifecycleOwner, Observer {
+            if (wifiClient.wifiEnabled.value!!)
+            {
+                val observable = Observable.timer(5000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+                    Log.e("WifiViewModel", "SYR -> Retrying connect to WIFI")
+                    connectToWifi(activity)
+                }
+            }
+        })
+
+    }
+
     /**
      * - Get a wifi client
      * - Get the camera connection data
-     * - Check if the connection is established jey
+     * - Check if the connection is established jet
      *      - Yes: Leave
-     *      - N. Try to connect
+     *      - No Try to connect
      */
     fun connectToWifi(activity: Activity )
     {
@@ -87,12 +118,12 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun changeWifiNetwork()
+    fun changeWifiNetwork(activity: Activity )
     {
         try {
             Log.i("WifiViewModel", "SYR -> changing the wifi parameters")
             wifiClient.disconnectFromNetwork()
-            wifiClient.connectToNetwork()
+            connectToWifi(activity)
         }
         catch(ex: java.lang.Exception)
         {

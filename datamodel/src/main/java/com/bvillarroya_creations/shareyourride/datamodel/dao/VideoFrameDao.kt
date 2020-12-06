@@ -16,7 +16,7 @@ interface VideoFrameDao {
      *
      * @param videoFrame: the new Video frame to add
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addVideoFrame(videoFrame: VideoFrame)
 
     /**

@@ -17,7 +17,7 @@ interface VideoDao {
      * @param video: the new Video to add
      * @return The Video identifier
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addVideo(video: Video): Long
 
     /**

@@ -9,7 +9,6 @@ import android.net.wifi.WifiManager
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.bvillarroya_creations.shareyourride.wifi.interfaces.IWifiScanner
-import java.lang.reflect.Method
 
 
 /**
@@ -65,7 +64,7 @@ class WifiScanner(private val context: Context): IWifiScanner {
             {
                 Log.e("WifiScanner", "SYR -> Unable to process the wifi scan result, exception: ${ex.message}")
                 ex.printStackTrace()
-                //scanFailure()
+                scanFailure()
             }
         }
     }
