@@ -10,6 +10,7 @@ import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
 import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
+import com.example.shareyourride.userplayground.common.AccelerationDirection
 import kotlin.math.abs
 
 /**
@@ -57,38 +58,6 @@ class InclinationViewModel : ViewModel(), IMessageHandlerClient
          */
         Left
     }
-
-    enum class AccelerationDirection(val value: Int) {
-        /**
-         * Unknown force
-         */
-        Unknown(0),
-
-        /**
-         * Positive force in the x axis
-         */
-        Right(1),
-
-        /**
-         * Negative force in the x axis
-         */
-        Left(2),
-
-        /**
-         * Positive force in the y axis
-         */
-        Front(3),
-
-        /**
-         * Negative force in the y axis
-         */
-        Back(4);
-
-        companion object {
-            fun fromInt(value: Int) = AccelerationDirection.values().first { it.value == value }
-        }
-    }
-    //endregion
 
     //region message handlers
     init {

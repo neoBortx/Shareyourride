@@ -2,6 +2,7 @@ package com.example.shareyourride.services.video
 
 import android.graphics.*
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.datamodel.data.*
@@ -15,8 +16,10 @@ import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
 import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.example.shareyourride.common.CommonConstants
+import com.example.shareyourride.common.CommonConstants.Companion.GRAVITY_ACCELERATION
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.services.base.ServiceBase
+import com.example.shareyourride.userplayground.common.AccelerationDirection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -27,7 +30,6 @@ import org.bytedeco.javacv.FFmpegFrameGrabber
 import org.bytedeco.javacv.FFmpegFrameRecorder
 import org.bytedeco.javacv.Frame
 import java.io.File
-import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -44,7 +46,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
      * Milliseconds to update the composition state
      * While the timer expires, sends the VIDEO_CREATION_STATE_EVENT
      */
-    private val millisecondsToUpdateVideoConverterState: Int = 5000
+    private val millisecondsToUpdateVideoConverterState: Int = 1000
     //endregion
 
     //region properties
@@ -122,20 +124,66 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
      */
     private var lastProcessedSyncTimeStamp: Long = -1
 
+
+    //region bitmaps
+    /**
+     * Bitmap with teh altitude icon
+     */
+    private var altitudeDrawable: Bitmap? = null
+
+    /**
+     * Bitmap with the distance icon
+     */
+    private var distanceDrawable: Bitmap? = null
+
+    /**
+     * Birmap with the terrain inclination icon
+     */
+    private var terrainInclinationDrawable: Bitmap? = null
+
+
+    /**
+     * The last inserted speedometer image, in order to speed up the generation of
+     * frames when the telemetry values are the same
+     */
+    private var lastSpeedometerDrawable: Bitmap? = null
+
+    /**
+     * The last inserted lean angle image, in order to speed up the generation of
+     * frames when the telemetry values are the same
+     */
+    private var lastLeanAngleDrawable: Bitmap? = null
+
+    /**
+     * The last inserted force image, in order to speed up the generation of
+     * frames when the telemetry values are the same
+     */
+    private var lastForceDrawable: Bitmap? = null
+    //endregion
+
+
+    //region telemetry data
     /**
      * Last processed location telemetry
      */
-    var location: Location? = null
+    private var location: Location? = null
 
     /**
      * Last processed inclination telemetry
      */
-    var inclination: Inclination? = null
+    private var inclination: Inclination? = null
+    //endregion
+
+    //region locations of all elements in screen
+    /**
+     * Coordinates of the speed value text in the canvas
+     */
+    private var speedValueLocation : Pair<Float,Float>? = null
 
     /**
-     * Coordinates of the speed text in the canvas
+     * Coordinates of the speed units text in the canvas
      */
-    private var speedLocation : Pair<Float,Float>? = null
+    private var speedUnitsLocation : Pair<Float,Float>? = null
 
     /**
      * Coordinates of the distance text in the canvas
@@ -143,9 +191,19 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private var distanceLocation : Pair<Float,Float>? = null
 
     /**
-     * Coordinates of the acceleration text in the canvas
+     * Coordinates of the distance drwable in the canvas
      */
-    private var accelerationLocation : Pair<Float,Float>? = null
+    private var distanceDrawableLocation : Pair<Float,Float>? = null
+
+    /**
+     * Coordinates of the acceleration value text in the canvas
+     */
+    private var accelerationValueLocation : Pair<Float,Float>? = null
+
+    /**
+     * Coordinates of the acceleration units in the canvas
+     */
+    private var accelerationUnitLocation : Pair<Float,Float>? = null
 
     /**
      * Coordinates of the terrain inclination text in the canvas
@@ -153,15 +211,27 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private var terrainInclinationLocation : Pair<Float,Float>? = null
 
     /**
+     * Coordinates of the terrain inclination drawable in the canvas
+     */
+    private var terrainInclinationDrawableLocation : Pair<Float,Float>? = null
+
+    /**
      * Coordinates of the altitude text in the canvas
      */
-    private var heightLocation : Pair<Float,Float>? = null
+    private var altitudeLocation : Pair<Float,Float>? = null
+
+    /**
+     * Coordinates of the altitude drawable in the canvas
+     */
+    private var altitudeDrawableLocation : Pair<Float,Float>? = null
 
     /**
      * Coordinates of the lean angle text in the canvas
      */
     private var leanAngleLocation : Pair<Float,Float>? = null
+    //endregion
 
+    //region image selectors
     /**
      * Selects the speedometer image
      */
@@ -173,8 +243,16 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private lateinit var leanAnglePrinter: LeanAnglePrinter
 
     /**
-     * Refernce points
+     * Selects the force image
      */
+    private lateinit var forcePrinter: ForcePrinter
+    //endregion
+
+
+    /**
+     * Reference points used to locate image and text in the final canvas
+     */
+
     private var leftBorder: Float   = 0F
     private var bottomBorder: Float = 0F
     private var rightBorder: Float  = 0F
@@ -273,25 +351,44 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                         paint.textSize = textSize
                         paint.setShadowLayer(1f, 0f, 1f, Color.DKGRAY)
 
-                        //places
-                        bottomBorder = video!!.height-(30*scale)
-                        rightBorder  = video!!.width-(150*scale)
+                                //places
+                        bottomBorder = video!!.height-(15*scale)
+                        rightBorder  = video!!.width-(90*scale)
                         leftBorder   = 40 * scale
                         centerBorder = ((video!!.width/2).toFloat())
-                        topBorder    = 30 * scale
+                        topBorder    = 35 * scale
 
                         //bottom
-                        speedLocation                = Pair(leftBorder, bottomBorder)
-                        leanAngleLocation            = Pair(centerBorder-20*scale, bottomBorder)
-                        accelerationLocation         = Pair(rightBorder, bottomBorder)
+                        speedValueLocation           = Pair(leftBorder, bottomBorder)
+                        speedUnitsLocation           = Pair(leftBorder + 148*scale, bottomBorder)
+                        leanAngleLocation            = Pair(centerBorder- 20*scale, bottomBorder)
+                        accelerationValueLocation    = Pair(rightBorder - 35*scale, bottomBorder)
+                        accelerationUnitLocation     = Pair(rightBorder + 25*scale, bottomBorder)
 
                         //top
-                        distanceLocation           = Pair(leftBorder, topBorder)
-                        heightLocation             = Pair(centerBorder, topBorder)
-                        terrainInclinationLocation = Pair(rightBorder , topBorder)
+                        distanceLocation                   = Pair(leftBorder+55*scale, topBorder)
+                        distanceDrawableLocation           = Pair(leftBorder, topBorder - 35*scale)
+                        altitudeLocation                   = Pair(centerBorder- 10*scale, topBorder)
+                        altitudeDrawableLocation           = Pair(centerBorder - 58, topBorder-21*scale)
+                        terrainInclinationLocation         = Pair(rightBorder + 5*scale , topBorder)
+                        terrainInclinationDrawableLocation = Pair(rightBorder - 55*scale, topBorder-22*scale)
 
                         speedometerPrinter = SpeedometerPrinter(bottomBorder, leftBorder, scale, maxSessionSpeed, applicationContext)
-                        leanAnglePrinter   = LeanAnglePrinter(bottomBorder, leftBorder, scale, applicationContext)
+                        leanAnglePrinter   = LeanAnglePrinter(bottomBorder, centerBorder, scale, applicationContext)
+                        forcePrinter = ForcePrinter(bottomBorder, rightBorder, scale, applicationContext)
+
+                        //bitmaps
+                        distanceDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.distance).apply {
+                            this?.bounds = Rect(0, 0, (24 * scale).toInt(), (24 * scale).toInt())
+                        }!!.toBitmap()
+
+                        altitudeDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.altitude).apply {
+                            this?.bounds = Rect(0, 0, (24*scale).toInt(), (12*scale).toInt())
+                        }!!.toBitmap()
+
+                        terrainInclinationDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.inclination).apply {
+                            this?.bounds = Rect(0, 0, (24*scale).toInt(), (12*scale).toInt())
+                        }!!.toBitmap()
 
                         val frameList = ShareYourRideRepository.getVideoFrameList(video!!.sessionId)
                         var count : Long = 1
@@ -441,20 +538,23 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
+            Log.d("SessionService", "SYR -> composing frame ${composedFramesCount} --------------------- ${frame.timestamp}")
+
             composedFramesCount++
 
             val currentMillis = System.currentTimeMillis()
 
-            if(lastUpdateTimeStamp - currentMillis > millisecondsToUpdateVideoConverterState)
+            if(currentMillis - lastUpdateTimeStamp > millisecondsToUpdateVideoConverterState)
             {
                 notifyCreationState(VideoState.Composing)
                 lastUpdateTimeStamp = currentMillis
             }
+
             //Generate a bitmap compatible with the Android API to add text and images on it
             val frameBitmap: Bitmap = converter.convert(frame)
             val canvas = Canvas(frameBitmap)
 
-            if (/*framesMap.containsKey(frame.timestamp)*/ framesMap.containsKey(composedFramesCount)
+            if (framesMap.containsKey(composedFramesCount)
                 && lastProcessedSyncTimeStamp != framesMap[composedFramesCount])
             {
                 lastProcessedSyncTimeStamp = framesMap[composedFramesCount]!!
@@ -467,12 +567,12 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                 val bitmap = speedometerPrinter.getSpeedometer(location!!.speed)
                 if(bitmap != null)
                 {
-                    val rect = Rect(leftBorder.toInt(), (bottomBorder - 40*scale).toInt(),(bitmap.width*scale).toInt(),(bitmap.height*scale).toInt())
-                    canvas.drawBitmap(bitmap,leftBorder, bottomBorder - (40*scale) - bitmap.height, null)
+                    canvas.drawBitmap(bitmap,leftBorder, bottomBorder - (30*scale) - bitmap.height, null)
                 }
 
-                val text = (location!!.speed.times(CommonConstants.getSpeedConverter(applicationContext)).roundToInt().toString() + CommonConstants.getSpeedText(applicationContext))
-                canvas.drawText(text, speedLocation!!.first, speedLocation!!.second, paint)
+                val text = location!!.speed.times(CommonConstants.getSpeedConverter(applicationContext)).roundToInt().toString()
+                canvas.drawText(text, speedValueLocation!!.first, speedValueLocation!!.second, paint)
+                canvas.drawText(CommonConstants.getSpeedText(applicationContext), speedUnitsLocation!!.first, speedUnitsLocation!!.second, paint)
             }
 
             if (sessionTelemetry!!.leanAngle && inclination != null)
@@ -480,8 +580,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                 val bitmap = leanAnglePrinter.getAngle(inclination!!.roll)
                 if(bitmap != null)
                 {
-                    val rect = Rect(((centerBorder - bitmap.width/2)*scale).toInt(), (bottomBorder - 40*scale).toInt(),(bitmap.width*scale).toInt(),(bitmap.height*scale).toInt())
-                    canvas.drawBitmap(bitmap,centerBorder - (bitmap.width / 2), bottomBorder - (40*scale) - bitmap.height, null)
+                    canvas.drawBitmap(bitmap,centerBorder - (bitmap.width / 2), bottomBorder - (30*scale) - bitmap.height/2, null)
                 }
 
                 val text = (inclination!!.roll.absoluteValue.toString() + applicationContext.getString(R.string.degrees))
@@ -490,8 +589,17 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
 
             if (sessionTelemetry!!.acceleration && inclination != null)
             {
-                val text = DecimalFormat("##.#").format(inclination!!.accelerationScalar.times(CommonConstants.getAccelerationConverter(applicationContext)).absoluteValue).toString() + CommonConstants.getAccelerationText(applicationContext)
-                canvas.drawText(text, accelerationLocation!!.first, accelerationLocation!!.second, paint)
+
+                val bitmap = forcePrinter.getForceRepresentation((inclination!!.accelerationScalar/GRAVITY_ACCELERATION).toFloat(), AccelerationDirection.fromInt(inclination!!.accelerationDirection))
+
+                if (bitmap != null)
+                {
+                    canvas.drawBitmap(bitmap,rightBorder - (bitmap.width/2), bottomBorder - (30*scale) - bitmap.height, null)
+                }
+
+                val text = String.format("%.2f", (inclination!!.accelerationScalar/GRAVITY_ACCELERATION).absoluteValue)
+                canvas.drawText(text, accelerationValueLocation!!.first, accelerationValueLocation!!.second, paint)
+                canvas.drawText(CommonConstants.getAccelerationText(applicationContext), accelerationUnitLocation!!.first, accelerationUnitLocation!!.second, paint)
             }
 
             if (sessionTelemetry!!.distance && location != null)
@@ -499,18 +607,33 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                 val distance = location!!.distance.times(CommonConstants.getShortDistanceConverter(applicationContext))
                 val text = distance.roundToInt().toString() + CommonConstants.getShortDistanceText(applicationContext)
                 canvas.drawText(text, distanceLocation!!.first, distanceLocation!!.second, paint)
+
+                if (distanceDrawable != null)
+                {
+                    canvas.drawBitmap(distanceDrawable!!,distanceDrawableLocation!!.first,distanceDrawableLocation!!.second,null)
+                }
             }
 
             if (sessionTelemetry!!.altitude  && location != null)
             {
                 val text = (location!!.altitude.times(CommonConstants.getShortDistanceConverter(applicationContext)).roundToInt().toString() + CommonConstants.getShortDistanceText(applicationContext))
-                canvas.drawText(text, heightLocation!!.first, heightLocation!!.second, paint)
+                canvas.drawText(text, altitudeLocation!!.first, altitudeLocation!!.second, paint)
+
+                if (altitudeDrawable != null)
+                {
+                    canvas.drawBitmap(altitudeDrawable!!,altitudeDrawableLocation!!.first,altitudeDrawableLocation!!.second,null)
+                }
             }
 
             if (sessionTelemetry!!.terrainInclination && location != null)
             {
                 val text = (location!!.terrainInclination.toString() + applicationContext.getString(R.string.percentage))
                 canvas.drawText(text, terrainInclinationLocation!!.first, terrainInclinationLocation!!.second, paint)
+
+                if (terrainInclinationDrawable != null)
+                {
+                    canvas.drawBitmap(terrainInclinationDrawable!!,terrainInclinationDrawableLocation!!.first,terrainInclinationDrawableLocation!!.second,null)
+                }
             }
 
             //Generate a ffmpeg frame
@@ -529,8 +652,8 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private fun notifyCreationState(state: VideoState)
     {
         lastUpdateTimeStamp = 0
-        val percentage = (composedFramesCount / video!!.totalVideoFrames)*100
-        Log.d("SessionService", "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $percentage")
+        val percentage = (composedFramesCount.toFloat().div(video!!.totalVideoFrames.toFloat()))*100
+        Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames}  $percentage")
         val message = MessageBundle(MessageTypes.VIDEO_CREATION_STATE_EVENT, VideoCreationStateEvent(state, percentage.toInt()), MessageTopics.VIDEO_CREATION_DATA)
         sendMessage(message)
     }

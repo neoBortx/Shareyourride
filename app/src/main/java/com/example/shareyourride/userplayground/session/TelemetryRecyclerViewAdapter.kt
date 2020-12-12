@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.bvillarroya_creations.shareyourride.R
 import com.example.shareyourride.common.CommonConstants
+import com.example.shareyourride.common.CommonConstants.Companion.GRAVITY_ACCELERATION
 import com.example.shareyourride.services.session.TelemetryType
 import com.example.shareyourride.userplayground.common.TelemetryDirectionIconConverter
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
@@ -103,7 +104,7 @@ class TelemetryRecyclerViewAdapter(private val dataList: Array<TelemetryType>,
                     })
                 }
                 TelemetryType.Acceleration -> {
-                    telemetryValue.text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value?.times(CommonConstants.getAccelerationConverter(itemView.context))).toString() + CommonConstants.getAccelerationText(itemView.context)
+                    telemetryValue.text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value?.div(GRAVITY_ACCELERATION)).toString() + CommonConstants.getAccelerationText(itemView.context)
                     inclinationViewModel.acceleration.observe(itemView.context as LifecycleOwner, Observer {
                         telemetryValue.text = DecimalFormat("##.#").format(inclinationViewModel.acceleration.value?.times(CommonConstants.getAccelerationConverter(itemView.context))).toString() + CommonConstants.getAccelerationText(itemView.context)
                     })

@@ -36,8 +36,15 @@ class LocationService() : TelemetryServiceBase()
      */
     private var updateGpsStateTimer: Disposable? = null
 
+    /**
+     * Points if the accuracy mode is enabled, in that mode the telemetry data is used to calculate
+     * if the received GPS data is good enough to start a new session
+     */
     private var accuracyModeEnabled = false
 
+    /**
+     * Flag that points if the accuracy data is admissible
+     */
     private var accuracyAdmissible = false
 
     /**

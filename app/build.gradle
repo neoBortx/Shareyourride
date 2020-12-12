@@ -53,7 +53,7 @@ android {
 
     }
 
-    //to avoid More than one file was found with OS independent path
+    //to avoid More than One file was found with OS independent path
     packagingOptions {
         pickFirst 'META-INF/native-image/android-arm/jnijavacpp/jni-config.json'
         pickFirst 'META-INF/native-image/android-arm64/jnijavacpp/jni-config.json'

@@ -13,6 +13,7 @@ import com.bvillarroya_creations.shareyourride.telemetry.inclination.Inclination
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.example.shareyourride.services.DataConverters
 import com.example.shareyourride.services.base.TelemetryServiceBase
+import com.example.shareyourride.userplayground.common.TelemetryDirectionIconConverter
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
 import kotlinx.coroutines.runBlocking
 import kotlin.math.absoluteValue
@@ -128,7 +129,7 @@ class InclinationService(): TelemetryServiceBase()
 
             val acceleration = processAcceleration(inclinationData.acceleration)
             val accelerationScalar = getAccelerationScalar(acceleration,inclinationData.pitch)
-            val accelerationDirection = getAccelerationDirection(determineLongitudinalValue(acceleration[0],acceleration[2],inclinationData.pitch),acceleration[1]).ordinal
+            val accelerationDirection = TelemetryDirectionIconConverter.getAccelerationDirection(determineLongitudinalValue(acceleration[0], acceleration[2], inclinationData.pitch), acceleration[1]).ordinal
 
             val inclination = DataConverters.convertData(inclinationData, mSessionId, 0, accelerationScalar, accelerationDirection)
 
@@ -310,7 +311,7 @@ class InclinationService(): TelemetryServiceBase()
     }
 
     /**
-     * Calculate the acceleration direction and magnitude
+     * Calculate the acceleration magnitude
      *
      * @param accelerationVector: the acceleration in x,y and z axis
      * @param pitch: the rotation in the x axis
@@ -328,8 +329,6 @@ class InclinationService(): TelemetryServiceBase()
 
                 val longitudinalValue = determineLongitudinalValue(x,y,pitch)
 
-                getAccelerationDirection(longitudinalValue, y)
-
                 return sqrt(longitudinalValue.pow(2.0F) + y.pow(2.0F) + z.pow(2.0F))
             }
         }
@@ -340,23 +339,6 @@ class InclinationService(): TelemetryServiceBase()
         }
 
         return 0F
-    }
-
-    /**
-     * Calculate the direction of the acceleration getting the higher absolute value
-     */
-    private fun getAccelerationDirection(longitudinalValue: Float, y :Float): InclinationViewModel.AccelerationDirection
-    {
-        //To simplify the interface, only show the dominant direction of the vector
-        return if(longitudinalValue.absoluteValue >= y.absoluteValue)
-        {
-            if (longitudinalValue < 0) InclinationViewModel.AccelerationDirection.Left else InclinationViewModel.AccelerationDirection.Right
-        }
-        else
-        {
-            if (y < 0) InclinationViewModel.AccelerationDirection.Back else InclinationViewModel.AccelerationDirection.Front
-        }
-
     }
 
     /**

@@ -176,11 +176,11 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
         {
             Log.i("SessionService","SYR -> Configuring periodic timers for session ${mSession.id}")
 
-            saveTelemetryTimer = Observable.interval(1000, 100, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            saveTelemetryTimer = Observable.interval(1000, 200, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 sendSaveTelemetry()
             }
 
-            updateTelemetryTimer = Observable.interval(1000, 200, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateTelemetryTimer = Observable.interval(1000, 400, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 sendUpdateTelemetry()
             }
         }
@@ -454,6 +454,8 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                 {
                     sessionState   = SessionState.Finished
                     mSession.state = SessionState.Finished.value
+
+                    sendSessionState()
                 }
             }
             else
@@ -471,7 +473,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
     //region IMessageHandlerClient implementation
     init {
-        this.createMessageHandler( "SessionService", listOf(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_CONTROL))
+        this.createMessageHandler( "SessionService", listOf(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_CONTROL, MessageTopics.VIDEO_CREATION_DATA))
     }
 
     override lateinit var messageHandler: MessageHandler

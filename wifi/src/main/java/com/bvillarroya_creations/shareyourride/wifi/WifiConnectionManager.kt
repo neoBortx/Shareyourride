@@ -346,7 +346,7 @@ class WifiConnectionManager(): BroadcastReceiver() {
      *
      * Update the wifiConnected with the result
      */
-    fun checkIfConnected() {
+    fun checkIfConnected(): Boolean {
         try
         {
 
@@ -359,7 +359,7 @@ class WifiConnectionManager(): BroadcastReceiver() {
                     if (info.ssid.contains(wifiConnectionData!!.ssidName)) {
                         Log.i("WifiConnectionManager", "SYR -> Connected to SSID ${wifiConnectionData!!.ssidName}")
                         connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, true)) }
-                        return
+                        return true
                     }
                     else
                     {
@@ -382,6 +382,8 @@ class WifiConnectionManager(): BroadcastReceiver() {
             ex.printStackTrace()
         }
         connectionCallback?.let { it(WifiCallbackData(WifiCallbackData.Companion.EventType.WifiConnectionStateEvent, false)) }
+
+        return false
     }
 
     /**

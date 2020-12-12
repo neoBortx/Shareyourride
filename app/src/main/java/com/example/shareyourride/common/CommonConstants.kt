@@ -50,6 +50,11 @@ class CommonConstants {
          */
         private const val DISTANCE_CHANGE_UNITS_MILES = 1609.34
 
+        /**
+         * The acceleration of the gravity in the earth
+         */
+        const val GRAVITY_ACCELERATION = 9.80665
+
 
         fun getSpeedText(context: Context): String
         {
@@ -89,14 +94,16 @@ class CommonConstants {
 
         fun getAccelerationText(context: Context): String
         {
-            return if (SettingPreferencesGetter(context).getStringOption(SettingPreferencesIds.UnitSystem) == "imperial")
+            /*return if (SettingPreferencesGetter(context).getStringOption(SettingPreferencesIds.UnitSystem) == "imperial")
             {
                 context.getString(R.string.feet_per_seconds_unit)
             }
             else
             {
                 context.getString(R.string.meters_per_seconds_unit)
-            }
+            }*/
+            
+            return context.getString(R.string.gravity_force)
         }
 
 

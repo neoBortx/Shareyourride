@@ -1,5 +1,7 @@
 package com.example.shareyourride.services.video
 
+import android.annotation.SuppressLint
+import android.os.Process
 import android.util.Log
 import com.bvillarroya_creations.shareyourride.datamodel.data.Video
 import com.bvillarroya_creations.shareyourride.datamodel.data.VideoFrame
@@ -21,11 +23,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264
-import org.bytedeco.ffmpeg.global.avutil.*
+import org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_RGBA
+import org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P
 import org.bytedeco.javacv.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.concurrent.write
+import java.util.concurrent.locks.ReentrantLock
 
 
 /**
@@ -147,14 +149,21 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var tokenTimestamp: Long = 0
 
     /**
+     * Lock to avoid concurrent accesses to the grabber API
+     */
+    private val grabberLock: ReentrantLock = ReentrantLock()
+
+    /**
      * Lock to avoid concurrent accesses to the recorder API
      */
-    private val lock = ReentrantReadWriteLock()
+    private val recorderLock: ReentrantLock = ReentrantLock()
 
     /**
      * Contains the relation of the timestamp of the frame and the synchronization timestamp sent in the SAVE_TELEMETRY message
      */
     private val timeStampRelationMap: MutableMap<Long,Long> = mutableMapOf()
+
+    private val bitMapConverter = AndroidFrameConverter()
 
     /**
      * Counts the total amount of frames saved in disk for a video
@@ -162,9 +171,15 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var framesCounter: Long = 0
 
     /**
+     * Count the total amount of frames that can't be processed
+     */
+    private var failedFrames: Int = 0
+
+    /**
      * Stores the infromation related to the video
      */
     private var video : Video? = null
+
     //endregion
 
     //region message handlers
@@ -274,7 +289,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 val port = if (connectionData.port.isNotEmpty()) ":"+ connectionData.port else ""
 
                 addressString = if (connectionData.userName.isEmpty() || connectionData.password.isEmpty()) {
-                    connectionData.protocol + "://" + connectionData.ip + connectionData.port + "/" + connectionData.videoName
+                    connectionData.protocol + "://" + connectionData.ip + port + "/" + connectionData.videoName
                 }
                 else
                 {
@@ -284,11 +299,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 Log.i(mClassName, "SYR -> Composed video URL $addressString for video connection")
             }
 
-            if (grabber != null && !grabber!!.isCloseInputStream)
+            if (grabber != null)
             {
-                GlobalScope.async{
-                    grabber!!.stop()
-                }
+                Log.i(mClassName, "SYR -> Removing old instance of grabber")
+                startConnectionTimer()
             }
          }
         catch (ex:Exception)
@@ -306,18 +320,18 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         try
         {
             video = Video(sessionId,
-                              System.currentTimeMillis(),
-                              recorder!!.imageHeight,
-                              recorder!!.imageWidth,
-                              recorder!!.format,
-                              recorder!!.videoCodec,
-                              recorder!!.frameRate,
-                              recorder!!.videoBitrate,
-                              videoRawPath,
-                              0,
-                              "")
+                          System.currentTimeMillis(),
+                          grabber!!.imageHeight,
+                          grabber!!.imageWidth,
+                          grabber!!.format,
+                          grabber!!.videoCodec,
+                          grabber!!.frameRate,
+                          grabber!!.videoBitrate,
+                          videoRawPath,
+                          0,
+                          "")
 
-            ShareYourRideRepository.insertVideo(video!!)
+                ShareYourRideRepository.insertVideo(video!!)
         }
         catch(ex: Exception)
         {
@@ -348,8 +362,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                         framesCounter,
                         "")
 
-                ShareYourRideRepository.updateVideo(video!!)
-
+            ShareYourRideRepository.updateVideo(video!!)
             }
         }
         catch(ex: Exception)
@@ -368,10 +381,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
+            Log.i(mClassName, "SYR ->Saving frames ${timeStampRelationMap.count()} in disk")
             timeStampRelationMap.forEach {
-                Log.e(mClassName, "SYR ->Saving frame ${it.key}    ---------------  ${it.value}")
-                val videoFrame = VideoFrame(VideoFrameId(sessionId,it.key),it.value)
-                ShareYourRideRepository.insertVideoFrame(videoFrame)
+                try
+                {
+                    val videoFrame = VideoFrame(VideoFrameId(sessionId,it.key),it.value)
+                    ShareYourRideRepository.insertVideoFrame(videoFrame)
+                    Log.i(mClassName, "SYR ->Saving frame ${videoFrame.id.frameTimeStamp} ----------------- ${videoFrame.syncTimeStamp}")
+                }
+                catch(ex: Exception)
+                {
+                    Log.e(mClassName, "SYR -> Unable to record frame: ${ex.message}")
+                    ex.printStackTrace()
+                }
             }
 
             timeStampRelationMap.clear()
@@ -386,17 +408,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     /**
      * Crete the frame recorder, configure it and start processing frames
      */
+    @SuppressLint("CheckResult")
     private fun processStartAcquiringData(data: MessageBundleData)
     {
         try
         {
-            if (data.type == String::class) {
-
+            if (data.type == String::class)
+            {
                 timeStampRelationMap.clear()
                 framesCounter = 0
+                failedFrames = 0
 
                 sessionId = data.data as String
-                Log.e(mClassName, "SYR -> Start reading video frames in a new thread for session $sessionId ")
+                Log.d(mClassName, "SYR -> Start reading video frames in a new thread for session $sessionId ")
 
                 if (mediaStoreUtils == null) {
                     mediaStoreUtils = MediaStoreUtils(applicationContext)
@@ -404,7 +428,9 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 videoRawPath = getRawFileDir()
 
-                Log.e(mClassName, "SYR -> recording video $videoRawPath")
+                Log.i(mClassName, "SYR -> recording video $videoRawPath")
+
+                recorderLock.lock()
 
                 recorder = FFmpegFrameRecorder(videoRawPath, videoWidth, videoHeight)
                 recorder!!.videoCodec = AV_CODEC_ID_H264
@@ -414,29 +440,34 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 recorder!!.frameRate = videoFrameRate
                 recorder!!.videoBitrate = videoBitRate
-                recorder!!.timestamp = videoTimeStamp
+                recorder!!.timestamp = grabber!!.timestamp
+
+                recorder!!.start()
+
+                recorderLock.unlock()
 
                 GlobalScope.async(Dispatchers.IO) {
-                    recorder!!.start()
                     saveVideoFileInDataBase()
-                    captureVideoFlag = true
-
-                    Log.i(mClassName, "SYR -> Start reading video frames in a new thread")
-                    // Blocking network request code
-                    getVideoFrames()
                 }
-                            }
-            else {
+
+                captureVideoFlag = true
+            }
+            else
+            {
                 Log.e(mClassName, "SYR -> Unable to get video because session is is null or not valid")
             }
         }
         catch (ex:Exception)
         {
+            recorderLock.unlock()
+
             Log.e(mClassName, "SYR -> Unable to processStartAcquiringData due: ${ex.message}")
             ex.printStackTrace()
 
-            val observable = Observable.timer(5000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            Observable.timer(5000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                 Log.e(mClassName, "SYR -> Retrying connect to video")
+                closeInputStream()
+                closeOutputStream()
                 processStartAcquiringData(data)
             }
         }
@@ -450,13 +481,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private fun processStopAcquiringData()
     {
         captureVideoFlag = false
-
+        connectionEstablished = false
         try
         {
-            lock.write {
-                recorder?.stop()
-                recorder?.release()
-            }
+            closeOutputStream()
         }
         catch (ex: java.lang.Exception)
         {
@@ -465,20 +493,21 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
         try
         {
-            grabber?.stop()
+            closeInputStream()
         }
         catch (ex: java.lang.Exception) {
             ex.printStackTrace()
         }
 
-        GlobalScope.async {
+
+        GlobalScope.async(Dispatchers.IO)
+        {
             updateVideoFileInDataBase()
             saveFramesInDataBase()
-        }.invokeOnCompletion {
+            Log.i(mClassName, "SYR -> Sending message VIDEO_CREATION_COMMAND")
             val message = MessageBundle(MessageTypes.VIDEO_CREATION_COMMAND, sessionId, MessageTopics.VIDEO_CREATION_DATA)
             sendMessage(message)
         }
-
     }
 
     /**
@@ -487,32 +516,35 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private fun getVideoFrames()
     {
 
-        while(captureVideoFlag && connectionEstablished)
+        while(connectionEstablished && grabber != null && !grabber!!.isCloseInputStream)
         {
             try
             {
-                val frame = grabber!!.grabFrame()
-                if (!captureVideoFlag)
-                {
-                    break
-                }
-
+                //grabberLock.lock()
+                val frame : Frame? = grabber!!.grabImage()
+                //grabberLock.unlock()
                 if (frame != null)
                 {
-                    Log.e(mClassName, "SYR ->Grabbed frame -------------------------- ${frame.timestamp}")
-                    processVideoFrame(frame.clone())
+                    //for debuging, uncoment
+                    //Log.d(mClassName, "SYR ->Grabbed frame ${frame.timestamp} -------------------------- ${Process.myTid()}")
+                    processVideoFrame(frame!!)
                 }
                 else
                 {
-                    Log.d(mClassName, "SYR -> Grabbed null frame")
+                    Log.e(mClassName, "SYR -> Grabbed null frame ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
+                    failedFrames++
+                    Thread.sleep(20)
                     connectionEstablished = false
                 }
             }
             catch (ex:Exception)
             {
+                grabberLock.unlock()
                 Log.e(mClassName, "SYR -> Unable execute get video frame due: ${ex.message}")
                 ex.printStackTrace()
             }
+
+
         }
     }
 
@@ -523,17 +555,32 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      */
     private fun processVideoFrame(frame: Frame)
     {
-        lock.write {
-            if (recorder != null)
+        if (recorder != null && captureVideoFlag)
+        {
+            //synchronize the first processed frame with start of the video
+            if (framesCounter == 0L)
             {
-                recorder!!.record(frame)
-                framesCounter++
-                Log.e(mClassName, "SYR ->Saving in map frame -------------------------- ${frame.timestamp}")
-                //timeStampRelationMap.put(frame.timestamp,tokenTimestamp)
-                timeStampRelationMap.put(framesCounter,tokenTimestamp)
+                recorder!!.timestamp = frame.timestamp
             }
-        }
 
+            try {
+                Log.d(mClassName, "SYR ->Processing frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
+                synchronized(recorderLock) {
+                    recorder!!.record(frame)
+                }
+                timeStampRelationMap[framesCounter] = tokenTimestamp
+                framesCounter++
+            }
+            catch(ex: OutOfMemoryError)
+            {
+                ex.printStackTrace()
+            }
+            catch(ex: Exception)
+            {
+                ex.printStackTrace()
+            }
+
+        }
     }
 
     /**
@@ -549,63 +596,117 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             if (addressString.isNotEmpty())
             {
                  Log.i(mClassName, "SYR -> Trying to connect to video service $addressString")
-                grabber = FFmpegFrameGrabber(addressString) // rtsp url
-                grabber!!.setOption("rtsp_transport", "tcp")
-                grabber!!.timeout = 5
-                grabber!!.imageMode = FrameGrabber.ImageMode.COLOR
 
-                //to speed up the video processing
-                grabber!!.setOption("stimeout", "5000000")
-                grabber!!.setOption("thread", "1")
-                grabber!!.setOption("threads", "1")
+                grabberLock.tryLock()
+
+                //grabberLock.lock()
+                grabber = FFmpegFrameGrabber(addressString)
+                grabber!!.setOption("rtsp_transport", "tcp")
+                grabber!!.timeout = 5000
+                grabber!!.imageMode = FrameGrabber.ImageMode.COLOR
+                //As is explained in https://github.com/bytedeco/javacv/issues/214,
+                //use RGBA format to increase the performance of bitmap management
+                grabber!!.pixelFormat = AV_PIX_FMT_RGBA
+
                 grabber!!.setOption("fflags", "nobuffer")
+                grabber!!.setOption("flags", "low_delay")
+                grabber!!.setOption("flags", "discardcorrupt")
                 grabber!!.setOption("avioflags ", "direct")
-                grabber!!.setOption("sync", "ext")
-                grabber!!.setOption("probesize", "32")
+                grabber!!.setOption("probesize", "100")
                 grabber!!.setOption("preset", "superfast")
                 grabber!!.setOption("tune", "zerolatency")
 
-                //start the grabber in another thread because this is a blocking operation
-                GlobalScope.async(Dispatchers.IO) {
+                tryingToConnect = true
+                grabber!!.start(true)
+                tryingToConnect = false
 
-                    tryingToConnect = true
-                    grabber!!.start(false)
-                    tryingToConnect = false
+                if (grabber != null) {
+                    connectionEstablished = true
+                    videoHeight = grabber!!.imageHeight
+                    videoWidth = grabber!!.imageWidth
+                    videoFormat = grabber!!.format
+                    videoCodec = grabber!!.videoCodec
+                    videoFrameRate = grabber!!.frameRate
+                    videoBitRate = grabber!!.videoBitrate
+                    videoPixelFormat = grabber!!.pixelFormat
+                    videoTimeStamp = grabber!!.timestamp
 
-                    if (grabber!= null)
-                    {
-                        connectionEstablished = true
-                        videoHeight = grabber!!.imageHeight
-                        videoWidth = grabber!!.imageWidth
-                        videoFormat = grabber!!.format
-                        videoCodec = grabber!!.videoCodec
-                        videoFrameRate = grabber!!.frameRate
-                        videoBitRate = grabber!!.videoBitrate
-                        videoPixelFormat = grabber!!.pixelFormat
-                        videoTimeStamp = grabber!!.timestamp
-
-                    }
-
-                    notifyVideoState()
-
-                    Log.d(mClassName, "SYR -> connected to video, frame rate: $videoFrameRate, height: $videoHeight," +
-                            " width: $videoWidth, format: $videoFormat codec - $videoCodec pixelformat $videoPixelFormat")
                 }
+                //grabberLock.unlock()
+
+                notifyVideoState()
+
+                Log.i(mClassName, "SYR -> connected to video, frame rate: $videoFrameRate, height: $videoHeight width: $videoWidth, format: $videoFormat codec - $videoCodec pixelformat $videoPixelFormat")
+
+                getVideoFrames()
+
             }
             else
             {
                 Log.i(mClassName, "SYR -> Skipping connection to video service because the address is empty")
             }
         }
-        catch (e: FrameGrabber.Exception) {
-            grabber!!.stop()
-            grabber!!.close()
-        }
         catch (ex:Exception)
         {
-            Log.e(mClassName, "SYR -> Unable to connect to video stream, url: $addressString data due: ${ex.message}")
+            grabberLock.unlock()
+            Log.e(mClassName, "SYR -> Unable to connect to video stream, url: $addressString due: ${ex.message}")
+            ex.printStackTrace()
+            startConnectionTimer()
+        }
+    }
+
+    /**
+     * Closes de current connection and starts a new one
+     */
+    private fun closeInputStream()
+    {
+        try
+        {
+            Log.d(mClassName, "SYR -> Closing grabber to url: $addressString closed")
+            //grabberLock.lock()
+            if (grabber != null) {
+                Log.d(mClassName, "SYR -> calling releaseUnsafe")
+                grabber!!.stop()
+                Log.d(mClassName, "SYR -> executed!")
+                grabber = null
+            }
+            //grabberLock.unlock()
+
+            Log.i(mClassName, "SYR -> Grabber to url: $addressString closed")
+        }
+        catch(ex: Exception)
+        {
+            grabberLock.unlock()
+            Log.e(mClassName, "SYR -> Unable to close grabber connection due: ${ex.message}")
             ex.printStackTrace()
         }
+    }
+
+    private fun closeOutputStream()
+    {
+        try
+        {
+            Log.d(mClassName, "SYR -> Closing recorder to url: $addressString closed")
+
+            recorderLock.lock()
+
+            if (recorder != null) {
+                recorder!!.close()
+                recorder = null
+            }
+
+            recorderLock.unlock()
+
+            Log.i(mClassName, "SYR -> recorder of url: $addressString closed")
+            connectionEstablished = false
+        }
+        catch(ex: Exception)
+        {
+            recorderLock.unlock()
+            Log.e(mClassName, "SYR -> Unable to close recorder of connection due: ${ex.message}")
+            ex.printStackTrace()
+        }
+
     }
     //endregion
 
@@ -626,12 +727,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     //region start stop service handlers
     override fun startServiceActivity()
     {
+        startConnectionTimer()
+    }
+
+    private fun startConnectionTimer()
+    {
         try {
 
-            updateVideoStateTimer = Observable.interval(5000, 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateVideoStateTimer = Observable.timer( 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
 
                 if (!connectionEstablished)
                 {
+                    closeInputStream()
+                    closeOutputStream()
                     openVideoStream()
                 }
 

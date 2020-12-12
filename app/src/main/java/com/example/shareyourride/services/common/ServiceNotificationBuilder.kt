@@ -15,7 +15,7 @@ import com.example.shareyourride.services.session.SessionState
 /**
  * Creates a notification to show in the android drawer
  *
- * The notification is the same for all services in order to show just one notification in the drawer for all of them
+ * The notification is the same for all services in order to show just One notification in the drawer for all of them
  *
  */
 class ServiceNotificationBuilder()
@@ -27,7 +27,7 @@ class ServiceNotificationBuilder()
         private var notification: Notification? = null
 
         /**
-         * Id for all notifications sent by services to display only one message for al services in the android notification drawer
+         * Id for all notifications sent by services to display only One message for al services in the android notification drawer
          */
         const val NOTIFICATION_ID = 1985
 

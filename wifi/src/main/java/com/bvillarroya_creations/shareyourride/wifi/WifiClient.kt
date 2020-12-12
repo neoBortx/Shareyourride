@@ -111,7 +111,8 @@ abstract class WifiClient(private val context: Context) {
      */
     fun configureConnection(connectionData: WifiConnectionData)
     {
-        try {
+        try
+        {
             wifiConnectionData = connectionData
             //initialize
             wifiConnectionManager.configureConnection(connectionData)
@@ -123,6 +124,24 @@ abstract class WifiClient(private val context: Context) {
             Log.e("WifiClient", "SYR -> Unable to configure WifiClient: ${ex.message}")
             ex.printStackTrace()
         }
+    }
+
+    /**
+     * Check if the configured client is already connected
+     */
+    fun checkIfConnected(): Boolean
+    {
+        try
+        {
+            return wifiConnectionManager.checkIfConnected()
+        }
+        catch (ex: Exception)
+        {
+            Log.e("WifiClient", "SYR -> Unable to configure WifiClient: ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        return false
     }
 
     /**
@@ -219,11 +238,11 @@ abstract class WifiClient(private val context: Context) {
             {
                 WifiCallbackData.Companion.EventType.WifiDeviceStateEvent ->
                 {
-                    wifiEnabled.value = wifiCallbackData.state
+                    wifiEnabled.postValue(wifiCallbackData.state)
                 }
                 WifiCallbackData.Companion.EventType.WifiConnectionStateEvent ->
                 {
-                    wifiConnected.value = wifiCallbackData.state
+                    wifiConnected.postValue(wifiCallbackData.state)
                 }
             }
         }

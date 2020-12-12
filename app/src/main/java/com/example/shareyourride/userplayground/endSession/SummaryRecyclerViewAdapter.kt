@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.messagesdefinition.dataBundles.SessionSummaryData
 import com.example.shareyourride.common.CommonConstants
+import com.example.shareyourride.common.CommonConstants.Companion.GRAVITY_ACCELERATION
 import com.example.shareyourride.services.session.SummaryTelemetryType
 import com.example.shareyourride.viewmodels.userplayground.SessionViewModel
 import java.text.DecimalFormat
@@ -99,7 +100,7 @@ class SummaryRecyclerViewAdapter(private val dataList: Array<SummaryTelemetryTyp
                 
                 SummaryTelemetryType.MaxAcceleration -> {
                     itemView.findViewById<TextView>(R.id.telemetry_kind_summary).text = itemView.context.getString(R.string.maximum)
-                    itemView.findViewById<TextView>(R.id.telemetry_value_summary).text =  DecimalFormat("##.#").format(sessionSummary.maxAcceleration.times(CommonConstants.getAccelerationConverter(itemView.context)).absoluteValue).toString() + CommonConstants.getAccelerationText(itemView.context)
+                    itemView.findViewById<TextView>(R.id.telemetry_value_summary).text =  DecimalFormat("##.#").format((sessionSummary.maxAcceleration/GRAVITY_ACCELERATION).absoluteValue).toString() + CommonConstants.getAccelerationText(itemView.context)
                 }
 
                 SummaryTelemetryType.MaxLeftLeanAngle -> {

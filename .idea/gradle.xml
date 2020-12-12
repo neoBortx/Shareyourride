@@ -11,14 +11,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/bluetooth" />
             <option value="$PROJECT_DIR$/datamodel" />
             <option value="$PROJECT_DIR$/messagesDefinition" />
             <option value="$PROJECT_DIR$/messenger" />
-            <option value="$PROJECT_DIR$/services" />
             <option value="$PROJECT_DIR$/telemetry" />
-            <option value="$PROJECT_DIR$/video" />
-            <option value="$PROJECT_DIR$/videoUtils" />
             <option value="$PROJECT_DIR$/wifi" />
           </set>
         </option>

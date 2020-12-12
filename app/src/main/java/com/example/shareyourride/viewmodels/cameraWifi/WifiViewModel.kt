@@ -2,6 +2,8 @@ package com.example.shareyourride.viewmodels.cameraWifi
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
+import android.net.wifi.WifiManager
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
@@ -9,8 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.bvillarroya_creations.shareyourride.R
-import com.example.shareyourride.camera.SupportedCameras
 import com.example.shareyourride.camera.CameraWifiClient
+import com.example.shareyourride.camera.SupportedCameras
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
@@ -87,7 +89,7 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
 
                 if (wifiClient.wifiEnabled.value!!)
                 {
-                    if (wifiClient.wifiConnected.value!!)
+                    if (wifiClient.wifiConnected.value!! || wifiClient.checkIfConnected())
                     {
                         Log.i("WifiViewModel", "SYR -> Connection with ${cameraData.name} -${cameraData.connectionData.ssidName} already established")
                     }
@@ -117,6 +119,20 @@ class WifiViewModel(application: Application) : AndroidViewModel(application)
             ex.printStackTrace()
         }
     }
+
+    fun checkConnection()
+    {
+        try
+        {
+            //val wifiManager: WifiManager = context.getSystemService<Any>(Context.WIFI_SERVICE) as WifiManager
+        }
+        catch (ex: Exception)
+        {
+            Log.e("WifiViewModel", "SYR -> Unable to check the current connection: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
 
     fun changeWifiNetwork(activity: Activity )
     {

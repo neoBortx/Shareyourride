@@ -19,7 +19,7 @@ class PermissionsManager(val activity: Activity): ActivityCompat.OnRequestPermis
     val mPermissionList = mutableListOf<String>()
 
     /**
-     * The result code of the permission request. Each functionality uses an unique one
+     * The result code of the permission request. Each functionality uses an unique One
      */
     val mRequestPermissionsCode: Int = 23489
 

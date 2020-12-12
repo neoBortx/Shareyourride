@@ -2,17 +2,27 @@ package com.bvillarroya_creations.shareyourride.telemetry.constants
 
 class TelemetryConstants {
 
-    /*
-        List of request codes by functionality, request codes must be different
+    /**
+     * List of different events that holds telemetry data and are triggered in the telemetry module
      */
     companion object{
 
         enum class TelemetryEventType
         {
+            /**
+             * Holds GPS data, speed, altitude and distance
+             */
             Location,
+
+            /**
+             * Holds temperature, pressure, etc
+             */
             Environment,
-            Inclination,
-            Video
+
+            /**
+             * Holds acceleration and lean angle
+             */
+            Inclination
         }
 
     }

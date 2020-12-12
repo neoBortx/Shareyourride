@@ -11,105 +11,113 @@ import com.bvillarroya_creations.shareyourride.R
 /**
  * Selects the speedometer image
  */
-class SpeedometerPrinter(bottom: Float, left: Float, videoScale: Float, val maxSpeed: Float, val applicationContext: Context) {
+class SpeedometerPrinter(bottom: Float, left: Float, videoScale: Float, private val maxSpeed: Float, val applicationContext: Context)
+{
 
+    /**
+     * Map that holds all speedometer images
+     */
     private var speedometersMap: MutableMap<Int, Bitmap> = mutableMapOf()
+
+    /**
+     * Maps that holds different tokens
+     */
     private var speedTokensMap: MutableMap<Int, Int> = mutableMapOf()
     /**
      * Coordinates of the speedometer in the canvas of the whole frame
      */
-    private var speedImageLocation : Rect? = null
+    private lateinit  var speedImageLocation : Rect
 
     init
     {
         try
         {
             Log.d("SpeedometerPrinter", "SYR -> Creating SpeedometerPrinter")
-            speedImageLocation   = Rect(0, 0, (140 * videoScale).toInt(), (40 * videoScale).toInt())
+            speedImageLocation   = Rect(0, 0, (110 * videoScale).toInt(), (35 * videoScale).toInt())
             speedometersMap[0] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_1).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[1] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_2).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[2] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_3).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[3] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_4).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[4] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_5).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[5] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_6).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[6] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_7).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[7] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_8).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[8] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_9).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[9] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_10).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[10] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_11).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[11] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_12).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[12] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_13).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[13] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_14).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[14] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_15).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[15] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_16).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[16] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_17).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[17] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_18).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             speedometersMap[18] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_19).apply {
-                this?.bounds = speedImageLocation!!
+                this?.bounds = speedImageLocation
             }!!.toBitmap()
 
             //Split the max speed into tokens
-            val token = 100/19
+            val token = maxSpeed/19
 
             var count = 0
-            //firstvalue must be null
+
             while(count < 19)
             {
-                speedTokensMap[count] = count * token
+                speedTokensMap[count] = (count * token).toInt()
                 count++
             }
 
