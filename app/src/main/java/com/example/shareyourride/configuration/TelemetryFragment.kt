@@ -25,6 +25,7 @@ class TelemetryFragment : PreferenceFragmentCompat() {
         try
         {
             super.onCreate(savedInstanceState)
+
             configurePreferenceChangeListeners()
         }
         catch (ex: Exception)
@@ -40,8 +41,10 @@ class TelemetryFragment : PreferenceFragmentCompat() {
         {
             setPreferencesFromResource(R.xml.telemetry_preferences, rootKey)
 
-            val listPreference: ListPreference? = findPreference(getString(R.string.unit_system)) as ListPreference?
-            if (listPreference?.value == "custom") {
+            val getter = context?.let { SettingPreferencesGetter(it) }
+
+            if (getter!= null && getter.getStringOption(SettingPreferencesIds.ActivityKind) == "custom")
+            {
                 configureCustom()
             }
         }

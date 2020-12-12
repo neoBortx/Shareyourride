@@ -369,7 +369,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                         distanceLocation                   = Pair(leftBorder+55*scale, topBorder)
                         distanceDrawableLocation           = Pair(leftBorder, topBorder - 35*scale)
                         altitudeLocation                   = Pair(centerBorder- 10*scale, topBorder)
-                        altitudeDrawableLocation           = Pair(centerBorder - 58, topBorder-21*scale)
+                        altitudeDrawableLocation           = Pair(centerBorder - 58, topBorder-22*scale)
                         terrainInclinationLocation         = Pair(rightBorder + 5*scale , topBorder)
                         terrainInclinationDrawableLocation = Pair(rightBorder - 55*scale, topBorder-22*scale)
 

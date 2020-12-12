@@ -227,6 +227,8 @@ internal class DataBaseManager {
             }
             catch (ex: Exception)
             {
+                Log.e("DataBaseManager", "SYR -> Unable to insert inclination $inclination due ${ex.message}")
+
                 ex.printStackTrace()
             }
         }

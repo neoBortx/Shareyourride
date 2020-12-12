@@ -128,20 +128,12 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
     {
         try
         {
-            Log.e("VideoViewModel","SYR -> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA processVideoCreationState")
             if (messageBundleData.type == VideoCreationStateEvent::class)
             {
                 val state = messageBundleData.data as VideoCreationStateEvent
-                if (state.creationState != VideoState.Finished)
-                {
-                    Log.e("VideoViewModel","SYR -> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA processVideoCreationState 2")
-                    creationPercentage.postValue(state.creationPercentage)
-                    creationState.postValue(state.creationState)
-                }
-                else
-                {
-                    Log.e("VideoViewModel","SYR -> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA processVideoCreationState 3")
-                }
+
+                creationPercentage.postValue(state.creationPercentage)
+                creationState.postValue(state.creationState)
             }
             else
             {
