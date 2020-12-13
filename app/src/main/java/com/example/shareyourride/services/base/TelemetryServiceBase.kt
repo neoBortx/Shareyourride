@@ -9,9 +9,9 @@ import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.bvillarroya_creations.shareyourride.telemetry.events.TelemetryEvent
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryManager
-import com.example.shareyourride.services.interfaces.ITelemetryViewModel
+import com.example.shareyourride.services.interfaces.ITelemetryService
 
-abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
+abstract class TelemetryServiceBase : ITelemetryService, ServiceBase() {
 
     override lateinit var messageHandler: MessageHandler
 
@@ -79,7 +79,7 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
     }
     //endregion
 
-    //region override ITelemetryViewModel and AndroidViewModel
+    //region override ITelemetryService and AndroidViewModel
     /**
      * Flag that points if the provider is ready
      */
@@ -91,26 +91,29 @@ abstract class TelemetryServiceBase : ITelemetryViewModel, ServiceBase() {
      */
     protected fun initializeTelemetry()
     {
-        if (mTelemetryManager == null)
-        {
-            initializeManager()
-        }
-
-        if (mTelemetryManager!= null)
-        {
-            handleTelemetryChanged = Observer<TelemetryEvent> { event ->
-                if (event != null
-                    && event.eventType == mTelemetryManager?.telemetryEventType)
-                {
-                    processTelemetry(event.telemetryData)
-                }
+        try {
+            if (mTelemetryManager == null) {
+                initializeManager()
             }
-            mTelemetryManager?.telemetryChanged?.observe(this, handleTelemetryChanged!!)
-            mTelemetryManager?.startAcquiringData()
+
+            if (mTelemetryManager != null) {
+                handleTelemetryChanged = Observer<TelemetryEvent> { event ->
+                    if (event != null && event.eventType == mTelemetryManager?.telemetryEventType)
+                    {
+                        processTelemetry(event.telemetryData)
+                    }
+                }
+                mTelemetryManager?.telemetryChanged?.observe(this, handleTelemetryChanged!!)
+                mTelemetryManager?.startAcquiringData()
+            }
+            else {
+                Log.i(mClassName, "SYR -> Telemetry manager is not initialized yet, unable to start")
+            }
         }
-        else
+        catch (ex: java.lang.Exception)
         {
-            Log.i(mClassName, "SYR -> Telemetry manager is not initialized yet, unable to start")
+            Log.e(mClassName, "SYR -> Unable to configure the telemetry delay because: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 

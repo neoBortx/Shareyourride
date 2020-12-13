@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Share your ride</string>
+    <string name="app_label">SyR</string>
     <string name="title_activity_testctivity">TestActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -158,4 +159,8 @@
     <string name="session_calibrating">Calibrating gyroscopes</string>
     <string name="session_creating_video">Creating video</string>
     <string name="session_video_finished">Activity video created</string>
+
+    <string name="gravity_force">G</string>
+    <string name="synchronizing_video">Synchronizing video</string>
+    <string name="video_synchronization_message">Configure the delay of the video until the image and the tilt angle are synchronized</string>
 </resources>

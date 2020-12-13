@@ -16,6 +16,8 @@ class MessageTopics {
          * - DISCARD_SESSION
          * - SESSION_STATE_REQUEST
          * - SESSION_STATE_EVENT
+         * - RETRY_CALIBRATION
+         * - SYNCHRONIZE_VIDEO
          *
          */
         const val SESSION_COMMANDS = "sessionCommands"
@@ -62,6 +64,8 @@ class MessageTopics {
          * - VIDEO_STATE_REQUEST
          * - VIDEO_STATE_EVENT
          * - VIDEO_DISCARD_COMMAND
+         * - VIDEO_SYNCHRONIZATION_COMMAND
+         * - VIDEO_SYNCHRONIZATION_END_COMMAND
          */
         const val VIDEO_DATA = "videoData"
 
@@ -72,5 +76,12 @@ class MessageTopics {
          * - VIDEO_CREATION_DATA
          */
         const val VIDEO_CREATION_DATA = "videoCreationData"
+
+        /**
+         * Messages related to the video synchronization flow
+         *
+         * - VIDEO_FRAME_DATA
+         */
+        const val VIDEO_SYNCHRONIZATION_DATA = "videoSynchronizationData"
     }
 }

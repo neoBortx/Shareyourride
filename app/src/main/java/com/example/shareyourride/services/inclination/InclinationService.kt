@@ -15,7 +15,11 @@ import com.example.shareyourride.services.DataConverters
 import com.example.shareyourride.services.base.TelemetryServiceBase
 import com.example.shareyourride.userplayground.common.TelemetryDirectionIconConverter
 import com.example.shareyourride.viewmodels.userplayground.InclinationViewModel
+import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -34,12 +38,14 @@ class InclinationService(): TelemetryServiceBase()
     private var calibrationManager = CalibrationManager()
 
     override var mClassName: String = InclinationService::class.java.simpleName
+
+    private var synchronizationTimer: Disposable? = null
     //endregion
 
 
     //region message handlers
     init {
-        this.createMessageHandler( "InclinationService", listOf<String>(MessageTopics.SESSION_CONTROL, MessageTopics.INCLINATION_CONTROL))
+        this.createMessageHandler( "InclinationService", listOf<String>(MessageTopics.SESSION_CONTROL, MessageTopics.INCLINATION_CONTROL, MessageTopics.VIDEO_DATA))
     }
 
     /**
@@ -56,9 +62,19 @@ class InclinationService(): TelemetryServiceBase()
                 MessageTypes.INCLINATION_CALIBRATION_START ->
                 {
                     Log.d(mClassName, "SYR -> received  INCLINATION_CALIBRATION_START, starting the calibration process ")
-                    initializeTelemetry()
-
+                    stopVideoSynchronization()
                     calibrationManager.startCalibration()
+                }
+                MessageTypes.VIDEO_SYNCHRONIZATION_COMMAND ->
+                {
+                    Log.d(mClassName, "SYR -> received  VIDEO_SYNCHRONIZATION_COMMAND, starting the calibration process ")
+                    initializeTelemetry()
+                    startVideoSynchronization()
+                }
+                MessageTypes.VIDEO_SYNCHRONIZATION_END_COMMAND ->
+                {
+                    Log.d(mClassName, "SYR -> received  VIDEO_SYNCHRONIZATION_END_COMMAND, starting the calibration process ")
+                    stopVideoSynchronization()
                 }
                 else ->
                 {
@@ -69,6 +85,49 @@ class InclinationService(): TelemetryServiceBase()
         catch (ex: Exception)
         {
             Log.e(mClassName, "SYR -> Unable to process message ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Start sending elan angle data to upper layers in order to synchronize the video
+     */
+    private fun startVideoSynchronization()
+    {
+        try
+        {
+            if (synchronizationTimer == null) {
+                synchronizationTimer = Observable.interval(100, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+                    if (telemetryData != null)
+                    {
+                        val message = MessageBundle(MessageTypes.LEAN_ANGLE_SYNCHRONIZATION_DATA, (telemetryData as Inclination).roll, MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
+                        sendMessage(message)
+                    }
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to start video synchronization because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Stops sending lean angle information to upper layers
+     */
+    private fun stopVideoSynchronization()
+    {
+        try {
+            if (synchronizationTimer != null)
+            {
+                synchronizationTimer?.dispose()
+                synchronizationTimer = null
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to stop video synchronization because: ${ex.message}")
             ex.printStackTrace()
         }
     }

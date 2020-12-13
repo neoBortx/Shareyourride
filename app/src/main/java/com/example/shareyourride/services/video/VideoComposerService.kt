@@ -538,8 +538,8 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
-            Log.d("SessionService", "SYR -> composing frame ${composedFramesCount} --------------------- ${frame.timestamp}")
-
+            //Uncommet for developing purposes
+            //Log.d("SessionService", "SYR -> composing frame ${composedFramesCount} --------------------- ${frame.timestamp}")
             composedFramesCount++
 
             val currentMillis = System.currentTimeMillis()

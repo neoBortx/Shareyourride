@@ -60,48 +60,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_label_session" />
 
-        <TextureView
-            android:id="@+id/video_placeholder_home_session"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_session"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="350dp"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginTop="29dp"
-            app:flow_horizontalAlign="center"
+            app:flow_verticalAlign="bottom"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:layout_constraintBottom_toTopOf="@+id/stop_activity_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_activity_kind_value_session" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_session"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30dp"
-            android:layout_marginTop="29dp"
-            android:maxHeight="250dp"
-            app:flow_verticalAlign="bottom"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/video_placeholder_home_session" />
-
         <Button
             android:id="@+id/stop_activity_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
             android:background="@drawable/button_style"
             android:clickable="true"
             android:focusable="true"
-            android:paddingHorizontal="20dp"
             android:text="@string/stop_activity"
             android:textColor="@color/whiteColor"
-            app:flow_verticalAlign="bottom"
+            android:paddingHorizontal="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recycler_view_session" />
+            android:layout_marginBottom="20dp"/> />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

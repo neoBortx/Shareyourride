@@ -49,6 +49,12 @@ enum class SettingPreferencesIds{
     WindSpeedUnit,
 
     Custom,
+
+    /**
+     * The delay configured by the user to synchronize the video with the telemetry
+     * configured in milliseconds
+     */
+    VideoDelay,
 }
 
 
@@ -90,6 +96,8 @@ class SettingPreferencesGetter(context: Context) {
             idToString[SettingPreferencesIds.WindSpeedUnit] = context.getString(R.string.wind_speed_unit)
 
             idToString[SettingPreferencesIds.Custom] = context.getString(R.string.custom)
+
+            idToString[SettingPreferencesIds.VideoDelay] = context.getString(R.string.video_delay)
         }
         catch(ex: java.lang.Exception)
         {
@@ -209,6 +217,32 @@ class SettingPreferencesGetter(context: Context) {
         }
         catch (ex: java.lang.Exception) {
             false
+        }
+    }
+
+    /**
+     * Save the given int in the shared preferences system in order to persist it
+     */
+    fun savePreferenceInt(value: Int, id: SettingPreferencesIds)
+    {
+        try
+        {
+            if (idToString.containsKey(id))
+            {
+                Log.d("SettingsPreferencesGetter", "SYR -> Saving $id with value $value")
+                val editor: SharedPreferences.Editor = prefs.edit()
+                editor.putInt(idToString[id],value)
+                editor.apply()
+            }
+            else
+            {
+                Log.e("SettingsPreferencesGetter", "SYR -> Unsable to save $id because it isn't supported")
+            }
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e("SettingsPreferencesGetter", "SYR -> Unable to save int because: ${ex.message}")
+            ex.printStackTrace()
         }
     }
 }

@@ -18,29 +18,34 @@ enum class SessionState(val value: Int)
     Stopped(1),
 
     /**
+     * Thw window to synchronize the video with the telemetry has been shown and the system
+     * is waiting to the user to click in next button
+     */
+    SynchronizingVideo(2),
+    /**
      * Calibrating gyroscopes window is shown and the procedure to calibrate them is started
      */
-    CalibratingSensors(2),
+    CalibratingSensors(3),
 
     /**
      * Sensors are calibrated and the app is waiting to the user to press continue
      */
-    SensorsCalibrated(3),
+    SensorsCalibrated(4),
 
     /**
      * Session running
      */
-    Started(4),
+    Started(5),
 
     /**
      * The video of the session is being created
      */
-    CreatingVideo(5),
+    CreatingVideo(6),
 
     /**
      * Session is finished
      */
-    Finished(6);
+    Finished(7);
 
     companion object {
         fun fromInt(value: Int) = SessionState.values().first { it.value == value }

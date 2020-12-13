@@ -29,6 +29,16 @@
 
 
     <fragment
+        android:id="@+id/nav_video_synchronization_fragment"
+        android:name="com.example.shareyourride.userplayground.videoSync.VideoSyncFrame"
+        android:label="Share your ride"
+        tools:layout="@layout/fragment_session" >
+        <action
+            android:id="@+id/action_nav_video_synchronization_fragment_to_nav_activity_started_fragment"
+            app:destination="@id/nav_activity_started_fragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_gyroscope_calibration_fragment"
         android:name="com.example.shareyourride.userplayground.gyroscopes.GyroscopeCalibrationFragment"
         android:label="Share your ride"

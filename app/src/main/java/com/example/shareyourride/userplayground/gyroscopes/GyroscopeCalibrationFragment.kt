@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.fragment_gyroscope_calibration.*
  */
 class GyroscopeCalibrationFragment : Fragment()
 {
-    //region vide models
+    //region view models
     /**
      * View model that manage setting changes
      */

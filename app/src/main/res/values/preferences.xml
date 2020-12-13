@@ -29,7 +29,8 @@
     <string name="temperature_unit">temperature_unit</string>
     <string name="wind_speed_unit">wind_speed_unit</string>
 
-
+    <!-- video delay -->
+    <string name="video_delay">video_delay</string>
 
     <string name="custom">custom</string>
 

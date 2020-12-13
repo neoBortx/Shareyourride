@@ -58,7 +58,7 @@ class HomeFragment : Fragment()  {
         val view = inflater.inflate(layout.fragment_home, container, false)
 
         (view.findViewById(R.id.start_activity_button) as Button).setOnClickListener(startActivityButton)
-
+        (view.findViewById(R.id.start_activity_button) as Button).isEnabled = false
         if (context != null)
         {
             configureLocationChanges()
@@ -107,9 +107,13 @@ class HomeFragment : Fragment()  {
         try
         {
             videoViewModel.videoState.observe(viewLifecycleOwner, Observer {state ->
-                Log.d("HomeFragment", "SYR -> Handling change in the video state")
+                Log.d("HomeFragment", "SYR -> Handling change in the video state connected: $state")
+
                 val colorId = if (state) color.colorProviderOk else color.colorProviderError
+
                 ImageViewCompat.setImageTintList(video_state_img, context?.getColor(colorId)?.let { ColorStateList.valueOf(it) })
+
+                (view?.findViewById(R.id.start_activity_button) as Button).isEnabled = state
             })
         }
         catch(ex: Exception)

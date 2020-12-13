@@ -208,22 +208,18 @@ class LeanAnglePrinter(bottom: Float, left: Float, private val videoScale: Float
             return when {
                 angle.absoluteValue <= 5 ->
                 {
-                    Log.d("LeanAnglePrinter", "SYR -> angle.absoluteValue <= 5 ------------------ $angle")
                     leanAngleImagesMap[0]
                 }
                 angle > 0 ->
                 {
-                    Log.d("LeanAnglePrinter", "SYR -> angle > 0 ---------------------- $angle")
                     leanAngleImagesMap.toList().reversed().first { it.first <= angle.absoluteValue}.second
                 }
                 angle < 0 ->
                 {
-                    Log.d("LeanAnglePrinter", "SYR -> angle < 0 ---------------------- $angle")
                     leanAngleNegativeImagesMap.toList().reversed().first { it.first <= angle.absoluteValue}.second
                 }
                 else ->
                 {
-                    Log.d("LeanAnglePrinter", "SYR -> nulllllllllllll ---------------------- $angle")
                     null
                 }
             }

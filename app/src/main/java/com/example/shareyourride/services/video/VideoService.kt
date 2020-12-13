@@ -13,7 +13,6 @@ import com.bvillarroya_creations.shareyourride.messenger.IMessageHandlerClient
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundleData
 import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
-import com.example.shareyourride.common.MediaStoreUtils
 import com.example.shareyourride.configuration.SettingPreferencesGetter
 import com.example.shareyourride.services.base.ServiceBase
 import io.reactivex.Observable
@@ -26,6 +25,7 @@ import org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264
 import org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_RGBA
 import org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P
 import org.bytedeco.javacv.*
+import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
@@ -118,9 +118,14 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var updateVideoStateTimer: Disposable? = null
 
     /**
-     *Flag to point if the frames of the received has to be processed or not, breaks the read boucle
+     *Flag to point if the frames of the received have to be processed or not
      */
     private var captureVideoFlag = false
+
+    /**
+      * Flag to point if the frames of the received stream have to be sent to upper layers to be shown
+     */
+    private var synchronizeVideoFlag = false
 
     /**
      * Points if the connection with the video is established
@@ -131,11 +136,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      * Points if the grabber is trying to access to the stream, used to avoid parallel access to the same stream
      */
     private var tryingToConnect = false
-
-    /**
-     * Class that manages the way of save files in the system
-     */
-    private var mediaStoreUtils: MediaStoreUtils? = null
 
     /**
      * The unique identifier of the session
@@ -149,11 +149,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var tokenTimestamp: Long = 0
 
     /**
-     * Lock to avoid concurrent accesses to the grabber API
-     */
-    private val grabberLock: ReentrantLock = ReentrantLock()
-
-    /**
      * Lock to avoid concurrent accesses to the recorder API
      */
     private val recorderLock: ReentrantLock = ReentrantLock()
@@ -162,8 +157,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      * Contains the relation of the timestamp of the frame and the synchronization timestamp sent in the SAVE_TELEMETRY message
      */
     private val timeStampRelationMap: MutableMap<Long,Long> = mutableMapOf()
-
-    private val bitMapConverter = AndroidFrameConverter()
 
     /**
      * Counts the total amount of frames saved in disk for a video
@@ -176,10 +169,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var failedFrames: Int = 0
 
     /**
-     * Stores the infromation related to the video
+     * Stores the information related to the video
      */
     private var video : Video? = null
 
+    private var bitmapConverter = AndroidFrameConverter()
+
+    /**
+     * The delay configured by the user, it means that all frames have this average delay respect to the received telemetry data
+     */
+    private var videoDelay: Int =0
     //endregion
 
     //region message handlers
@@ -212,6 +211,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 MessageTypes.VIDEO_STATE_REQUEST ->
                 {
                     Log.d(mClassName, "SYR -> received  VIDEO_STATE_REQUEST")
+                    notifyVideoState()
 
                 }
                 MessageTypes.SAVE_TELEMETRY ->
@@ -232,7 +232,23 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 MessageTypes.VIDEO_DISCARD_COMMAND ->
                 {
                     Log.d(mClassName, "SYR -> received  VIDEO_DISCARD_COMMAND")
+                    processDiscardVideo()
+                }
 
+                MessageTypes.VIDEO_SYNCHRONIZATION_COMMAND ->
+                {
+                    Log.d(mClassName, "SYR -> received  VIDEO_SYNCHRONIZATION_COMMAND")
+                    processStartSynchronization()
+                }
+                MessageTypes.VIDEO_SYNCHRONIZATION_END_COMMAND ->
+                {
+                    Log.d(mClassName, "SYR -> received  VIDEO_SYNCHRONIZATION_COMMAND")
+                    processEndSynchronization()
+                }
+                MessageTypes.CONFIGURE_VIDEO_DELAY -> {
+                    val delay = msg.messageData.data as Int
+                    Log.d(mClassName, "SYR -> received  CONFIGURE_TELEMETRY_DELAY  with delay $delay")
+                    configureDelay(delay)
                 }
                 else ->
                 {
@@ -413,6 +429,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
+            synchronizeVideoFlag = false
+
             if (data.type == String::class)
             {
                 timeStampRelationMap.clear()
@@ -421,10 +439,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 sessionId = data.data as String
                 Log.d(mClassName, "SYR -> Start reading video frames in a new thread for session $sessionId ")
-
-                if (mediaStoreUtils == null) {
-                    mediaStoreUtils = MediaStoreUtils(applicationContext)
-                }
 
                 videoRawPath = getRawFileDir()
 
@@ -474,6 +488,56 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     }
 
     /**
+     * Start to send received frames to other layers in order to be shown
+     */
+    private fun processStartSynchronization()
+    {
+        try
+        {
+            synchronizeVideoFlag = true
+        }
+        catch(ex: Exception)
+        {
+
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Stop sending received frames to other layers
+     */
+    private fun processEndSynchronization()
+    {
+        try
+        {
+            synchronizeVideoFlag = false
+        }
+        catch(ex: Exception)
+        {
+
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Configures a delay in milliseconds to apply in the video association data with the telemetry, this delay provoke that
+     * received frames are associated to previous telemetry data, because the TCP connection will add some delay to the connection
+     *
+     * @param delay: In milliseconds, delay to apply to each video frame to associate them to older telemetry data
+     */
+    private fun configureDelay(delay: Int)
+    {
+        try {
+            videoDelay = delay
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to configure the telemetry delay because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
      * Close and clear recorder and grabber
      *
      * Also fill the video data with all frames data
@@ -508,6 +572,56 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             val message = MessageBundle(MessageTypes.VIDEO_CREATION_COMMAND, sessionId, MessageTopics.VIDEO_CREATION_DATA)
             sendMessage(message)
         }
+
+        startConnectionTimer()
+    }
+
+    /**
+     * Stop acquiring data and remove the file
+     * - Close recorder
+     * - close de grabber
+     * - Delete the file
+     * - Start again the connection process
+     */
+    private fun processDiscardVideo()
+    {
+        captureVideoFlag = false
+        connectionEstablished = false
+        try
+        {
+            closeOutputStream()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to close the recorder due : ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        try
+        {
+            closeInputStream()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to close the grabber due : ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        try
+        {
+            Log.i(mClassName,"SYR -> Deleting video file ${getRawFileDir()}")
+            val file = File(getRawFileDir())
+            file.delete()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to delete the video of the session ${ex.message}")
+            ex.printStackTrace()
+        }
+
+
+        startConnectionTimer()
+
     }
 
     /**
@@ -520,14 +634,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         {
             try
             {
-                //grabberLock.lock()
                 val frame : Frame? = grabber!!.grabImage()
-                //grabberLock.unlock()
                 if (frame != null)
                 {
                     //for debuging, uncoment
                     //Log.d(mClassName, "SYR ->Grabbed frame ${frame.timestamp} -------------------------- ${Process.myTid()}")
-                    processVideoFrame(frame!!)
+                    if (synchronizeVideoFlag)
+                    {
+                        sendVideoFrame(frame)
+                    }
+                    else
+                    {
+                        processVideoFrame(frame)
+                    }
                 }
                 else
                 {
@@ -539,13 +658,22 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             }
             catch (ex:Exception)
             {
-                grabberLock.unlock()
                 Log.e(mClassName, "SYR -> Unable execute get video frame due: ${ex.message}")
                 ex.printStackTrace()
             }
-
-
         }
+    }
+
+    /**
+     * Just send the given video frame to the view model
+     *
+     * @param frame: Frame to record
+     */
+    private fun sendVideoFrame(frame: Frame)
+    {
+        Log.d(mClassName, "SYR ->Sending frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
+        val message = MessageBundle(MessageTypes.VIDEO_FRAME_SYNCHRONIZATION_DATA, bitmapConverter.convert(frame), MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
+        sendMessage(message)
     }
 
     /**
@@ -564,7 +692,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             }
 
             try {
-                Log.d(mClassName, "SYR ->Processing frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
+                //Uncomment for developing purposes
+                //Log.d(mClassName, "SYR ->Processing frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
                 synchronized(recorderLock) {
                     recorder!!.record(frame)
                 }
@@ -597,9 +726,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             {
                  Log.i(mClassName, "SYR -> Trying to connect to video service $addressString")
 
-                grabberLock.tryLock()
-
-                //grabberLock.lock()
                 grabber = FFmpegFrameGrabber(addressString)
                 grabber!!.setOption("rtsp_transport", "tcp")
                 grabber!!.timeout = 5000
@@ -632,7 +758,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     videoTimeStamp = grabber!!.timestamp
 
                 }
-                //grabberLock.unlock()
 
                 notifyVideoState()
 
@@ -648,7 +773,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         }
         catch (ex:Exception)
         {
-            grabberLock.unlock()
             Log.e(mClassName, "SYR -> Unable to connect to video stream, url: $addressString due: ${ex.message}")
             ex.printStackTrace()
             startConnectionTimer()
@@ -663,20 +787,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         try
         {
             Log.d(mClassName, "SYR -> Closing grabber to url: $addressString closed")
-            //grabberLock.lock()
             if (grabber != null) {
                 Log.d(mClassName, "SYR -> calling releaseUnsafe")
                 grabber!!.stop()
                 Log.d(mClassName, "SYR -> executed!")
                 grabber = null
             }
-            //grabberLock.unlock()
-
             Log.i(mClassName, "SYR -> Grabber to url: $addressString closed")
         }
         catch(ex: Exception)
         {
-            grabberLock.unlock()
             Log.e(mClassName, "SYR -> Unable to close grabber connection due: ${ex.message}")
             ex.printStackTrace()
         }
@@ -734,23 +854,39 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try {
 
-            updateVideoStateTimer = Observable.timer( 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+            updateVideoStateTimer = Observable.timer( 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe({startConnection()},{
+                it.printStackTrace()
+                startConnectionTimer()
+            })
 
-                if (!connectionEstablished)
-                {
-                    closeInputStream()
-                    closeOutputStream()
-                    openVideoStream()
-                }
-
-                notifyVideoState()
-            }
 
             settingsGetter = SettingPreferencesGetter(applicationContext)
         }
         catch (ex: java.lang.Exception)
         {
             Log.e(mClassName,"SYR -> Unable to create openCV controllers because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * DO NOT CALL DIRECTLY
+     */
+    private fun startConnection()
+    {
+        try
+        {
+            if (!connectionEstablished)
+            {
+                closeInputStream()
+                closeOutputStream()
+                openVideoStream()
+            }
+            notifyVideoState()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to startConnection because: ${ex.message}")
             ex.printStackTrace()
         }
     }

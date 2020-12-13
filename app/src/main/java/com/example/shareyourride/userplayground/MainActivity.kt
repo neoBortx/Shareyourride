@@ -122,6 +122,11 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
 
                 when (sessionData.state)
                 {
+                    SessionState.SynchronizingVideo ->
+                    {
+                        disableNavigationControls()
+                        navController?.navigate(R.id.nav_video_synchronization_fragment)
+                    }
                     SessionState.CalibratingSensors ->
                     {
                         disableNavigationControls()
@@ -325,42 +330,50 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
             when (sessionViewModel.sessionData.value?.state) {
                 SessionState.Unknown -> {
                     //do nothing, let the system do its magic
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Unknown state, let the system to rule the navigation ")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in Unknown state, let the system to rule the navigation ")
                     mustBeManagedByTheSystem = true
                 }
                 SessionState.Stopped -> {
                     //do nothing, let the system do its magic
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Stopped state, let the system to rule the navigation ")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in Stopped state, let the system to rule the navigation ")
                     mustBeManagedByTheSystem = true
+                }
+                SessionState.SynchronizingVideo ->
+                {
+                    //Navigate to home
+                    sessionViewModel.cancelSession()
+                    navController?.navigate(R.id.nav_home_fragment)
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in SynchronizingVideo state, navigate to home fragment ")
                 }
                 SessionState.CalibratingSensors -> {
                     //Navigate to home
                     sessionViewModel.cancelSession()
                     navController?.navigate(R.id.nav_home_fragment)
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CalibrationSensors state, navigate to home fragment ")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in CalibrationSensors state, navigate to home fragment ")
                 }
                 SessionState.SensorsCalibrated -> {
                     //Navigate to home
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in SensorsCalibrated state, navigate to home fragment ")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in SensorsCalibrated state, navigate to home fragment ")
                     sessionViewModel.cancelSession()
                     navController?.navigate(R.id.nav_home_fragment)
 
                 }
                 SessionState.Started -> {
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CreatingVideo state, show the fisnish activity dialog")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in CreatingVideo state, show the fisnish activity dialog")
                     sessionViewModel.showFinishActivityDialog(this)
                 }
                 SessionState.CreatingVideo -> {
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in CreatingVideo state, block the action ")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in CreatingVideo state, block the action ")
                     Toast.makeText(applicationContext, getString(R.string.creating_video_notification), Toast.LENGTH_SHORT).show()
                 }
                 SessionState.Finished -> {
                     //Navigate to home
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Finished state, navigate to home fragment")
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in Finished state, navigate to home fragment")
                     navController?.navigate(R.id.nav_home_fragment)
                 }
-                null -> {
-                    Log.i("MainActivity", "SYR -> User press the return button when the app is in Finished state, navigate to home fragment")
+                null ->
+                {
+                    Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in Finished state, navigate to home fragment")
                 }
             }
 

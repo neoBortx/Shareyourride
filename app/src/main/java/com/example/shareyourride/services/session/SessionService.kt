@@ -96,26 +96,12 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
             Log.i("SYR", "SessionService -> starting session")
 
-            sessionState = if (settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) SessionState.CalibratingSensors else SessionState.Started
+            sessionState = SessionState.SynchronizingVideo
             mSession.state = sessionState.value
-
-            //the current running thread will be blocked until this piece of code is executed
-            runBlocking {
-                ShareYourRideRepository.buildDataBase(application)
-                ShareYourRideRepository.insertSession(mSession)
-                ShareYourRideRepository.insertSessionTelemetry(generateSessionTelemetry())
-            }
 
             sendSessionState()
 
-            if (!settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric))
-            {
-                startSession()
-            }
-            else
-            {
-                startCalibratingSensors()
-            }
+            sendStartVideoSynchronization()
         }
         catch (ex: Exception)
         {
@@ -123,6 +109,65 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    private fun processContinueSession()
+    {
+        try
+        {
+            Log.i("SessionService", "SYR -> Resuming session")
+
+            if (sessionState == SessionState.SynchronizingVideo)
+            {
+                Log.i("SessionService","SYR -> Processing continue session and showing the on session or calibrating gyroscopes sessions")
+                sessionState = if (settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) SessionState.CalibratingSensors else SessionState.Started
+                mSession.state = sessionState.value
+
+                //the current running thread will be blocked until this piece of code is executed
+
+
+                runBlocking {
+                    ShareYourRideRepository.buildDataBase(application)
+                    ShareYourRideRepository.insertSession(mSession)
+                    ShareYourRideRepository.insertSessionTelemetry(generateSessionTelemetry())
+                }
+
+                sendSessionState()
+
+                sendStopVideoSynchronization()
+
+                if (!settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) {
+                    startSession()
+                }
+                else {
+                    startCalibratingSensors()
+                }
+            }
+            else if (sessionState == SessionState.SensorsCalibrated)
+            {
+                Log.i("SessionService","SYR -> Processing continue session and showing the on session")
+
+                sessionState = SessionState.Started
+                mSession.state = sessionState.value
+
+                //the current running thread will be blocked until this piece of code is executed
+                runBlocking {
+                    ShareYourRideRepository.updateSession(mSession)
+                }
+
+                sendSessionState()
+                startSession()
+            }
+            else {
+                Log.e("SessionService", "SYR -> Unable to process continue session command because a non supported transition, current state $sessionState")
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to process continue session because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
 
     private fun processRetryCalibration()
     {
@@ -215,34 +260,6 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
 
-    }
-
-    /**
-     * Process the continue session message
-     * Set the session state to started
-     */
-    private fun processContinueSession()
-    {
-        try
-        {
-            Log.i("SYR", "SessionService -> Resuming session")
-
-            sessionState = SessionState.Started
-            mSession.state = sessionState.value
-
-            //the current running thread will be blocked until this piece of code is executed
-            runBlocking {
-                ShareYourRideRepository.updateSession(mSession)
-            }
-
-            sendSessionState()
-            startSession()
-        }
-        catch (ex: Exception)
-        {
-            Log.e("SessionService","SYR -> Unable to resume session because ${ex.message}")
-            ex.printStackTrace()
-        }
     }
 
     private fun stopSession()
@@ -503,7 +520,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                     Log.d("SessionService", "SYR -> received CONTINUE_SESSION updating event")
                     processContinueSession()
                 }
-                MessageTypes.CONTINUE_SESSION ->
+                MessageTypes.RETRY_CALIBRATION ->
                 {
                     Log.d("SessionService", "SYR -> received RETRY_CALIBRATION updating event")
                     processRetryCalibration()
@@ -657,7 +674,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
     {
         try
         {
-            Log.d("SessionService", "SYR -> Sending  session state")
+            Log.d("SessionService", "SYR -> Sending  INCLINATION_CALIBRATION_START")
             val message = MessageBundle( MessageTypes.INCLINATION_CALIBRATION_START, mSession.id, MessageTopics.INCLINATION_CONTROL)
             sendMessage(message)
         }
@@ -667,6 +684,43 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    /**
+     * Send the session state to upper layers
+     */
+    private fun sendStartVideoSynchronization()
+    {
+        try
+        {
+            Log.d("SessionService", "SYR -> Sending  VIDEO_SYNCHRONIZATION_COMMAND")
+            val message = MessageBundle( MessageTypes.VIDEO_SYNCHRONIZATION_COMMAND, mSession.id, MessageTopics.VIDEO_DATA)
+            sendMessage(message)
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to send session state message because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Send the session state to upper layers
+     */
+    private fun sendStopVideoSynchronization()
+    {
+        try
+        {
+            Log.d("SessionService", "SYR -> Sending  VIDEO_SYNCHRONIZATION_END_COMMAND")
+            val message = MessageBundle( MessageTypes.VIDEO_SYNCHRONIZATION_END_COMMAND, mSession.id, MessageTopics.VIDEO_DATA)
+            sendMessage(message)
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to send session state message because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
 
     /**
      * Command the video service to discard and remove the stored video data

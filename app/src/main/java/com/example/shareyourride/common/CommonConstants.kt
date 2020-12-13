@@ -13,7 +13,7 @@ class CommonConstants {
         /**
          * To convert meters/second to kilometers/hour
          */
-        const val KILOMETERS_PER_HOUR_CONVERTER = 3.6
+        private const val KILOMETERS_PER_HOUR_CONVERTER = 3.6
 
         /**
          * To convert meters/second to miles/hour
@@ -54,6 +54,11 @@ class CommonConstants {
          * The acceleration of the gravity in the earth
          */
         const val GRAVITY_ACCELERATION = 9.80665
+
+        /**
+         * Minimum managed video delay increments
+         */
+        const val VIDEO_DELAY_SEGMENT: Int = 100
 
 
         fun getSpeedText(context: Context): String

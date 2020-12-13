@@ -85,7 +85,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
     {
         try
         {
-            Log.i("SessionViewModel", "SYR -> $guid: Sending END_SESSION message")
+            Log.i("SessionViewModel", "SYR -> $guid: Sending CONTINUE_SESSION message")
             val message = MessageBundle(MessageTypes.CONTINUE_SESSION,"", MessageTopics.SESSION_COMMANDS)
             sendMessage(message)
         }

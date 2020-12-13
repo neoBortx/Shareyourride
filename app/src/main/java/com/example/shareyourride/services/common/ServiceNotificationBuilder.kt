@@ -91,6 +91,7 @@ class ServiceNotificationBuilder()
                 SessionState.Started -> context.getString(R.string.session_ongoing)
                 SessionState.CreatingVideo -> context.getString(R.string.session_creating_video)
                 SessionState.Finished -> context.getString(R.string.session_video_finished)
+                SessionState.SynchronizingVideo -> context.getString(R.string.synchronizing_video)
             }
         }
     }

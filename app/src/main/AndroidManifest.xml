@@ -27,7 +27,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/app_label"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -41,31 +41,36 @@
         <service
             android:name="com.example.shareyourride.services.session.SessionService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:stopWithTask="true">
         </service>
 
         <service
             android:name="com.example.shareyourride.services.inclination.InclinationService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:stopWithTask="true">
         </service>
 
         <service
             android:name="com.example.shareyourride.services.location.LocationService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:stopWithTask="true">
         </service>
 
         <service
             android:name="com.example.shareyourride.services.video.VideoService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:stopWithTask="true">
         </service>
 
         <service
             android:name="com.example.shareyourride.services.video.VideoComposerService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            android:stopWithTask="true">
         </service>
         <!--endregion-->
 
