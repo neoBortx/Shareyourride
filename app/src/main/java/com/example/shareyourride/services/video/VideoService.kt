@@ -143,12 +143,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     private var sessionId = ""
 
     /**
-     * Time stamp given by the session control. It has to be inserted in every frame in order to link them with
-     * the telemetry data
-     */
-    private var tokenTimestamp: Long = 0
-
-    /**
      * Lock to avoid concurrent accesses to the recorder API
      */
     private val recorderLock: ReentrantLock = ReentrantLock()
@@ -179,6 +173,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      * The delay configured by the user, it means that all frames have this average delay respect to the received telemetry data
      */
     private var videoDelay: Int =0
+
+    /**
+     * Time stamp of the mobile phone when the first frame of the video is processed, it is used to synchronize the video
+     */
+    private var referenceTimeStampSystem: Long = 0
+
+    /**
+     * Time stamp of the video phone when the first frame of the video is processed, it is used to synchronize the video
+     */
+    private var referenceTimeStampVideo: Long = 0
     //endregion
 
     //region message handlers
@@ -212,11 +216,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 {
                     Log.d(mClassName, "SYR -> received  VIDEO_STATE_REQUEST")
                     notifyVideoState()
-
-                }
-                MessageTypes.SAVE_TELEMETRY ->
-                {
-                    tokenTimestamp = msg.messageData.data as Long
 
                 }
                 MessageTypes.START_ACQUIRING_DATA ->
@@ -433,6 +432,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
             if (data.type == String::class)
             {
+                referenceTimeStampSystem = 0
+                referenceTimeStampVideo  = 0
                 timeStampRelationMap.clear()
                 framesCounter = 0
                 failedFrames = 0
@@ -671,7 +672,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      */
     private fun sendVideoFrame(frame: Frame)
     {
-        Log.d(mClassName, "SYR ->Sending frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
         val message = MessageBundle(MessageTypes.VIDEO_FRAME_SYNCHRONIZATION_DATA, bitmapConverter.convert(frame), MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
         sendMessage(message)
     }
@@ -685,19 +685,21 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         if (recorder != null && captureVideoFlag)
         {
+            val frameTimestamp = (frame.timestamp / 1000).toLong()
             //synchronize the first processed frame with start of the video
             if (framesCounter == 0L)
             {
-                recorder!!.timestamp = frame.timestamp
+                referenceTimeStampSystem = System.currentTimeMillis()
+                referenceTimeStampVideo = frameTimestamp
+                recorder!!.timestamp = frameTimestamp
             }
 
-            try {
-                //Uncomment for developing purposes
-                //Log.d(mClassName, "SYR ->Processing frame ${frame.timestamp} ------------------------- $tokenTimestamp  frames ${timeStampRelationMap.count()}")
+            try
+            {
                 synchronized(recorderLock) {
                     recorder!!.record(frame)
                 }
-                timeStampRelationMap[framesCounter] = tokenTimestamp
+                timeStampRelationMap[framesCounter] = referenceTimeStampSystem + frameTimestamp - referenceTimeStampVideo
                 framesCounter++
             }
             catch(ex: OutOfMemoryError)
@@ -738,8 +740,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 grabber!!.setOption("flags", "low_delay")
                 grabber!!.setOption("flags", "discardcorrupt")
                 grabber!!.setOption("avioflags ", "direct")
-                grabber!!.setOption("probesize", "100")
-                grabber!!.setOption("preset", "superfast")
+                grabber!!.setOption("probesize", "36")
+                grabber!!.setOption("preset", "ultrafast")
                 grabber!!.setOption("tune", "zerolatency")
 
                 tryingToConnect = true

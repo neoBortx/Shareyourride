@@ -42,8 +42,9 @@ interface InclinationDao {
      *
      * @return: The list of Inclination
      */
-    @Query("SELECT * FROM Inclination WHERE sessionId like :sessionId and timeStamp like :timeStamp")
-    fun getInclinationList(sessionId: String, timeStamp: Long): Inclination
+    //@Query("SELECT * FROM Inclination WHERE sessionId like :sessionId and timeStamp like :timeStamp")
+    @Query("SELECT * FROM Inclination WHERE sessionId LIKE :sessionId ORDER BY abs(timeStamp - :timeStamp) LIMIT 1")
+    fun getInclination(sessionId: String, timeStamp: Long): Inclination
 
     /**
      * Get the maximum lean angle in the left side detected during session

@@ -343,7 +343,7 @@ internal class DataBaseManager {
             try
             {
                 return if (inclinationDao != null) {
-                    inclinationDao!!.getInclinationList(sessionId,timestamp)
+                    inclinationDao!!.getInclination(sessionId,timestamp)
                 } else {
                     Log.e("DataBaseManager", "SYR -> Data base is not initialized yet, unable to retrieve the list of inclinations")
                     null
