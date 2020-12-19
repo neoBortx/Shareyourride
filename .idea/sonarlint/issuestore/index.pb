@@ -270,8 +270,6 @@ Yapp/src/main/java/com/example/shareyourride/userplayground/session/MiddleItemDe
 `app/src/main/java/com/example/shareyourride/userplayground/endSession/SessionFinishedFragment.kt,b\b\bb813a8cab6fe123f63f37440d42f5c466a7461e
 “
 capp/src/main/java/com/example/shareyourride/userplayground/endSession/SummaryRecyclerViewAdapter.kt,5\4\546cf6af04bf2dafc203ebacd4a4a0a5e00b3587
-†
-Vapp/src/main/java/com/example/shareyourride/services/interfaces/ITelemetryViewModel.kt,c\4\c496a1a85f792c9b5f87465956b91e1ac8165393
 ~
 Nwifi/src/main/java/com/bvillarroya_creations/shareyourride/wifi/WifiCommons.kt,3\e\3e1483a5bdd600543474511c781f4afae2c2fcae
 u

@@ -145,19 +145,6 @@ class MessageTypes {
          * SESSION -> The rest of services
          */
         const val UPDATE_TELEMETRY = "updateTelemetry"
-
-        /**
-         * Configures a delay in milliseconds to process the telemetry
-         * The telemetry service will receive the telemetry with this delay in order to synchronise the telemetry
-         * with the video without changing the logic of the orchestration and keeping the implementation as simple as possible
-         *
-         * Belongs to topic SESSION_COMMANDS
-         *
-         * @remarks this message contains a long with the delay in milliseconds
-         *
-         * SESSION -> The rest of services
-         */
-        const val CONFIGURE_VIDEO_DELAY = "configureTelemetryDelay"
         //endregion
 
         //region GPS_DATA
@@ -246,21 +233,41 @@ class MessageTypes {
         /**
          * Command sent to start the synchronization process. In that mode, the video service will send all captured frames
          * to the view model in order to be shown
+         *
+         * Belongs to topic VIDEO_DATA
+         *
+         * Session service -> Video service and Inclination service
          */
         const val VIDEO_SYNCHRONIZATION_COMMAND= "videoSynchronizationCommand"
 
         /**
          * Command sent to finish the synchronization process.
+         *
+         *  Belongs to topic VIDEO_DATA
+         *
+         *  Session service -> Video service and Inclination service
          */
         const val VIDEO_SYNCHRONIZATION_END_COMMAND= "videoSynchronizationEndCommand"
         //endregion
 
         //region VIDEO_SYNCHRONIZATION_DATA
-
+        /**
+         * Configures a delay in milliseconds to process the telemetry
+         * The telemetry service will receive the telemetry with this delay in order to synchronise the telemetry
+         * with the video without changing the logic of the orchestration and keeping the implementation as simple as possible
+         *
+         * Belongs to topic VIDEO_SYNCHRONIZATION_DATA
+         *
+         * @remarks this message contains a long with the delay in milliseconds
+         *
+         * SESSION -> The rest of services
+         */
+        const val CONFIGURE_VIDEO_DELAY = "configureVideoDelay"
         /**
          * Message sent with the frame data in order to be printed in the synchronization window
          *
          *  Belongs to topic VIDEO_SYNCHRONIZATION_DATA
+         *
          * @remarks this message contains the video frame image
          */
         const val VIDEO_FRAME_SYNCHRONIZATION_DATA = "videoFrameData"
