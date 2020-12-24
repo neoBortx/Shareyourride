@@ -348,15 +348,14 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
                 SessionState.CalibratingSensors -> {
                     //Navigate to home
                     sessionViewModel.cancelSession()
-                    navController?.navigate(R.id.nav_video_synchronization_fragment)
+                    navController?.navigate(R.id.nav_home_fragment)
                     Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in CalibrationSensors state, navigate to home fragment ")
                 }
                 SessionState.SensorsCalibrated -> {
                     //Navigate to home
                     Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in SensorsCalibrated state, navigate to home fragment ")
                     sessionViewModel.cancelSession()
-                    navController?.navigate(R.id.nav_video_synchronization_fragment)
-
+                    navController?.navigate(R.id.nav_home_fragment)
                 }
                 SessionState.Started -> {
                     Log.i("MainActivity", "SYR -> User has pressed the return button when the app is in CreatingVideo state, show the fisnish activity dialog")
