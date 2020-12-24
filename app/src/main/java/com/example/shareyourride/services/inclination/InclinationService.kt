@@ -97,7 +97,7 @@ class InclinationService(): TelemetryServiceBase()
         try
         {
             if (synchronizationTimer == null) {
-                synchronizationTimer = Observable.interval(100, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
+                synchronizationTimer = Observable.interval(200, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
                     if (telemetryData != null)
                     {
                         val message = MessageBundle(MessageTypes.LEAN_ANGLE_SYNCHRONIZATION_DATA, (telemetryData as Inclination).roll, MessageTopics.VIDEO_SYNCHRONIZATION_DATA)

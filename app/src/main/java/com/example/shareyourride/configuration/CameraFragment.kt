@@ -172,6 +172,7 @@ class CameraFragment : PreferenceFragmentCompat() {
             cameraPath?.isEnabled = true
             //only rtsp supported a this moment
             cameraProtocol?.isEnabled = false
+            cameraProtocol?.text = "rtsp"
         }
         catch (ex: Exception)
         {

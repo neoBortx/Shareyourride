@@ -3,7 +3,6 @@ package com.bvillarroya_creations.shareyourride.datamodel.converters
 import androidx.room.TypeConverter
 import org.json.JSONArray
 import org.json.JSONException
-import java.util.*
 
 class FloatArrayToStringConverter {
     @TypeConverter

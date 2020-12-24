@@ -9,7 +9,7 @@ import androidx.core.graphics.drawable.toBitmap
 import com.bvillarroya_creations.shareyourride.R
 import kotlin.math.absoluteValue
 
-class LeanAnglePrinter(bottom: Float, left: Float, private val videoScale: Float, val applicationContext: Context) {
+class LeanAnglePrinter(videoScale: Float, val applicationContext: Context) {
 
 
     /**

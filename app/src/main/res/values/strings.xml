@@ -162,5 +162,5 @@
 
     <string name="gravity_force">G</string>
     <string name="synchronizing_video">Synchronizing video</string>
-    <string name="video_synchronization_message">Configure the delay of the video until the image and the tilt angle are synchronized</string>
+    <string name="video_synchronization_message">Synchronize the video and the tilt angle</string>
 </resources>

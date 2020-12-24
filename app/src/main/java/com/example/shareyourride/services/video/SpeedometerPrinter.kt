@@ -11,7 +11,7 @@ import com.bvillarroya_creations.shareyourride.R
 /**
  * Selects the speedometer image
  */
-class SpeedometerPrinter(bottom: Float, left: Float, videoScale: Float, private val maxSpeed: Float, val applicationContext: Context)
+class SpeedometerPrinter(videoScale: Float, maxSpeed: Float, val applicationContext: Context)
 {
 
     /**

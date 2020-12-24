@@ -233,7 +233,7 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
         val ip = setting.getStringOption(SettingPreferencesIds.CameraIp)
         val path = setting.getStringOption(SettingPreferencesIds.CameraPath)
         val port: String = setting.getStringOption(SettingPreferencesIds.CameraPort)
-        val data = VideoConnectionData(protocol,"", "",ip, port,path)
+        val data = VideoConnectionData("rtsp"/*protocol*/,"", "",ip, port,path)
 
         val message = MessageBundle(MessageTypes.VIDEO_CONNECTION_DATA,data, MessageTopics.VIDEO_DATA)
         sendMessage(message)

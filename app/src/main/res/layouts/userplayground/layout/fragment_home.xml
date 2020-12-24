@@ -12,14 +12,14 @@
             android:id="@+id/text_activity_kind_label"
             android:layout_width="146dp"
             android:layout_height="25dp"
+            android:layout_marginTop="20dp"
             android:text="@string/activity_kind_label"
             android:textAlignment="center"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="30dp"
-             />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/video_state_img"
@@ -37,9 +37,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginTop="10dp"
             android:textAlignment="center"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -61,8 +60,10 @@
         <ListView
             android:id="@+id/telemetry_list"
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_marginVertical="30dp"
             android:layout_marginHorizontal="30dp"
+            android:maxHeight="250dp"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@+id/start_activity_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

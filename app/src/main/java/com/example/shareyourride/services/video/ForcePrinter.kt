@@ -13,7 +13,7 @@ import kotlin.math.absoluteValue
 /**
  * Selects the speedometer image
  */
-class ForcePrinter(bottom: Float, left: Float, videoScale: Float, val applicationContext: Context) {
+class ForcePrinter(videoScale: Float, val applicationContext: Context) {
 
     /**
      * Map that holds the collection of images

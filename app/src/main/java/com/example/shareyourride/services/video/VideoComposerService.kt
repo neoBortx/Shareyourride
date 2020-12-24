@@ -1,7 +1,14 @@
 package com.example.shareyourride.services.video
 
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.graphics.*
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bvillarroya_creations.shareyourride.R
@@ -29,7 +36,10 @@ import org.bytedeco.javacv.AndroidFrameConverter
 import org.bytedeco.javacv.FFmpegFrameGrabber
 import org.bytedeco.javacv.FFmpegFrameRecorder
 import org.bytedeco.javacv.Frame
+import org.bytedeco.librealsense.context
 import java.io.File
+import java.io.OutputStream
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -309,23 +319,23 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             val dir = applicationContext.getExternalFilesDir("")
 
             return if (dir != null) {
-                dir.path +"/"+454532121212121241+"_raw.mp4"
+                dir.path +"/"+454554585421224178+"_raw.mp4"
             }
             else {
                 ""
             }
         }
         catch (ex: Exception) {
-            Log.e("VideoClient", "SYR -> Unable to get the directory to save the video 454532121212121241")
+            Log.e("VideoClient", "SYR -> Unable to get the directory to save the video")
             ex.printStackTrace()
             ""
         }
     }
 
-
     /**
      *
      */
+    @Suppress("DeferredResultUnused")
     private fun processVideoCreationCommand(messageData: MessageBundleData)
     {
         try
@@ -333,8 +343,6 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             if (messageData.type == String::class)
             {
                 val sessionId = messageData.data as String
-
-                startTimeStamp = System.currentTimeMillis()
 
                 GlobalScope.async {
 
@@ -373,9 +381,9 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                         terrainInclinationLocation         = Pair(rightBorder + 5*scale , topBorder)
                         terrainInclinationDrawableLocation = Pair(rightBorder - 55*scale, topBorder-22*scale)
 
-                        speedometerPrinter = SpeedometerPrinter(bottomBorder, leftBorder, scale, maxSessionSpeed, applicationContext)
-                        leanAnglePrinter   = LeanAnglePrinter(bottomBorder, centerBorder, scale, applicationContext)
-                        forcePrinter = ForcePrinter(bottomBorder, rightBorder, scale, applicationContext)
+                        speedometerPrinter = SpeedometerPrinter(scale, maxSessionSpeed, applicationContext)
+                        leanAnglePrinter   = LeanAnglePrinter(scale, applicationContext)
+                        forcePrinter = ForcePrinter(scale, applicationContext)
 
                         //bitmaps
                         distanceDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.distance).apply {
@@ -428,70 +436,82 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
      *
      * @return The full path address of the directory
      */
-    private fun composeVideo()
-    {
-        val file = File(video!!.rawVideoFilePath)
-        val grabber = FFmpegFrameGrabber(file)
-        val recorder = FFmpegFrameRecorder(getRawFileDir(), video!!.width, video!!.height)
-        val converter = AndroidFrameConverter()
+    private fun composeVideo() {
+        try {
 
-        recorder.videoCodec = avcodec.AV_CODEC_ID_H264
-        recorder.format = "matroska"
-        recorder.isInterleaved = true
-        recorder.pixelFormat = avutil.AV_PIX_FMT_YUV420P
 
-        recorder.frameRate = video!!.frameRate
-        recorder.videoBitrate = video!!.bitRate
-        recorder.timestamp = 0
+            val file = File(video!!.rawVideoFilePath)
+            val grabber = FFmpegFrameGrabber(file)
 
-        Log.d(mClassName, "SYR -> Starting recorder to file ${video!!.generatedVideoPath}")
+            //val recorder = FFmpegFrameRecorder(getRawFileDir(), video!!.width, video!!.height)
+            val stream = createFileStream((video!!.totalVideoFrames / video!!.frameRate).toLong())
 
-        recorder.start()
-
-        Log.d(mClassName, "SYR -> Recorder started")
-
-        //start the grabber in another thread because this is a blocking operation
-        GlobalScope.async(Dispatchers.IO) {
-
-            Log.d(mClassName, "SYR -> Starting grabber")
-            grabber.start()
-            Log.d(mClassName, "SYR -> grabber started")
-
-            var continueProcessing = true
-            lastUpdateTimeStamp = 0
-            while (continueProcessing)
-            {
-                val frame = grabber.grab()
-
-                if (frame != null)
-                {
-                    composeFrame(frame, recorder, converter)
-                }
-                else
-                {
-                    val millisecondsElapsed = System.currentTimeMillis() - startTimeStamp
-                    val time = String.format("%d min, %d sec",
-                                                TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed),
-                                                TimeUnit.MILLISECONDS.toSeconds(millisecondsElapsed) -
-                                                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed)))
-                    continueProcessing = false
-                    if (composedFramesCount >= video!!.totalVideoFrames)
-                    {
-                        Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} composed in $time, Hell yeah!!!!!!!!!!!!")
-                        notifyCreationState(VideoState.Finished)
-                    }
-                    else
-                    {
-                        Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} failed in $time")
-                        notifyCreationState(VideoState.Failed)
-                    }
-                }
+            if (stream == null) {
+                Log.e(mClassName, "SYR -> Unable to compose video because stream is not accessible")
+                return
             }
+            val recorder = FFmpegFrameRecorder(stream, video!!.width, video!!.height)
+            val converter = AndroidFrameConverter()
 
-            recorder.stop()
-            recorder.release()
-            grabber.stop()
-            grabber.release()
+            recorder.videoCodec = avcodec.AV_CODEC_ID_H264
+            recorder.format = "matroska"
+            recorder.isInterleaved = true
+            recorder.pixelFormat = avutil.AV_PIX_FMT_YUV420P
+
+            recorder.frameRate = video!!.frameRate
+            recorder.videoBitrate = video!!.bitRate
+
+            Log.d(mClassName, "SYR -> Starting recorder to file ${video!!.generatedVideoPath}")
+
+            startTimeStamp = System.currentTimeMillis()
+
+            recorder.start()
+
+            Log.d(mClassName, "SYR -> Recorder started")
+
+            //start the grabber in another thread because this is a blocking operation
+            GlobalScope.async(Dispatchers.IO) {
+
+                Log.d(mClassName, "SYR -> Starting grabber")
+                grabber.start()
+                Log.d(mClassName, "SYR -> grabber started")
+
+                var continueProcessing = true
+                lastUpdateTimeStamp = 0
+                while (continueProcessing) {
+                    val frame = grabber.grab()
+
+                    val millisecondsElapsed = System.currentTimeMillis() - startTimeStamp
+
+                    if (frame != null) {
+                        composeFrame(frame, recorder, converter, millisecondsElapsed)
+                    }
+                    else {
+                        val time = String.format(
+                                "%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed), TimeUnit.MILLISECONDS.toSeconds(millisecondsElapsed) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed)))
+                        continueProcessing = false
+                        if (composedFramesCount >= video!!.totalVideoFrames) {
+                            Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} composed in $time, Hell yeah!!!!!!!!!!!!")
+                            notifyCreationState(VideoState.Finished)
+                        }
+                        else {
+                            Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} failed in $time")
+                            notifyCreationState(VideoState.Failed)
+                        }
+                    }
+                }
+
+                recorder.stop()
+                recorder.release()
+                stream.close()
+                grabber.stop()
+                grabber.release()
+            }
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to create video because ${ex.message}")
+            ex.printStackTrace()
         }
     }
 
@@ -534,7 +554,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
      *  @param recorder: saves the frame in disk
      *  @param converter: converts frames is bitmaps and vice-versa, pass as parameter instead of initialize it in each frame to speed up the operation
      */
-    private suspend fun composeFrame(frame: Frame, recorder: FFmpegFrameRecorder, converter: AndroidFrameConverter)
+    private suspend fun composeFrame(frame: Frame, recorder: FFmpegFrameRecorder, converter: AndroidFrameConverter, millisecondsElapsed: Long)
     {
         try
         {
@@ -639,7 +659,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             //Generate a ffmpeg frame
             val videoFrame: Frame = converter.convert(frameBitmap)
             videoFrame.timestamp = frame.timestamp
-
+            recorder.setTimestamp( frame.timestamp)
             recorder.record(videoFrame)
         }
         catch (ex: Exception)
@@ -656,6 +676,44 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
         Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames}  $percentage")
         val message = MessageBundle(MessageTypes.VIDEO_CREATION_STATE_EVENT, VideoCreationStateEvent(state, percentage.toInt()), MessageTopics.VIDEO_CREATION_DATA)
         sendMessage(message)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun createFileStream(duration: Long):OutputStream? {
+
+        val uri: Uri? = null
+        val resolver: ContentResolver = applicationContext.contentResolver
+        var stream :OutputStream? = null
+        try {
+
+            val contentValues = ContentValues()
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, sessionData!!.videoConvertedPath)
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES+"/ShareYourRide/")
+            contentValues.put(MediaStore.Video.Media.DURATION, duration)
+            contentValues.put(MediaStore.Video.Media.TITLE, sessionData!!.videoConvertedPath)
+            contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, sessionData!!.videoConvertedPath)
+            val imageUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            if (imageUri != null)
+            {
+                if (uri != null) {
+                    stream = resolver.openOutputStream(imageUri)
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to create stream writing because ${ex.message}")
+            ex.printStackTrace()
+            if (uri != null) {
+                // Don't leave an orphan entry in the MediaStore
+                resolver.delete(uri, null, null)
+            }
+            stream?.close()
+        }
+
+        return stream
     }
 
     //region start stop service handlers
