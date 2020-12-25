@@ -191,7 +191,8 @@ class LocationProvider(private val context: Context): IDataProvider, IMessageHan
 
                     for (location in locationResult.locations)
                     {
-                        if (location.accuracy >= 1 && location.time > lastLocationTime)
+                        //TODO change value accuracy to 68
+                        if (location.accuracy >= 1 && location.time >= lastLocationTime)
                         {
                             val (distance, terrainInclination) = calculateTerrainInclination(newlong = location.longitude, newLat = location.latitude, newAlt = location.altitude)
 
