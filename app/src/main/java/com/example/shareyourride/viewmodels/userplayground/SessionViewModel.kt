@@ -38,7 +38,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         Log.i("SessionViewModel", "SYR -> $guid: Initiating SessionViewModel")
-        this.createMessageHandler( "SessionViewModel", listOf<String>(MessageTopics.SESSION_COMMANDS))
+        this.createMessageHandler( "SessionViewModel", listOf<String>(MessageTopics.SESSION_COMMANDS, MessageTopics.VIDEO_DATA))
     }
 
     //region public functions

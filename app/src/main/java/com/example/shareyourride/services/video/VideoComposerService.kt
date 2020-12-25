@@ -448,6 +448,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
 
             if (stream == null) {
                 Log.e(mClassName, "SYR -> Unable to compose video because stream is not accessible")
+                notifyCreationState(VideoState.Failed)
                 return
             }
             val recorder = FFmpegFrameRecorder(stream, video!!.width, video!!.height)
@@ -682,7 +683,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun createFileStream(duration: Long):OutputStream? {
 
-        val uri: Uri? = null
+        var imageUri: Uri? = null
         val resolver: ContentResolver = applicationContext.contentResolver
         var stream :OutputStream? = null
         try {
@@ -694,21 +695,19 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             contentValues.put(MediaStore.Video.Media.DURATION, duration)
             contentValues.put(MediaStore.Video.Media.TITLE, sessionData!!.videoConvertedPath)
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, sessionData!!.videoConvertedPath)
-            val imageUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            imageUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
             if (imageUri != null)
             {
-                if (uri != null) {
-                    stream = resolver.openOutputStream(imageUri)
-                }
+                stream = resolver.openOutputStream(imageUri)
             }
         }
         catch (ex: Exception)
         {
             Log.e(mClassName, "SYR -> Unable to create stream writing because ${ex.message}")
             ex.printStackTrace()
-            if (uri != null) {
+            if (imageUri != null) {
                 // Don't leave an orphan entry in the MediaStore
-                resolver.delete(uri, null, null)
+                resolver.delete(imageUri, null, null)
             }
             stream?.close()
         }

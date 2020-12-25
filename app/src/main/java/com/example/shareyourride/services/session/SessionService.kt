@@ -345,27 +345,26 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
         }
     }
 
-    private fun processCancelSession()
+    /**
+     * The session has been cancelled by the user. Its state transition happens when the user press back when is calibrating sensors or synchronizing
+     * the video. Also happens when the connection with the camera is lost in some states.
+     *
+     * Depending on the current state this procedure includes to stop
+     */
+    private fun cancelSession()
     {
         try
         {
-            if (sessionState != SessionState.SensorsCalibrated && sessionState != SessionState.CalibratingSensors)
-            {
-                sessionState = SessionState.Stopped
-                mSession.state = SessionState.Stopped.value
+            sessionState = SessionState.Stopped
+            mSession.state = SessionState.Stopped.value
 
-                stopSession()
+            stopSession()
 
-                runBlocking {
-                    ShareYourRideRepository.deleteSession(mSession)
-                }
-
-                sendSessionState()
+            runBlocking {
+                ShareYourRideRepository.deleteSession(mSession)
             }
-            else
-            {
-                Log.e("SessionService","SYR -> processCancelSession, Transition from  $sessionState to ${SessionState.Stopped} not supported")
-            }
+
+            sendSessionState()
         }
         catch (ex: Exception)
         {
@@ -373,6 +372,30 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    /**
+     *
+     */
+    private fun processCancelSession()
+    {
+        //Every funtion here is surrounded with a try catch
+
+        when (sessionState) {
+            SessionState.SynchronizingVideo -> {
+                sendStopVideoSynchronization()
+            }
+            SessionState.CalibratingSensors -> {
+                sendStopCalibratingSensors()
+            }
+            else -> {
+                //do nothing
+            }
+        }
+
+        cancelSession()
+    }
+
+
 
     private fun processInclinationCalibrationEnd(msgData: MessageBundleData)
     {
@@ -486,11 +509,85 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             ex.printStackTrace()
         }
     }
+
+    /**
+     * Process VIDEO_STATE_EVENT message.
+     *
+     * If the state is disconnected (false value), depending on the current session state the state machine of the
+     * session will perform different actions:
+     */
+    private fun processVideoState(msg: MessageBundleData)
+    {
+        try
+        {
+            if (msg.data is Boolean)
+            {
+                val wifiState = msg.data as Boolean
+
+                if (!wifiState)
+                {
+                    when(sessionState)
+                    {
+                        SessionState.Unknown ->
+                        {
+                            //do nothing
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, ignoring event")
+                        }
+                        SessionState.Stopped ->
+                        {
+                            //do nothing
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, ignoring event")
+                        }
+                        SessionState.SynchronizingVideo ->
+                        {
+                            //cancel. discard session, stop synchronizing video
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
+                            processCancelSession()
+                        }
+                        SessionState.CalibratingSensors ->
+                        {
+                            //cancel, discard session, stop calibrating sensors
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
+                            processCancelSession()
+                        }
+                        SessionState.SensorsCalibrated ->
+                        {
+                            //cancel and discard session
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
+                            cancelSession()
+                        }
+                        SessionState.Started ->
+                        {
+                            //stop and save session
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, finishing and saving session")
+                            processStopSession()
+                        }
+                        SessionState.CreatingVideo ->
+                        {
+                            //do nothing
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, ignoring event")
+                        }
+                        SessionState.Finished ->
+                        {
+                            //do nothing
+                            Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, ignoring event")
+                        }
+                    }
+                }
+
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e(mClassName, "SYR -> Unable to process processVideoState state event because: ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
     //endregion
 
     //region IMessageHandlerClient implementation
     init {
-        this.createMessageHandler( "SessionService", listOf(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_CONTROL, MessageTopics.VIDEO_CREATION_DATA))
+        this.createMessageHandler( "SessionService", listOf(MessageTopics.SESSION_COMMANDS, MessageTopics.INCLINATION_CONTROL, MessageTopics.VIDEO_CREATION_DATA, MessageTopics.VIDEO_DATA))
     }
 
     override lateinit var messageHandler: MessageHandler
@@ -554,6 +651,11 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                 {
                     Log.d("SessionService", "SYR -> received VIDEO_CREATION_STATE_EVENT updating event")
                     processVideoCreationStateEvent(msg.messageData)
+                }
+                MessageTypes.VIDEO_STATE_EVENT ->
+                {
+                    Log.d("VideoViewModel", "SYR -> received VIDEO_STATE_EVENT updating state")
+                    processVideoState(msg.messageData)
                 }
                 else ->
                 {
@@ -668,7 +770,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
     }
 
     /**
-     * Send the session state to upper layers
+     * Command the inclination service to start calibrating sensors
      */
     private fun sendStartCalibratingSensors()
     {
@@ -680,7 +782,25 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
         }
         catch (ex: Exception)
         {
-            Log.e("SessionService","SYR -> Unable to send session state message because ${ex.message}")
+            Log.e("SessionService","SYR -> Unable to send INCLINATION_CALIBRATION_START because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+
+    /**
+     * Command the inclination service to stop calibrating sensors
+     */
+    private fun sendStopCalibratingSensors()
+    {
+        try
+        {
+            Log.d("SessionService", "SYR -> Sending  INCLINATION_CALIBRATION_STOP")
+            val message = MessageBundle( MessageTypes.INCLINATION_CALIBRATION_STOP, mSession.id, MessageTopics.INCLINATION_CONTROL)
+            sendMessage(message)
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to send sINCLINATION_CALIBRATION_STOP message because ${ex.message}")
             ex.printStackTrace()
         }
     }

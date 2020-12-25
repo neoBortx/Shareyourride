@@ -2,6 +2,7 @@ package com.example.shareyourride.services.base
 
 import android.util.Log
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.bvillarroya_creations.shareyourride.datamodel.interfaces.IDataBaseTelemetry
 import com.bvillarroya_creations.shareyourride.messagesdefinition.MessageTypes
 import com.bvillarroya_creations.shareyourride.messenger.MessageBundle
@@ -10,6 +11,9 @@ import com.bvillarroya_creations.shareyourride.telemetry.events.TelemetryEvent
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryData
 import com.bvillarroya_creations.shareyourride.telemetry.interfaces.ITelemetryManager
 import com.example.shareyourride.services.interfaces.ITelemetryService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 abstract class TelemetryServiceBase : ITelemetryService, ServiceBase() {
 
@@ -124,8 +128,16 @@ abstract class TelemetryServiceBase : ITelemetryService, ServiceBase() {
     {
         if (mTelemetryManager != null)
         {
-            mTelemetryManager?.telemetryChanged?.removeObserver(handleTelemetryChanged!!)
-            mTelemetryManager?.stopAcquiringData()
+            lifecycleScope.launch {
+                withContext(Dispatchers.Main)
+                {
+                    mTelemetryManager?.telemetryChanged?.removeObserver(handleTelemetryChanged!!)
+                    mTelemetryManager?.stopAcquiringData()
+                }
+            }
+
+
+
         }
         else
         {

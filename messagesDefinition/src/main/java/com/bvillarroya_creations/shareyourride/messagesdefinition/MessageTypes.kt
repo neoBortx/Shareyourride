@@ -325,6 +325,15 @@ class MessageTypes {
         const val INCLINATION_CALIBRATION_START = "inclinationCalibrationStart"
 
         /**
+         * Command to the inclination service to stop the sensor calibration
+         *
+         * belongs to topic INCLINATION_CONTROL
+         *
+         * view -> Inclination service
+         */
+        const val INCLINATION_CALIBRATION_STOP = "inclinationCalibrationStop"
+
+        /**
          * Notifies that the synchronization service has finished
          *
          * belongs to topic INCLINATION_CONTROL

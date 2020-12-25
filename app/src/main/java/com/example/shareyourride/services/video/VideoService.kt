@@ -572,7 +572,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 referenceTimeStampVideo  = 0
                 timeStampRelationMap.clear()
                 framesCounter = 0
-                failedFrames = 0
 
                 sessionId = data.data as String
                 Log.d(mClassName, "SYR -> Start reading video frames in a new thread for session $sessionId ")
@@ -622,12 +621,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             Log.e(mClassName, "SYR -> Unable to processStartAcquiringData due: ${ex.message}")
             ex.printStackTrace()
 
-            Observable.timer(5000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe {
-                Log.e(mClassName, "SYR -> Retrying connect to video")
-                closeInputStream()
-                closeOutputStream()
-                processStartAcquiringData(data)
-            }
+            processErrorInConnection()
         }
     }
 
@@ -690,23 +684,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         captureVideoFlag = false
         connectionEstablished = false
-        try
-        {
-            closeOutputStream()
-        }
-        catch (ex: java.lang.Exception)
-        {
-            ex.printStackTrace()
-        }
 
-        try
-        {
-            closeInputStream()
-        }
-        catch (ex: java.lang.Exception) {
-            ex.printStackTrace()
-        }
-
+        closeStreams()
 
         GlobalScope.async(Dispatchers.IO)
         {
@@ -731,6 +710,38 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         captureVideoFlag = false
         connectionEstablished = false
+
+        closeStreams()
+
+        try
+        {
+            Log.i(mClassName,"SYR -> Deleting video file ${getRawFileDir()}")
+            val file = File(getRawFileDir())
+            file.delete()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to delete the video of the session ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        startConnectionTimer()
+    }
+
+    private fun processErrorInConnection()
+    {
+        captureVideoFlag = false
+        connectionEstablished = false
+
+        notifyVideoState()
+
+        closeStreams()
+
+        startConnectionTimer()
+    }
+
+    private fun closeStreams()
+    {
         try
         {
             closeOutputStream()
@@ -750,22 +761,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             Log.e(mClassName,"SYR -> Unable to close the grabber due : ${ex.message}")
             ex.printStackTrace()
         }
-
-        try
-        {
-            Log.i(mClassName,"SYR -> Deleting video file ${getRawFileDir()}")
-            val file = File(getRawFileDir())
-            file.delete()
-        }
-        catch (ex: java.lang.Exception)
-        {
-            Log.e(mClassName,"SYR -> Unable to delete the video of the session ${ex.message}")
-            ex.printStackTrace()
-        }
-
-
-        startConnectionTimer()
-
     }
 
     /**
@@ -793,11 +788,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                             processVideoFrame(frame)
                         }
                     }
-                    else {
+                    else
+                    {
                         Log.e(mClassName, "SYR -> Grabbed null frame ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
-                        failedFrames++
-                        Thread.sleep(20)
-                        connectionEstablished = false
+                        processErrorInConnection()
                     }
                 }
                 catch (ex: Exception) {
@@ -874,9 +868,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             Log.d(mClassName, "SYR -> Closing grabber to url: $addressString closed")
             if (grabber != null)
             {
-                Log.d(mClassName, "SYR -> calling releaseUnsafe")
                 grabber!!.stop()
-                Log.d(mClassName, "SYR -> executed!")
                 grabber = null
             }
             Log.i(mClassName, "SYR -> Grabber to url: $addressString closed")
@@ -941,10 +933,20 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try {
 
-            updateVideoStateTimer = Observable.timer( 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe({startConnection()},{
-                it.printStackTrace()
-                startConnectionTimer()
-            })
+            if (updateVideoStateTimer != null)
+            {
+                updateVideoStateTimer!!.dispose()
+            }
+
+            updateVideoStateTimer = Observable.timer( 10000, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).subscribe(
+                    {
+                        Log.d(mClassName, "SYR -> Launching scheduled connection process")
+                        startConnection()
+                    },
+                    {
+                        it.printStackTrace()
+                        startConnectionTimer()
+                    })
 
 
             settingsGetter = SettingPreferencesGetter(applicationContext)
