@@ -413,18 +413,21 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                     else
                     {
                         Log.e(mClassName, "SYR -> There isn't any video with the given session id $sessionId")
+                        notifyCreationState(VideoState.Failed)
                     }
                 }
             }
             else
             {
                 Log.e(mClassName, "SYR -> Message VIDEO_CREATION_COMMAND comes with out data")
+                notifyCreationState(VideoState.Failed)
             }
         }
         catch(ex: Exception)
         {
             Log.e(mClassName, "SYR -> Unable to process message ${ex.message}")
             ex.printStackTrace()
+            notifyCreationState(VideoState.Failed)
         }
     }
 
@@ -673,9 +676,19 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private fun notifyCreationState(state: VideoState)
     {
         lastUpdateTimeStamp = 0
-        val percentage = (composedFramesCount.toFloat().div(video!!.totalVideoFrames.toFloat()))*100
-        Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames}  $percentage")
-        val message = MessageBundle(MessageTypes.VIDEO_CREATION_STATE_EVENT, VideoCreationStateEvent(state, percentage.toInt()), MessageTopics.VIDEO_CREATION_DATA)
+        var percentage: Int = 0
+        if (video!= null && video!!.totalVideoFrames > 0)
+        {
+            percentage = ((composedFramesCount.toFloat().div(video!!.totalVideoFrames.toFloat()))*100).toInt()
+
+            Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames}  $percentage")
+        }
+        else
+        {
+            Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> State ${state}")
+        }
+
+        val message = MessageBundle(MessageTypes.VIDEO_CREATION_STATE_EVENT, VideoCreationStateEvent(state, percentage), MessageTopics.VIDEO_CREATION_DATA)
         sendMessage(message)
     }
 
