@@ -47,6 +47,4 @@ class UnitsFragment : PreferenceFragmentCompat() {
     }
     //endregion
 
-    //region Configuration management
-    //endregion
 }

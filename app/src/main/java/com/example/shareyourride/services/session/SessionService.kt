@@ -1,6 +1,9 @@
 package com.example.shareyourride.services.session
 
 import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.datamodel.data.Session
 import com.bvillarroya_creations.shareyourride.datamodel.data.SessionTelemetry
 import com.bvillarroya_creations.shareyourride.datamodel.dataBase.ShareYourRideRepository
@@ -120,6 +123,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             {
                 Log.i("SessionService","SYR -> Processing continue session and showing the on session or calibrating gyroscopes sessions")
                 sessionState = if (settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) SessionState.CalibratingSensors else SessionState.Started
+                mSession.startTimeStamp = if (settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) 0 else System.currentTimeMillis()
                 mSession.state = sessionState.value
 
                 //the current running thread will be blocked until this piece of code is executed
@@ -138,7 +142,8 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                 if (!settingsGetter!!.getBooleanOption(SettingPreferencesIds.LeanAngleMetric)) {
                     startSession()
                 }
-                else {
+                else
+                {
                     startCalibratingSensors()
                 }
             }
@@ -148,6 +153,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
                 sessionState = SessionState.Started
                 mSession.state = sessionState.value
+                mSession.startTimeStamp = System.currentTimeMillis()
 
                 //the current running thread will be blocked until this piece of code is executed
                 runBlocking {
@@ -262,11 +268,16 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
     }
 
-    private fun stopSession()
+    /**
+     * Stops the session because user interaction or due a failure
+     *
+     * @param discarded: flag that points if the current session has to be erased
+     */
+    private fun stopSession(discarded: Boolean)
     {
         try
         {
-            sendStopAcquiringData()
+            sendStopAcquiringData(discarded)
 
             saveTelemetryTimer?.dispose()
 
@@ -293,7 +304,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             mSession.state = sessionState.value
             mSession.endTimeStamp = System.currentTimeMillis()
 
-            stopSession()
+            stopSession(false)
 
             Log.e("SessionService","SYR -> stopping session ${mSession.id}")
 
@@ -323,7 +334,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                 sessionState = SessionState.Stopped
                 mSession.state = SessionState.Stopped.value
 
-                stopSession()
+                stopSession(true)
 
                 sendVideoDiscardCommand()
 
@@ -358,7 +369,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             sessionState = SessionState.Stopped
             mSession.state = SessionState.Stopped.value
 
-            stopSession()
+            stopSession(true)
 
             runBlocking {
                 ShareYourRideRepository.deleteSession(mSession)
@@ -456,7 +467,7 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
             val sessionSummary = SessionSummaryData()
 
             scope.launch {
-                sessionSummary.duration = mSession.endTimeStamp - mSession.initTimeStamp
+                sessionSummary.duration = mSession.endTimeStamp - mSession.startTimeStamp
                 sessionSummary.maxSpeed = ShareYourRideRepository.getMaxSpeed(mSession.id)
                 sessionSummary.averageSpeed = ShareYourRideRepository.getAverageMaxSpeed(mSession.id)
                 sessionSummary.distance = ShareYourRideRepository.getDistance(mSession.id)
@@ -538,29 +549,32 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
                             //do nothing
                             Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, ignoring event")
                         }
-                        SessionState.SynchronizingVideo ->
-                        {
+                        SessionState.SynchronizingVideo -> {
                             //cancel. discard session, stop synchronizing video
                             Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
                             processCancelSession()
+                            printConnetionLostToast()
                         }
                         SessionState.CalibratingSensors ->
                         {
                             //cancel, discard session, stop calibrating sensors
                             Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
                             processCancelSession()
+                            printConnetionLostToast()
                         }
                         SessionState.SensorsCalibrated ->
                         {
                             //cancel and discard session
                             Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, canceling session")
                             cancelSession()
+                            printConnetionLostToast()
                         }
                         SessionState.Started ->
                         {
                             //stop and save session
                             Log.i(mClassName, "SYR -> The video connection has been lost in state ${sessionState}, finishing and saving session")
                             processStopSession()
+                            printConnetionLostToast()
                         }
                         SessionState.CreatingVideo ->
                         {
@@ -670,6 +684,28 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
         }
     }
 
+    //region toast
+    /**
+     * Shows a toast message to notify the user that the connection with the camera have been lost
+     */
+    private fun printConnetionLostToast()
+    {
+        try
+        {
+            lifecycleScope.launch {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(applicationContext, getString(R.string.connection_lost), Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        catch (ex: Exception)
+        {
+            Log.e("SessionService","SYR -> Unable to show toast message because ${ex.message}")
+            ex.printStackTrace()
+        }
+    }
+    //endregion
+
     //region send messages
     /**
      * Sends the start session message to all telemetry services to start
@@ -694,13 +730,15 @@ internal class SessionService() : ServiceBase(), IMessageHandlerClient {
 
     /**
      * Command to the rest of telemetry services to stop acquiring data
+     *
+     * @param discarded: flag that points if the current session has to be erased
      */
-    private fun sendStopAcquiringData()
+    private fun sendStopAcquiringData(discarded: Boolean)
     {
         try
         {
-            Log.d("SessionService", "SYR -> Sending  stop session message ${mSession.id}")
-            val message = MessageBundle( MessageTypes.STOP_ACQUIRING_DATA, mSession.id, MessageTopics.SESSION_CONTROL)
+            Log.d("SessionService", "SYR -> Sending  stop session message ${mSession.id}, discarded ${discarded}")
+            val message = MessageBundle( MessageTypes.STOP_ACQUIRING_DATA, discarded, MessageTopics.SESSION_CONTROL)
             sendMessage(message)
         }
         catch (ex: Exception)

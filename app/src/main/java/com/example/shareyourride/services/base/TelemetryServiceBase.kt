@@ -60,7 +60,7 @@ abstract class TelemetryServiceBase : ITelemetryService, ServiceBase() {
                     initializeTelemetry()
                 }
                 MessageTypes.STOP_ACQUIRING_DATA -> {
-                    Log.d(mClassName, "SYR -> received  STOP_ACQUIRING_DATA messaged ${msg.messageData.data as String}")
+                    Log.d(mClassName, "SYR -> received  STOP_ACQUIRING_DATA message")
                     stopTelemetry()
                 }
                 MessageTypes.SAVE_TELEMETRY -> {

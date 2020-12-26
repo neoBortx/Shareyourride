@@ -125,7 +125,8 @@ class LocationService() : TelemetryServiceBase()
             val location = DataConverters.convertData(locationData, mSessionId, 0)
 
             if (accuracyModeEnabled) {
-                if (locationData.accuracy > 68) {
+                //TODO change to 68
+                if (locationData.accuracy > 1) {
                     Log.d(mClassName, "SYR -> The received accuracy is good enough ${locationData.accuracy}")
                     accuracyAdmissible = true
                     notifyGpState()

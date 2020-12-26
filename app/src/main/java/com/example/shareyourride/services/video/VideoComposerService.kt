@@ -459,7 +459,6 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
 
             recorder.videoCodec = avcodec.AV_CODEC_ID_H264
             recorder.format = "matroska"
-            recorder.isInterleaved = true
             recorder.pixelFormat = avutil.AV_PIX_FMT_YUV420P
 
             recorder.frameRate = video!!.frameRate

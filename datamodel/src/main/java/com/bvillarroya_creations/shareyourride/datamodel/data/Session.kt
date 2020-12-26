@@ -27,6 +27,11 @@ data class Session(
     var initTimeStamp: Long = 0,
 
     /**
+     * Dat of start of the activity session (time stamp)
+     */
+    var startTimeStamp: Long = 0,
+
+    /**
      *  Date of the end of the session (time stamp)
      */
     var endTimeStamp: Long = 0,
@@ -56,7 +61,7 @@ data class Session(
     var videoPath: String = "",
 
     /**
-     * THe path and name of the converted vídeo
+     * THe path and name of the converted video
      */
     var videoConvertedPath: String = "",
 
@@ -95,6 +100,7 @@ data class Session(
         if (id != other.id) return false
         if (name != other.name) return false
         if (initTimeStamp != other.initTimeStamp) return false
+        if (startTimeStamp != other.startTimeStamp) return false
         if (endTimeStamp != other.endTimeStamp) return false
         if (state != other.state) return false
         if (activityKind != other.activityKind) return false
@@ -113,6 +119,7 @@ data class Session(
         var result = id.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + initTimeStamp.hashCode()
+        result = 31 * result + startTimeStamp.hashCode()
         result = 31 * result + endTimeStamp.hashCode()
         result = 31 * result + state.hashCode()
         result = 31 * result + activityKind.hashCode()

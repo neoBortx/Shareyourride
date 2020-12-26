@@ -17,7 +17,7 @@ import com.bvillarroya_creations.shareyourride.datamodel.data.*
     Video::class,
     VideoFrame::class,
     Location::class,
-    Inclination::class], version = 17)
+    Inclination::class], version = 18)
 @TypeConverters(FloatArrayToStringConverter::class,IntArrayToStringConverter::class)
 abstract class ShareYourRideDatabase : RoomDatabase()
 {

@@ -1,10 +1,8 @@
 package com.example.shareyourride.services.video
 
 import android.annotation.SuppressLint
-import android.os.Environment
 import android.os.Process
 import android.util.Log
-import com.bvillarroya_creations.shareyourride.R
 import com.bvillarroya_creations.shareyourride.datamodel.data.Video
 import com.bvillarroya_creations.shareyourride.datamodel.data.VideoFrame
 import com.bvillarroya_creations.shareyourride.datamodel.data.VideoFrameId
@@ -27,11 +25,13 @@ import kotlinx.coroutines.async
 import org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264
 import org.bytedeco.ffmpeg.global.avutil.*
 import org.bytedeco.javacv.*
-import java.io.File
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.write
 
 
 /**
@@ -154,7 +154,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     /**
      * Lock to avoid concurrent accesses to the recorder API
      */
-    private val recorderLock: ReentrantLock = ReentrantLock()
+    private val recorderLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
 
     /**
      * Contains the relation of the timestamp of the frame and the synchronization timestamp sent in the SAVE_TELEMETRY message
@@ -234,7 +234,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 }
                 MessageTypes.STOP_ACQUIRING_DATA -> {
                     Log.d(mClassName, "SYR -> received  STOP_ACQUIRING_DATA")
-                    processStopAcquiringData()
+                    val discarded = msg.messageData.data as Boolean
+                    processStopAcquiringData(discarded)
                 }
 
                 MessageTypes.VIDEO_DISCARD_COMMAND ->
@@ -457,13 +458,13 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
-            Log.i(mClassName, "SYR ->Saving frames ${timeStampRelationMap.count()} in disk")
+            //Log.i(mClassName, "SYR ->Saving frames ${timeStampRelationMap.count()} in disk")
             timeStampRelationMap.forEach {
                 try
                 {
                     val videoFrame = VideoFrame(VideoFrameId(sessionId,it.key),it.value)
                     ShareYourRideRepository.insertVideoFrame(videoFrame)
-                    Log.i(mClassName, "SYR ->Saving frame ${videoFrame.id.frameTimeStamp} ----------------- ${videoFrame.syncTimeStamp}")
+                    //Log.i(mClassName, "SYR ->Saving frame ${videoFrame.id.frameTimeStamp} ----------------- ${videoFrame.syncTimeStamp}")
                 }
                 catch(ex: Exception)
                 {
@@ -502,21 +503,24 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 grabber!!.timeout = 5000
                 grabber!!.imageMode = FrameGrabber.ImageMode.COLOR
                 //As is explained in https://github.com/bytedeco/javacv/issues/214,
-                //use RGBA format to increase the performance of bitmap management
-                grabber!!.pixelFormat = AV_PIX_FMT_RGBA
-                //grabber!!.pixelFormat = AV_PIX_FMT_YUVA420P
+                //In the perform test AV_PIX_FMT_RGB565LE was the fastest pixel formart
+                //grabber!!.pixelFormat = AV_PIX_FMT_RGBA
+                grabber!!.pixelFormat = AV_PIX_FMT_RGB565LE
+                //grabber!!.pixelFormat = AV_PIX_FMT_YUV420P
                 grabber!!.videoCodec = AV_CODEC_ID_H264
                 //grabber!!.sampleRate = 900
                 //grabber!!.format = "mp4"
 
                 //grabber!!.setOption("vcodec","copy");
+                grabber!!.setOption("hwaccel", "h264_videotoolbox")
                 grabber!!.setOption("fflags", "nobuffer")
                 grabber!!.setOption("flags", "low_delay")
                 grabber!!.setOption("flags", "discardcorrupt")
                 grabber!!.setOption("avioflags ", "direct")
                 grabber!!.setOption("probesize", "120")
                 grabber!!.setOption("preset", "ultrafast")
-                grabber!!.setOption("tune", "zerolatency")
+                grabber!!.setOption("tune", "fastdecode")
+                grabber!!.setOption("crf", "44")
                 //grabber!!.setOption("threads", "1")
 
                 tryingToConnect = true
@@ -581,27 +585,24 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 Log.i(mClassName, "SYR -> recording video $videoRawPath, final video : $videoSharedPath")
 
-                recorderLock.lock()
+                recorderLock.write {
+                    recorder = FFmpegFrameRecorder(videoRawPath, videoWidth, videoHeight)
+                    recorder!!.videoCodec = AV_CODEC_ID_H264
+                    recorder!!.format = "matroska"
+                    recorder!!.isInterleaved = false
+                    recorder!!.pixelFormat = AV_PIX_FMT_YUV420P
+                    recorder!!.setOption("preset", "ultrafast")
+                    recorder!!.setOption("tune", "zerolatency")
+                    recorder!!.setOption("crf", "44")
+                    recorder!!.setOption("hwaccel", "h264_videotoolbox")
 
-                recorder = FFmpegFrameRecorder(videoRawPath, videoWidth, videoHeight)
-                recorder!!.videoCodec = AV_CODEC_ID_H264
-                recorder!!.format = "matroska"
-                recorder!!.isInterleaved = true
-                recorder!!.pixelFormat = AV_PIX_FMT_YUV420P
-                /*recorder!!.videoCodec = videoCodec
-                recorder!!.imageHeight = videoHeight
-                recorder!!.imageWidth = videoWidth
-                recorder!!.format = videoFormat
-                recorder!!.pixelFormat = videoPixelFormat*/
+                    recorder!!.frameRate = videoFrameRate
+                    recorder!!.videoBitrate = videoBitRate
 
-                recorder!!.frameRate = videoFrameRate
-                recorder!!.videoBitrate = videoBitRate
-
-                if (grabber != null) {
-                    recorder!!.start()
+                    if (grabber != null) {
+                        recorder!!.start()
+                    }
                 }
-
-                recorderLock.unlock()
 
                 GlobalScope.async(Dispatchers.IO) {
                     saveVideoFileInDataBase()
@@ -616,12 +617,88 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         }
         catch (ex:Exception)
         {
-            recorderLock.unlock()
-
             Log.e(mClassName, "SYR -> Unable to processStartAcquiringData due: ${ex.message}")
             ex.printStackTrace()
 
             processErrorInConnection()
+        }
+    }
+
+    /**
+     * Loop to read the incoming video stream
+     */
+    private fun getVideoFrames()
+    {
+
+        GlobalScope.async(Dispatchers.IO) {
+
+
+            //Log.d(mClassName, "SYR ->Starting  recording frame grabber timestamp ${grabber!!.timestamp} recorder timepstamp ${recorder!!.timestamp}")
+
+            while (connectionEstablished && grabber != null && !grabber!!.isCloseInputStream) {
+                try {
+                    val frame: Frame? = grabber!!.grabImage()
+                    if (frame != null) {
+                        //for debuging, uncoment
+                        //Log.d(mClassName, "SYR ->Grabbed frame ${frame.timestamp}  ---------------- ${System.currentTimeMillis()}")
+                        if (synchronizeVideoFlag) {
+                            sendVideoFrame(frame)
+                        }
+                        else
+                        {
+                            processVideoFrame(frame)
+                        }
+                    }
+                    else
+                    {
+                        Log.e(mClassName, "SYR -> Grabbed null frame ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
+                        processErrorInConnection()
+                    }
+                }
+                catch (ex: Exception) {
+                    Log.e(mClassName, "SYR -> Unable execute get video frame due: ${ex.message}")
+                    ex.printStackTrace()
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Just record the given video frame with FFmpegFrameRecorder tool
+     *
+     * @param frame: Frame to record
+     */
+    private fun processVideoFrame(frame: Frame)
+    {
+        if (recorder != null && captureVideoFlag)
+        {
+            val frameTimestamp = (frame.timestamp / 1000).toLong()
+            //val frameTimestamp = (frame.timestamp).toLong()
+            //synchronize the first processed frame with start of the video
+            if (framesCounter == 0L)
+            {
+                referenceTimeStampSystem = System.currentTimeMillis()
+                referenceTimeStampVideo = frameTimestamp
+                recorder!!.timestamp = 0
+            }
+
+            frame.timestamp = (System.currentTimeMillis() - referenceTimeStampSystem) * 1000
+
+            try
+            {
+                recorderLock.write {
+                    recorder!!.setTimestamp(frame.timestamp)
+                    recorder!!.record(frame)
+                }
+                timeStampRelationMap[framesCounter] = referenceTimeStampSystem + frameTimestamp - referenceTimeStampVideo
+                framesCounter++
+            }
+            catch(ex: Exception)
+            {
+                ex.printStackTrace()
+            }
+
         }
     }
 
@@ -680,20 +757,29 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      *
      * Also fill the video data with all frames data
      */
-    private fun processStopAcquiringData()
+    private fun processStopAcquiringData(discarded: Boolean)
     {
         captureVideoFlag = false
         connectionEstablished = false
 
         closeStreams()
 
-        GlobalScope.async(Dispatchers.IO)
+        if (!discarded)
         {
-            updateVideoFileInDataBase()
-            saveFramesInDataBase()
-            Log.i(mClassName, "SYR -> Sending message VIDEO_CREATION_COMMAND")
-            val message = MessageBundle(MessageTypes.VIDEO_CREATION_COMMAND, sessionId, MessageTopics.VIDEO_CREATION_DATA)
-            sendMessage(message)
+            Log.i(mClassName, "SYR -> Saving video and data in the system")
+            GlobalScope.async(Dispatchers.IO) {
+                updateVideoFileInDataBase()
+                saveFramesInDataBase()
+                Log.i(mClassName, "SYR -> Sending message VIDEO_CREATION_COMMAND")
+                val message = MessageBundle(MessageTypes.VIDEO_CREATION_COMMAND, sessionId, MessageTopics.VIDEO_CREATION_DATA)
+                sendMessage(message)
+            }
+        }
+        else
+        {
+            Log.i(mClassName, "SYR -> Deleting video and data in the system")
+            val file = File(getRawFileDir())
+            file.delete()
         }
 
         startConnectionTimer()
@@ -744,6 +830,16 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     {
         try
         {
+            closeInputStream()
+        }
+        catch (ex: java.lang.Exception)
+        {
+            Log.e(mClassName,"SYR -> Unable to close the grabber due : ${ex.message}")
+            ex.printStackTrace()
+        }
+
+        try
+        {
             closeOutputStream()
         }
         catch (ex: java.lang.Exception)
@@ -752,54 +848,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             ex.printStackTrace()
         }
 
-        try
-        {
-            closeInputStream()
-        }
-        catch (ex: java.lang.Exception)
-        {
-            Log.e(mClassName,"SYR -> Unable to close the grabber due : ${ex.message}")
-            ex.printStackTrace()
-        }
-    }
 
-    /**
-     * Loop to read the incoming video stream
-     */
-    private fun getVideoFrames()
-    {
-
-        GlobalScope.async(Dispatchers.IO) {
-
-
-            //Log.d(mClassName, "SYR ->Starting  recording frame grabber timestamp ${grabber!!.timestamp} recorder timepstamp ${recorder!!.timestamp}")
-
-            while (connectionEstablished && grabber != null && !grabber!!.isCloseInputStream) {
-                try {
-                    val frame: Frame? = grabber!!.grabImage()
-                    if (frame != null) {
-                        //for debuging, uncoment
-                        Log.d(mClassName, "SYR ->Grabbed frame ${frame.timestamp}  ---------------- ${System.currentTimeMillis()}")
-                        if (synchronizeVideoFlag) {
-                            sendVideoFrame(frame)
-                        }
-                        else
-                        {
-                            processVideoFrame(frame)
-                        }
-                    }
-                    else
-                    {
-                        Log.e(mClassName, "SYR -> Grabbed null frame ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
-                        processErrorInConnection()
-                    }
-                }
-                catch (ex: Exception) {
-                    Log.e(mClassName, "SYR -> Unable execute get video frame due: ${ex.message}")
-                    ex.printStackTrace()
-                }
-            }
-        }
     }
 
     /**
@@ -812,50 +861,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         val message = MessageBundle(MessageTypes.VIDEO_FRAME_SYNCHRONIZATION_DATA, bitmapConverter.convert(frame), MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
         sendMessage(message)
     }
-
-    /**
-     * Just record the given video frame with FFmpegFrameRecorder tool
-     *
-     * @param frame: Frame to record
-     */
-    private fun processVideoFrame(frame: Frame)
-    {
-        if (recorder != null && captureVideoFlag)
-        {
-            val frameTimestamp = (frame.timestamp / 1000).toLong()
-            //val frameTimestamp = (frame.timestamp).toLong()
-            //synchronize the first processed frame with start of the video
-            if (framesCounter == 0L)
-            {
-                referenceTimeStampSystem = System.currentTimeMillis()
-                referenceTimeStampVideo = frameTimestamp
-                recorder!!.timestamp = 0
-            }
-
-            frame.timestamp = (System.currentTimeMillis() - referenceTimeStampSystem) * 1000
-
-            Log.d(mClassName, "SYR ->Saveddd frame ${frame.timestamp}")
-            try
-            {
-                synchronized(recorderLock) {
-                    recorder!!.setTimestamp(frame.timestamp)
-                    recorder!!.record(frame)
-                }
-                timeStampRelationMap[framesCounter] = referenceTimeStampSystem + frameTimestamp - referenceTimeStampVideo
-                framesCounter++
-            }
-            catch(ex: OutOfMemoryError)
-            {
-                ex.printStackTrace()
-            }
-            catch(ex: Exception)
-            {
-                ex.printStackTrace()
-            }
-
-        }
-    }
-
 
 
     /**
@@ -886,22 +891,19 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         {
             Log.d(mClassName, "SYR -> Closing recorder to url: $addressString closed")
 
-            recorderLock.lock()
-
-            if (recorder != null)
-            {
-                recorder!!.close()
-                recorder = null
+            recorderLock.write {
+                if (recorder != null) {
+                    //recorder!!.flush()
+                    recorder!!.close()
+                    recorder = null
+                }
             }
 
-            recorderLock.unlock()
-
             Log.i(mClassName, "SYR -> recorder of url: $addressString closed")
-            connectionEstablished = false
         }
         catch(ex: Exception)
         {
-            recorderLock.unlock()
+            connectionEstablished = false
             Log.e(mClassName, "SYR -> Unable to close recorder of connection due: ${ex.message}")
             ex.printStackTrace()
         }

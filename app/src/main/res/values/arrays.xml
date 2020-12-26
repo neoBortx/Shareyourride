@@ -3,13 +3,11 @@
     <string-array name="unit_system_entries">
         <item>@string/metric_system</item>
         <item>@string/imperial_system</item>
-        <item>@string/custom_system</item>
     </string-array>
 
     <string-array name="unit_system_values">
         <item>metric</item>
         <item>imperial</item>
-        <item>custom</item>
     </string-array>
 
     <!-- Reply Preference -->
