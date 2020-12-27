@@ -106,6 +106,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      */
     private var videoFrameRate: Double = 0.0
 
+    private var videoMillisecondsPerFrame: Long = 0
+
     /**
      * The video bitrate
      */
@@ -192,6 +194,11 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      * Time stamp of the video phone when the first frame of the video is processed, it is used to synchronize the video
      */
     private var referenceTimeStampVideo: Long = 0
+
+    /**
+     * The timestamp associated to the current frame
+     */
+    private var frameTimeStamp: Long = 0
     //endregion
 
     //region message handlers
@@ -323,7 +330,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             return fileName
         }
         catch (ex: Exception) {
-            Log.e("VideoClient", "SYR -> Unable to get the directory to save the video 454532121212121241")
             ex.printStackTrace()
             ""
         }
@@ -513,10 +519,10 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
 
                 //grabber!!.setOption("vcodec","copy");
                 grabber!!.setOption("hwaccel", "h264_videotoolbox")
-                grabber!!.setOption("fflags", "nobuffer")
-                grabber!!.setOption("flags", "low_delay")
-                grabber!!.setOption("flags", "discardcorrupt")
-                grabber!!.setOption("avioflags ", "direct")
+                //grabber!!.setOption("fflags", "nobuffer")
+                //grabber!!.setOption("flags", "low_delay")
+                //grabber!!.setOption("flags", "discardcorrupt")
+                //grabber!!.setOption("avioflags ", "direct")
                 grabber!!.setOption("probesize", "120")
                 grabber!!.setOption("preset", "ultrafast")
                 grabber!!.setOption("tune", "fastdecode")
@@ -534,6 +540,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     videoFormat = grabber!!.format
                     videoCodec = grabber!!.videoCodec
                     videoFrameRate = grabber!!.frameRate
+                    videoMillisecondsPerFrame = getMillisecondsPerFrame()
                     videoBitRate = grabber!!.videoBitrate
                     videoPixelFormat = grabber!!.pixelFormat
                     videoTimeStamp = grabber!!.timestamp
@@ -624,6 +631,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         }
     }
 
+
+
     /**
      * Loop to read the incoming video stream
      */
@@ -664,6 +673,17 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
     }
 
 
+    private fun getMillisecondsPerFrame(): Long
+    {
+        return if(grabber!= null) {
+            (1000/grabber!!.videoFrameRate).toLong()
+        }
+        else {
+            1000/25
+        }
+
+    }
+
     /**
      * Just record the given video frame with FFmpegFrameRecorder tool
      *
@@ -682,12 +702,17 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 referenceTimeStampVideo = frameTimestamp
                 recorder!!.timestamp = 0
             }
-
-            frame.timestamp = (System.currentTimeMillis() - referenceTimeStampSystem) * 1000
+            else
+            {
+                //frame.timestamp = (System.currentTimeMillis() - referenceTimeStampSystem) * 1000
+                frameTimeStamp+= videoMillisecondsPerFrame
+                frame.timestamp = frameTimeStamp * 1000
+            }
 
             try
             {
                 recorderLock.write {
+                    //Log.d(mClassName, "SYR ->saved frame ${frame.timestamp}")
                     recorder!!.setTimestamp(frame.timestamp)
                     recorder!!.record(frame)
                 }
