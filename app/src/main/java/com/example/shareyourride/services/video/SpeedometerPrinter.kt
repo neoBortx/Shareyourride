@@ -3,6 +3,10 @@ package com.example.shareyourride.services.video
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.ScaleDrawable
+import android.graphics.drawable.VectorDrawable
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -32,83 +36,69 @@ class SpeedometerPrinter(videoScale: Float, maxSpeed: Float, val applicationCont
     {
         try
         {
-            Log.d("SpeedometerPrinter", "SYR -> Creating SpeedometerPrinter")
-            speedImageLocation   = Rect(0, 0, (110 * videoScale).toInt(), (35 * videoScale).toInt())
-            speedometersMap[0] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_1).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            Log.d("SpeedometerPrinter", "SYR -> Creating SpeedometerPrinter video, scale ${videoScale}")
 
-            speedometersMap[1] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_2).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            var bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_1)!!.toBitmap()
+            var height = if ((bitmap.height * videoScale).toInt() < 1 ) 1 else (bitmap.height * videoScale).toInt()
+            speedometersMap[0] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), height, true)
 
-            speedometersMap[2] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_3).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_2)!!.toBitmap()
+            height = if ((bitmap.height * videoScale).toInt() < 1 ) 1 else (bitmap.height * videoScale).toInt()
+            speedometersMap[1] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), height, true)
 
-            speedometersMap[3] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_4).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_3)!!.toBitmap()
+            height = if ((bitmap.height * videoScale).toInt() < 1 ) 1 else (bitmap.height * videoScale).toInt()
+            speedometersMap[2] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), height, true)
 
-            speedometersMap[4] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_5).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_4)!!.toBitmap()
+            height = if ((bitmap.height * videoScale).toInt() < 1 ) 1 else (bitmap.height * videoScale).toInt()
+            speedometersMap[3] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), height, true)
 
-            speedometersMap[5] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_6).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_5)!!.toBitmap()
+            speedometersMap[4] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[6] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_7).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_6)!!.toBitmap()
+            speedometersMap[5] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[7] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_8).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_7)!!.toBitmap()
+            speedometersMap[6] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[8] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_9).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_8)!!.toBitmap()
+            speedometersMap[7] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[9] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_10).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_9)!!.toBitmap()
+            speedometersMap[8] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[10] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_11).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_10)!!.toBitmap()
+            speedometersMap[9] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[11] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_12).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_11)!!.toBitmap()
+            speedometersMap[10] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[12] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_13).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_12)!!.toBitmap()
+            speedometersMap[11] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[13] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_14).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_13)!!.toBitmap()
+            speedometersMap[12] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[14] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_15).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_14)!!.toBitmap()
+            speedometersMap[13] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[15] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_16).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_15)!!.toBitmap()
+            speedometersMap[14] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[16] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_17).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_16)!!.toBitmap()
+            speedometersMap[15] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[17] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_18).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_17)!!.toBitmap()
+            speedometersMap[16] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            speedometersMap[18] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_19).apply {
-                this?.bounds = speedImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_18)!!.toBitmap()
+            speedometersMap[17] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_speedometer_19)!!.toBitmap()
+            speedometersMap[18] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
 
             //Split the max speed into tokens
             val token = maxSpeed/19

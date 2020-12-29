@@ -25,11 +25,10 @@ import kotlinx.coroutines.async
 import org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264
 import org.bytedeco.ffmpeg.global.avutil.*
 import org.bytedeco.javacv.*
-import java.io.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.write
 
@@ -37,15 +36,10 @@ import kotlin.concurrent.write
 /**
  * Stores and mange the video session
  */
-class VideoService: IMessageHandlerClient, ServiceBase() {
+class VideoService(): IMessageHandlerClient, ServiceBase() {
 
 
     //region properties
-    /**
-     * In charge of access to the application settings
-     */
-    private var settingsGetter : SettingPreferencesGetter? = null
-
     /**
      * The name of the service
      */
@@ -199,6 +193,18 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      * The timestamp associated to the current frame
      */
     private var frameTimeStamp: Long = 0
+
+    /**
+     * Used to count the null received frames
+     * If the connection throws ten null frames in a consecutive way, we declare the connection down
+     */
+    private var nullFrames: Int = 0
+
+    /**
+     * Counter of syncrhonization frames. Only send the half of them to the view to limit the cpu consumption due the poor
+     * performance of image converters
+     */
+    private var syncFramesCounter: Long = 0
     //endregion
 
     //region message handlers
@@ -509,25 +515,22 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 grabber!!.timeout = 5000
                 grabber!!.imageMode = FrameGrabber.ImageMode.COLOR
                 //As is explained in https://github.com/bytedeco/javacv/issues/214,
-                //In the perform test AV_PIX_FMT_RGB565LE was the fastest pixel formart
+                //In the perform test AV_PIX_FMT_NV12 was the fastest pixel format
                 //grabber!!.pixelFormat = AV_PIX_FMT_RGBA
-                grabber!!.pixelFormat = AV_PIX_FMT_RGB565LE
+                //grabber!!.pixelFormat = AV_PIX_FMT_RGB565LE
                 //grabber!!.pixelFormat = AV_PIX_FMT_YUV420P
+                grabber!!.pixelFormat = AV_PIX_FMT_NV12
                 grabber!!.videoCodec = AV_CODEC_ID_H264
-                //grabber!!.sampleRate = 900
-                //grabber!!.format = "mp4"
+                grabber!!.imageWidth=960
+                grabber!!.imageHeight=518
 
-                //grabber!!.setOption("vcodec","copy");
                 grabber!!.setOption("hwaccel", "h264_videotoolbox")
-                //grabber!!.setOption("fflags", "nobuffer")
-                //grabber!!.setOption("flags", "low_delay")
-                //grabber!!.setOption("flags", "discardcorrupt")
-                //grabber!!.setOption("avioflags ", "direct")
-                grabber!!.setOption("probesize", "120")
+                grabber!!.setOption("probesize", "256")
+                grabber!!.setOption("flags", "low_delay")
+                grabber!!.setOption("flags", "discardcorrupt")
                 grabber!!.setOption("preset", "ultrafast")
                 grabber!!.setOption("tune", "fastdecode")
-                grabber!!.setOption("crf", "44")
-                //grabber!!.setOption("threads", "1")
+                grabber!!.setOption("crf", "51")
 
                 tryingToConnect = true
                 grabber!!.start(true)
@@ -597,14 +600,18 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     recorder!!.videoCodec = AV_CODEC_ID_H264
                     recorder!!.format = "matroska"
                     recorder!!.isInterleaved = false
-                    recorder!!.pixelFormat = AV_PIX_FMT_YUV420P
+                    //recorder!!.pixelFormat = AV_PIX_FMT_YUV420P
+                    recorder!!.pixelFormat = AV_PIX_FMT_NV12
+
                     recorder!!.setOption("preset", "ultrafast")
                     recorder!!.setOption("tune", "zerolatency")
-                    recorder!!.setOption("crf", "44")
+                    recorder!!.setOption("crf", "51")
                     recorder!!.setOption("hwaccel", "h264_videotoolbox")
 
                     recorder!!.frameRate = videoFrameRate
                     recorder!!.videoBitrate = videoBitRate
+                    recorder!!.imageHeight = videoHeight
+                    recorder!!.imageWidth = videoWidth
 
                     if (grabber != null) {
                         recorder!!.start()
@@ -648,6 +655,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                 try {
                     val frame: Frame? = grabber!!.grabImage()
                     if (frame != null) {
+
+                        nullFrames = 0
                         //for debuging, uncoment
                         //Log.d(mClassName, "SYR ->Grabbed frame ${frame.timestamp}  ---------------- ${System.currentTimeMillis()}")
                         if (synchronizeVideoFlag) {
@@ -660,8 +669,12 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                     }
                     else
                     {
-                        Log.e(mClassName, "SYR -> Grabbed null frame ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
-                        processErrorInConnection()
+                        nullFrames++
+
+                        if (nullFrames > 50) {
+                            Log.e(mClassName, "SYR -> Grabbed 50 consecutive null frames ------ ${Process.myTid()} is closed ${grabber!!.isCloseInputStream} has video ${grabber!!.hasVideo()}")
+                            processErrorInConnection()
+                        }
                     }
                 }
                 catch (ex: Exception) {
@@ -712,11 +725,11 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
             try
             {
                 recorderLock.write {
-                    //Log.d(mClassName, "SYR ->saved frame ${frame.timestamp}")
+                    Log.d(mClassName, "SYR ->saved frame ${frame.timestamp} - count $framesCounter")
                     recorder!!.setTimestamp(frame.timestamp)
                     recorder!!.record(frame)
                 }
-                timeStampRelationMap[framesCounter] = referenceTimeStampSystem + frameTimestamp - referenceTimeStampVideo
+                timeStampRelationMap[frame.timestamp] = referenceTimeStampSystem + frameTimestamp - referenceTimeStampVideo
                 framesCounter++
             }
             catch(ex: Exception)
@@ -735,6 +748,7 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         try
         {
             synchronizeVideoFlag = true
+            syncFramesCounter = 0
         }
         catch(ex: Exception)
         {
@@ -883,8 +897,12 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
      */
     private fun sendVideoFrame(frame: Frame)
     {
-        val message = MessageBundle(MessageTypes.VIDEO_FRAME_SYNCHRONIZATION_DATA, bitmapConverter.convert(frame), MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
-        sendMessage(message)
+        if (syncFramesCounter % 2 == 0L)
+        {
+            val message = MessageBundle(MessageTypes.VIDEO_FRAME_SYNCHRONIZATION_DATA, bitmapConverter.convert(frame), MessageTopics.VIDEO_SYNCHRONIZATION_DATA)
+            sendMessage(message)
+        }
+        syncFramesCounter++
     }
 
 
@@ -956,7 +974,8 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
         startConnectionTimer()
     }
 
-    private fun startConnectionTimer()
+    //private  fun startConnectionTimer()
+    public fun startConnectionTimer()
     {
         try {
 
@@ -974,9 +993,6 @@ class VideoService: IMessageHandlerClient, ServiceBase() {
                         it.printStackTrace()
                         startConnectionTimer()
                     })
-
-
-            settingsGetter = SettingPreferencesGetter(applicationContext)
         }
         catch (ex: java.lang.Exception)
         {

@@ -25,6 +25,7 @@ import com.bvillarroya_creations.shareyourride.messenger.MessageHandler
 import com.example.shareyourride.common.CommonConstants
 import com.example.shareyourride.common.CommonConstants.Companion.GRAVITY_ACCELERATION
 import com.example.shareyourride.configuration.SettingPreferencesGetter
+import com.example.shareyourride.configuration.SettingPreferencesIds
 import com.example.shareyourride.services.base.ServiceBase
 import com.example.shareyourride.userplayground.common.AccelerationDirection
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +170,11 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
      * frames when the telemetry values are the same
      */
     private var lastForceDrawable: Bitmap? = null
+
+    /**
+     * The configured delay of the video
+     */
+    private var configuredDelay: Int = 0
     //endregion
 
 
@@ -359,7 +365,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                         paint.textSize = textSize
                         paint.setShadowLayer(1f, 0f, 1f, Color.DKGRAY)
 
-                                //places
+                        //places
                         bottomBorder = video!!.height-(15*scale)
                         rightBorder  = video!!.width-(90*scale)
                         leftBorder   = 40 * scale
@@ -368,41 +374,38 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
 
                         //bottom
                         speedValueLocation           = Pair(leftBorder, bottomBorder)
-                        speedUnitsLocation           = Pair(leftBorder + 148*scale, bottomBorder)
+                        speedUnitsLocation           = Pair(leftBorder + 198*scale, bottomBorder)
                         leanAngleLocation            = Pair(centerBorder- 20*scale, bottomBorder)
                         accelerationValueLocation    = Pair(rightBorder - 35*scale, bottomBorder)
                         accelerationUnitLocation     = Pair(rightBorder + 25*scale, bottomBorder)
 
                         //top
-                        distanceLocation                   = Pair(leftBorder+55*scale, topBorder)
-                        distanceDrawableLocation           = Pair(leftBorder, topBorder - 35*scale)
+                        distanceLocation                   = Pair(leftBorder+65*scale, topBorder)
+                        distanceDrawableLocation           = Pair(leftBorder, topBorder - 39*scale)
                         altitudeLocation                   = Pair(centerBorder- 10*scale, topBorder)
-                        altitudeDrawableLocation           = Pair(centerBorder - 58, topBorder-22*scale)
+                        altitudeDrawableLocation           = Pair(centerBorder - 45, topBorder-24*scale)
                         terrainInclinationLocation         = Pair(rightBorder + 5*scale , topBorder)
-                        terrainInclinationDrawableLocation = Pair(rightBorder - 55*scale, topBorder-22*scale)
+                        terrainInclinationDrawableLocation = Pair(rightBorder - 65*scale, topBorder-22*scale)
 
                         speedometerPrinter = SpeedometerPrinter(scale, maxSessionSpeed, applicationContext)
                         leanAnglePrinter   = LeanAnglePrinter(scale, applicationContext)
                         forcePrinter = ForcePrinter(scale, applicationContext)
 
                         //bitmaps
-                        distanceDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.distance).apply {
-                            this?.bounds = Rect(0, 0, (24 * scale).toInt(), (24 * scale).toInt())
-                        }!!.toBitmap()
+                        var bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.distance)!!.toBitmap()
+                        distanceDrawable = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *scale).toInt(), (bitmap.height * scale).toInt(), true)
 
-                        altitudeDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.altitude).apply {
-                            this?.bounds = Rect(0, 0, (24*scale).toInt(), (12*scale).toInt())
-                        }!!.toBitmap()
+                        bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.altitude)!!.toBitmap()
+                        altitudeDrawable = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *scale).toInt(), (bitmap.height * scale).toInt(), true)
 
-                        terrainInclinationDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.inclination).apply {
-                            this?.bounds = Rect(0, 0, (24*scale).toInt(), (12*scale).toInt())
-                        }!!.toBitmap()
+                        bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.inclination)!!.toBitmap()
+                        terrainInclinationDrawable = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *scale).toInt(), (bitmap.height * scale).toInt(), true)
 
                         val frameList = ShareYourRideRepository.getVideoFrameList(video!!.sessionId)
                         var count : Long = 1
                         frameList.forEach{
                             //framesMap[it.id.frameTimeStamp] = it.syncTimeStamp
-                            framesMap.put(count,it.syncTimeStamp)
+                            framesMap.put(it.id.frameTimeStamp,it.syncTimeStamp)
                             count++
                         }
 
@@ -442,11 +445,12 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
     private fun composeVideo() {
         try {
 
+            composedFramesCount = 0
+            notifyCreationState(VideoState.Composing)
 
             val file = File(video!!.rawVideoFilePath)
             val grabber = FFmpegFrameGrabber(file)
 
-            //val recorder = FFmpegFrameRecorder(getRawFileDir(), video!!.width, video!!.height)
             val stream = createFileStream((video!!.totalVideoFrames / video!!.frameRate).toLong())
 
             if (stream == null) {
@@ -459,12 +463,17 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
 
             recorder.videoCodec = avcodec.AV_CODEC_ID_H264
             recorder.format = "matroska"
+            //recorder.pixelFormat = avutil.AV_PIX_FMT_YUV420P
+            //To avoid h264 warnings in the creation of the video
             recorder.pixelFormat = avutil.AV_PIX_FMT_YUV420P
 
             recorder.frameRate = video!!.frameRate
             recorder.videoBitrate = video!!.bitRate
 
             Log.d(mClassName, "SYR -> Starting recorder to file ${video!!.generatedVideoPath}")
+
+            val getter = SettingPreferencesGetter(applicationContext)
+            configuredDelay = getter.getIntOption(SettingPreferencesIds.VideoDelay)
 
             startTimeStamp = System.currentTimeMillis()
 
@@ -493,22 +502,20 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
                         val time = String.format(
                                 "%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed), TimeUnit.MILLISECONDS.toSeconds(millisecondsElapsed) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisecondsElapsed)))
                         continueProcessing = false
-                        if (composedFramesCount >= video!!.totalVideoFrames) {
+                        //if (composedFramesCount >= video!!.totalVideoFrames) {
                             Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} composed in $time, Hell yeah!!!!!!!!!!!!")
                             notifyCreationState(VideoState.Finished)
-                        }
-                        else {
+                        /*}
+                        //else {
                             Log.i(mClassName, "SYR -> Video of session ${video!!.sessionId} failed in $time")
                             notifyCreationState(VideoState.Failed)
-                        }
+                        }*/
                     }
                 }
 
-                recorder.stop()
-                recorder.release()
+                recorder.close()
+                grabber.close()
                 stream.close()
-                grabber.stop()
-                grabber.release()
             }
         }
         catch (ex: java.lang.Exception)
@@ -562,7 +569,7 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
         try
         {
             //Uncommet for developing purposes
-            //Log.d("SessionService", "SYR -> composing frame ${composedFramesCount} --------------------- ${frame.timestamp}")
+            Log.d("SessionService", "SYR -> composing frame ${frame.timestamp} --------------------- $composedFramesCount")
             composedFramesCount++
 
             val currentMillis = System.currentTimeMillis()
@@ -577,10 +584,10 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             val frameBitmap: Bitmap = converter.convert(frame)
             val canvas = Canvas(frameBitmap)
 
-            if (framesMap.containsKey(composedFramesCount)
-                && lastProcessedSyncTimeStamp != framesMap[composedFramesCount])
+            if (framesMap.containsKey(frame.timestamp)
+                && lastProcessedSyncTimeStamp != (framesMap[frame.timestamp]?.minus(configuredDelay)))
             {
-                lastProcessedSyncTimeStamp = framesMap[composedFramesCount]!!
+                lastProcessedSyncTimeStamp = framesMap[frame.timestamp]!!.minus(configuredDelay)
                 location = ShareYourRideRepository.getLocation(video!!.sessionId, lastProcessedSyncTimeStamp)
                 inclination = ShareYourRideRepository.getInclination(video!!.sessionId, lastProcessedSyncTimeStamp)
             }
@@ -680,11 +687,16 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
         {
             percentage = ((composedFramesCount.toFloat().div(video!!.totalVideoFrames.toFloat()))*100).toInt()
 
-            Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames}  $percentage")
+            Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> $composedFramesCount - ${video!!.totalVideoFrames} - $percentage $state")
         }
         else
         {
             Log.d(mClassName, "SYR -> Sending  VIDEO_CREATION_STATE_EVENT ===> State ${state}")
+        }
+
+        if (state == VideoState.Failed || state == VideoState.Finished)
+        {
+            percentage = 100
         }
 
         val message = MessageBundle(MessageTypes.VIDEO_CREATION_STATE_EVENT, VideoCreationStateEvent(state, percentage), MessageTopics.VIDEO_CREATION_DATA)
@@ -707,6 +719,8 @@ class VideoComposerService: IMessageHandlerClient, ServiceBase() {
             contentValues.put(MediaStore.Video.Media.DURATION, duration)
             contentValues.put(MediaStore.Video.Media.TITLE, sessionData!!.videoConvertedPath)
             contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, sessionData!!.videoConvertedPath)
+            contentValues.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+            contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
             imageUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
             if (imageUri != null)
             {

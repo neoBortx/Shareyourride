@@ -72,6 +72,7 @@ class VideoViewModel(application: Application) : AndroidViewModel(application), 
      * The delay applied to the telemetry to synchronize the video with the data
      */
     val synchronizationDelay = MutableLiveData<Int>()
+
     //endregion
 
     //region init

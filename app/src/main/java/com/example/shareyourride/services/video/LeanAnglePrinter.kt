@@ -35,152 +35,119 @@ class LeanAnglePrinter(videoScale: Float, val applicationContext: Context) {
             Log.d("LeanAnglePrinter", "SYR -> Creating LeanAnglePrinter")
             leanAngleLocation   = Rect(0, 0, (50 * videoScale).toInt(), (50 * videoScale).toInt())
 
-            leanAngleImagesMap[0] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_0).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            var bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_0)!!.toBitmap()
+            leanAngleImagesMap[0] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[5] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_5).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_5)!!.toBitmap()
+            leanAngleImagesMap[5] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[10] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_10).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_10)!!.toBitmap()
+            leanAngleImagesMap[10] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[15] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_15).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_15)!!.toBitmap()
+            leanAngleImagesMap[15] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[20] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_20).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_20)!!.toBitmap()
+            leanAngleImagesMap[20] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[25] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_25).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_25)!!.toBitmap()
+            leanAngleImagesMap[25] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[30] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_30).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_30)!!.toBitmap()
+            leanAngleImagesMap[30] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[35] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_35).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_35)!!.toBitmap()
+            leanAngleImagesMap[35] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[40] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_40).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_40)!!.toBitmap()
+            leanAngleImagesMap[40] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[45] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_45).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_45)!!.toBitmap()
+            leanAngleImagesMap[45] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[50] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_50).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_50)!!.toBitmap()
+            leanAngleImagesMap[50] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[55] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_55).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_55)!!.toBitmap()
+            leanAngleImagesMap[55] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[60] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_60).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_60)!!.toBitmap()
+            leanAngleImagesMap[60] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[65] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_65).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_65)!!.toBitmap()
+            leanAngleImagesMap[65] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[70] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_70).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_70)!!.toBitmap()
+            leanAngleImagesMap[70] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[75] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_75).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_75)!!.toBitmap()
+            leanAngleImagesMap[75] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[80] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_80).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_80)!!.toBitmap()
+            leanAngleImagesMap[80] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[85] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_85).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_85)!!.toBitmap()
+            leanAngleImagesMap[85] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleImagesMap[90] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_90).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_90)!!.toBitmap()
+            leanAngleImagesMap[90] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[5] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_5).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
 
-            leanAngleNegativeImagesMap[10] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_10).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
 
-            leanAngleNegativeImagesMap[15] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_15).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
 
-            leanAngleNegativeImagesMap[20] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_20).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_5)!!.toBitmap()
+            leanAngleNegativeImagesMap[5] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[25] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_25).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_10)!!.toBitmap()
+            leanAngleNegativeImagesMap[10] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[30] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_30).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
-            leanAngleNegativeImagesMap[35] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_35).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_15)!!.toBitmap()
+            leanAngleNegativeImagesMap[15] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[40] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_40).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_20)!!.toBitmap()
+            leanAngleNegativeImagesMap[20] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[45] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_45).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_25)!!.toBitmap()
+            leanAngleNegativeImagesMap[25] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[50] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_50).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_30)!!.toBitmap()
+            leanAngleNegativeImagesMap[30] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[55] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_55).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_35)!!.toBitmap()
+            leanAngleNegativeImagesMap[35] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[60] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_60).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_40)!!.toBitmap()
+            leanAngleNegativeImagesMap[40] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[65] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_65).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_45)!!.toBitmap()
+            leanAngleNegativeImagesMap[45] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[70] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_70).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_50)!!.toBitmap()
+            leanAngleNegativeImagesMap[50] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[75] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_75).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_55)!!.toBitmap()
+            leanAngleNegativeImagesMap[55] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[80] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_80).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_60)!!.toBitmap()
+            leanAngleNegativeImagesMap[60] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[85] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_85).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_65)!!.toBitmap()
+            leanAngleNegativeImagesMap[65] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            leanAngleNegativeImagesMap[90] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_90).apply {
-                this?.bounds = leanAngleLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_70)!!.toBitmap()
+            leanAngleNegativeImagesMap[70] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_75)!!.toBitmap()
+            leanAngleNegativeImagesMap[75] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_80)!!.toBitmap()
+            leanAngleNegativeImagesMap[80] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_85)!!.toBitmap()
+            leanAngleNegativeImagesMap[85] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_lean_angle_grad_neg_90)!!.toBitmap()
+            leanAngleNegativeImagesMap[90] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
             Log.d("LeanAnglePrinter", "SYR -> Created LeanAnglePrinter")
         }

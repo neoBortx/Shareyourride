@@ -61,105 +61,81 @@ class ForcePrinter(videoScale: Float, val applicationContext: Context) {
         {
             Log.d("ForcePrinter", "SYR -> Creating ForcePrinter")
             forceImageLocation   = Rect(0, 0, (70 * videoScale).toInt(), (70 * videoScale).toInt())
-            forceImagesMap[Pair(ForceIntensity.None,AccelerationDirection.None)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_1).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Front)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_2).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            var bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_1)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.None,AccelerationDirection.None)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Front)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_3).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_2)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Front)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Front)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_4).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_3)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Front)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.FrontRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_5).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_4)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Front)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.FrontRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_6).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_5)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.FrontRight)] =Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.FrontRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_7).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_6)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.FrontRight)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Right)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_8).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_7)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.FrontRight)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Right)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_9).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_8)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Right)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Right)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_10).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_9)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Right)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.BackRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_11).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_10)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Right)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.BackRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_12).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_11)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.BackRight)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.BackRight)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_13).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_12)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.BackRight)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Back)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_14).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_13)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.BackRight)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Back)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_15).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_14)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Back)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Back)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_16).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_15)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Back)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.BackLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_17).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_16)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Back)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.BackLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_18).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_17)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.BackLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.BackLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_19).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_18)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.BackLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Left)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_20).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_19)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.BackLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Left)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_21).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_20)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.Left)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Left)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_22).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_21)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.Left)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.FrontLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_23).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_22)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.Left)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.FrontLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_24).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_23)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.LessThanOne,AccelerationDirection.FrontLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
-            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.FrontLeft)] = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_24).apply {
-                this?.bounds =forceImageLocation
-            }!!.toBitmap()
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_24)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.One,AccelerationDirection.FrontLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
+
+            bitmap = ContextCompat.getDrawable(applicationContext, R.drawable.ic_fuerza_25)!!.toBitmap()
+            forceImagesMap[Pair(ForceIntensity.MoreThanOne,AccelerationDirection.FrontLeft)] = Bitmap.createScaledBitmap( bitmap, (bitmap.width  *videoScale).toInt(), (bitmap.height * videoScale).toInt(), true)
 
             Log.d("ForcePrinter", "SYR -> Created ForcePrinter")
         }
