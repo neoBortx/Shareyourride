@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+  -->
+
 <resources>
     <!-- Camera preferences window-->
     <string name="camera_id">camera_id</string>

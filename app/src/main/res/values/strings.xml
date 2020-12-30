@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+  -->
+
 <resources>
     <string name="app_name">Share your ride</string>
     <string name="app_label">SyR</string>

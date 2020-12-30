@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+ */
+
 package com.example.shareyourride.userplayground.home
 
 import android.content.res.ColorStateList

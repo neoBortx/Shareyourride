@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+ */
+
 package com.example.shareyourride.services.inclination
 
 import android.util.Log

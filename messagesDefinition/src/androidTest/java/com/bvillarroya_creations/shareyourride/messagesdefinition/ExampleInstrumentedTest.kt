@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+ */
+
 package com.bvillarroya_creations.shareyourride.messagesdefinition
 
 import androidx.test.platform.app.InstrumentationRegistry

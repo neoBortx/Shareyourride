@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+  -->
+
 <!-- This layout contains some patterns that should be avoided and are fixed in
  the view model layout. -->
 <layout

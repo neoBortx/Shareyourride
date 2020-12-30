@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+ */
+
 include ':wifi'
 include ':messagesDefinition'
 include ':messagesDefinition'

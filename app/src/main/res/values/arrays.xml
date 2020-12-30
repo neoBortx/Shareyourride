@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2020. Borja Villarroya Rodriguez, All rights reserved
+  -->
+
 <resources>
     <!-- Reply Preference -->
     <string-array name="unit_system_entries">
